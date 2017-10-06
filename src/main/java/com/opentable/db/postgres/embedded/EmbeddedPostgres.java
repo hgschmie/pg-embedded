@@ -15,16 +15,19 @@ package com.opentable.db.postgres.embedded;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 
+import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
 import java.nio.channels.FileLock;
 import java.nio.channels.OverlappingFileLockException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -74,7 +77,7 @@ import org.tukaani.xz.XZInputStream;
 @SuppressWarnings("PMD.AvoidDuplicateLiterals") // "postgres"
 public class EmbeddedPostgres implements Closeable
 {
-    private static final Logger LOG = LoggerFactory.getLogger(EmbeddedPostgres.class);
+    static final Logger LOG = LoggerFactory.getLogger(EmbeddedPostgres.class);
     private static final String JDBC_FORMAT = "jdbc:postgresql://localhost:%s/%s?user=%s";
 
     private static final String PG_STOP_MODE = "fast";
@@ -228,6 +231,11 @@ public class EmbeddedPostgres implements Closeable
         builder.redirectError(outputRedirector);
         builder.redirectOutput(outputRedirector);
         final Process postmaster = builder.start();
+
+        if (outputRedirector.type() == ProcessBuilder.Redirect.Type.PIPE) {
+            ServerLoggerThread.logOutput(postmaster);
+        }
+
         LOG.info("{} postmaster started as {} on port {}.  Waiting up to {}ms for server startup to finish.", instanceId, postmaster.toString(), port, PG_STARTUP_WAIT_MS);
 
         Runtime.getRuntime().addShutdownHook(newCloserThread());
@@ -428,8 +436,8 @@ public class EmbeddedPostgres implements Closeable
         private int builderPort = 0;
         private PgBinaryResolver pgBinaryResolver = new BundledPostgresBinaryResolver();
 
-        private ProcessBuilder.Redirect errRedirector = ProcessBuilder.Redirect.INHERIT;
-        private ProcessBuilder.Redirect outRedirector = ProcessBuilder.Redirect.INHERIT;
+        private ProcessBuilder.Redirect errRedirector = ProcessBuilder.Redirect.PIPE;
+        private ProcessBuilder.Redirect outRedirector = ProcessBuilder.Redirect.PIPE;
 
         Builder() {
             config.put("timezone", "UTC");
@@ -496,14 +504,14 @@ public class EmbeddedPostgres implements Closeable
 
     private static List<String> system(String... command)
     {
-        return system(ProcessBuilder.Redirect.INHERIT, ProcessBuilder.Redirect.INHERIT, command);
+        return system(ProcessBuilder.Redirect.PIPE, ProcessBuilder.Redirect.PIPE, command);
     }
 
     private static List<String> system(ProcessBuilder.Redirect errorRedirector, ProcessBuilder.Redirect outputRedirector, String... command)
     {
         try {
             final ProcessBuilder builder = new ProcessBuilder(command);
-            builder.redirectError(errorRedirector);
+            builder.redirectErrorStream(true);
             builder.redirectOutput(outputRedirector);
             final Process process = builder.start();
             Verify.verify(0 == process.waitFor(), "Process %s failed\n%s", Arrays.asList(command), IOUtils.toString(process.getErrorStream()));
@@ -687,5 +695,34 @@ public class EmbeddedPostgres implements Closeable
     public String toString()
     {
         return "EmbeddedPG-" + instanceId;
+    }
+}
+
+class ServerLoggerThread implements Runnable {
+
+    private final Process process;
+    private final BufferedReader reader;
+
+    private ServerLoggerThread(Process process) {
+        this.process = process;
+        reader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
+    }
+
+    @Override
+    public void run() {
+        while (process.isAlive()) {
+            try {
+                EmbeddedPostgres.LOG.info(reader.readLine());
+            } catch (IOException e) {
+                EmbeddedPostgres.LOG.error("while reading server output");
+                return;
+            }
+        }
+    }
+
+    public static void logOutput(Process process) {
+        final Thread t = new Thread(new ServerLoggerThread(process));
+        t.setName("output redirector for " + process);
+        t.start();
     }
 }
