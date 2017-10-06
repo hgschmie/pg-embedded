@@ -18,8 +18,8 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>com.opentable</groupId>
-    <artifactId>otj-parent-oss</artifactId>
-    <version>50</version>
+    <artifactId>otj-parent-spring</artifactId>
+    <version>116-SNAPSHOT</version>
   </parent>
 
   <scm>
@@ -37,7 +37,9 @@
   <properties>
     <project.build.targetJdk>1.8</project.build.targetJdk>
     <basepom.test.timeout>1800</basepom.test.timeout>
-    <dep.postgres.version>9.4.1208</dep.postgres.version>
+    <!-- NB: This is the *client* library version, not to be confused with the server version.      -->
+    <!-- The important compatibility point is the *protocol* version, which hasn't changed in ages. -->
+    <dep.postgres.version>42.1.4</dep.postgres.version>
   </properties>
 
   <build>
@@ -102,20 +104,12 @@
     <dependency>
       <groupId>org.flywaydb</groupId>
       <artifactId>flyway-core</artifactId>
-      <version>4.0</version>
-      <optional>true</optional>
-    </dependency>
-
-    <dependency>
-      <groupId>com.google.code.findbugs</groupId>
-      <artifactId>annotations</artifactId>
       <optional>true</optional>
     </dependency>
 
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
-      <version>${dep.postgres.version}</version>
     </dependency>
 
     <dependency>
