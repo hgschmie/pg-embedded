@@ -37,6 +37,7 @@
   <properties>
     <project.build.targetJdk>1.8</project.build.targetJdk>
     <basepom.test.timeout>1800</basepom.test.timeout>
+    <dep.postgres.version>9.4.1208</dep.postgres.version>
   </properties>
 
   <build>
@@ -114,7 +115,7 @@
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
-      <version>9.4.1208</version>
+      <version>${dep.postgres.version}</version>
     </dependency>
 
     <dependency>
