@@ -13,19 +13,20 @@
  */
 package com.opentable.db.postgres.embedded;
 
+import static liquibase.database.DatabaseFactory.getInstance;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Objects;
+
+import javax.sql.DataSource;
+
 import liquibase.Contexts;
 import liquibase.Liquibase;
 import liquibase.database.Database;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.LiquibaseException;
 import liquibase.resource.ClassLoaderResourceAccessor;
-
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Objects;
-
-import static liquibase.database.DatabaseFactory.getInstance;
 
 public final class LiquibasePreparer implements DatabasePreparer {
 
@@ -50,8 +51,11 @@ public final class LiquibasePreparer implements DatabasePreparer {
         try {
             connection = ds.getConnection();
             Database database = getInstance().findCorrectDatabaseImplementation(new JdbcConnection(connection));
-            Liquibase liquibase = new Liquibase(location, new ClassLoaderResourceAccessor(), database);
-            liquibase.update(contexts);
+            try (Liquibase liquibase = new Liquibase(location, new ClassLoaderResourceAccessor(), database)) {
+                liquibase.update(contexts);
+            } catch (Exception e) {
+                throw new SQLException(e);
+            }
         } catch (LiquibaseException e) {
             throw new SQLException(e);
         } finally {
