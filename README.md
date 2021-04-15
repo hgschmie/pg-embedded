@@ -19,7 +19,7 @@ public SingleInstancePostgresRule pg = EmbeddedPostgresRules.singleInstance();
 
 This simply has JUnit manage an instance of EmbeddedPostgres (start, stop). You can then use this to get a DataSource with: `pg.getEmbeddedPostgres().getPostgresDatabase();`  
 
-Additionally you may use the [`EmbeddedPostgres`](src/main/java/com/opentable/db/postgres/embedded/EmbeddedPostgres.java) class directly by manually starting and stopping the instance; see [`EmbeddedPostgresTest`](src/test/java/com/opentable/db/postgres/embedded/EmbeddedPostgresTest.java) for an example.
+Additionally you may use the [`EmbeddedPostgres`](src/main/java/de/softwareforge/testing/postgres/embedded/EmbeddedPostgres.java) class directly by manually starting and stopping the instance; see [`EmbeddedPostgresTest`](src/test/java/com/opentable/db/postgres/embedded/EmbeddedPostgresTest.java) for an example.
 
 Default username/password is: postgres/postgres and the default database is 'postgres'
 
@@ -48,7 +48,7 @@ independent databases gives you.
 
 ## Postgres version
 
-The JAR file contains bundled version of Postgres. You can pass different Postgres version by implementing [`PgBinaryResolver`](src/main/java/com/opentable/db/postgres/embedded/PgBinaryResolver.java).
+The JAR file contains bundled version of Postgres. You can pass different Postgres version by implementing [`PgBinaryResolver`](src/main/java/de/softwareforge/testing/postgres/embedded/PgBinaryResolver.java).
 
 Example:
 ```java
