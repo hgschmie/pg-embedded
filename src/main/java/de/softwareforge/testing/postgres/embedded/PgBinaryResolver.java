@@ -25,9 +25,9 @@ import java.io.InputStream;
 public interface PgBinaryResolver {
 
     /**
-     * Returns an input stream with the postgress binary for the given
-     * systen and hardware architecture.
-     * @param system a system identification (Darwin, Linux...)
+     * Returns an input stream with the postgress binary for the given systen and hardware architecture.
+     *
+     * @param system          a system identification (Darwin, Linux...)
      * @param machineHardware a machine hardware architecture (x86_64...)
      * @return the binary
      */

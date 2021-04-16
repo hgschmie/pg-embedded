@@ -17,26 +17,19 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
-import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
-import java.util.Optional;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
 
 /**
- * Read standard output of process and write lines to given {@link Logger} as INFO;
- * depends on {@link ProcessBuilder#redirectErrorStream(boolean)} being set to {@code true} (since only stdout is
- * read).
+ * Read standard output of process and write lines to given {@link Logger} as INFO; depends on {@link ProcessBuilder#redirectErrorStream(boolean)} being set to
+ * {@code true} (since only stdout is read).
  *
  * <p>
- * The use of the input stream is threadsafe since it's used only in a single thread&mdash;the one launched by this
- * code.
+ * The use of the input stream is threadsafe since it's used only in a single thread&mdash;the one launched by this code.
  */
 final class ProcessOutputLogger implements Runnable {
-    @SuppressWarnings("PMD.LoggerIsNotStaticFinal")
+
     private final Logger logger;
     private final BufferedReader reader;
 
@@ -48,10 +41,10 @@ final class ProcessOutputLogger implements Runnable {
     @Override
     public void run() {
         try {
-                try {
+            try {
                 reader.lines().forEach(logger::info);
             } catch (final UncheckedIOException e) {
-                    logger.error("while reading output", e);
+                logger.error("while reading output", e);
             }
         } finally {
             try {
@@ -67,18 +60,5 @@ final class ProcessOutputLogger implements Runnable {
         t.setName("output redirector for " + process);
         t.setDaemon(true);
         t.start();
-    }
-
-    private static String processId(Process process) {
-        try { // java 9+
-            return String.format("pid(%s)", MethodHandles.lookup().findVirtual(Process.class, "pid", MethodType.methodType(long.class)).invoke(process));
-        } catch (Throwable ignored) {} // NOPMD since MethodHandles.invoke throws Throwable
-        try { // openjdk / oraclejdk 8
-            final Field pid = process.getClass().getDeclaredField("pid");
-            pid.setAccessible(true);
-            return String.format("pid(%s)", pid.getInt(process));
-        } catch (Exception ignored) {} // NOPMD
-
-        return String.format("id(%s)", process.hashCode());
     }
 }

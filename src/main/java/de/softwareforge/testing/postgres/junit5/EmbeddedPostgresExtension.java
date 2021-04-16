@@ -28,11 +28,10 @@ public final class EmbeddedPostgresExtension {
     }
 
     /**
-     * Returns a {@link Extension} to create a Postgres cluster, shared amongst all test cases in this JVM.
-     * The rule contributes Config switches to configure each test case to get its own database.
+     * Returns a {@link Extension} to create a Postgres cluster, shared amongst all test cases in this JVM. The rule contributes Config switches to configure
+     * each test case to get its own database.
      */
-    public static PreparedDbExtension preparedDatabase(DatabasePreparer preparer)
-    {
+    public static PreparedDbExtension preparedDatabase(DatabasePreparer preparer) {
         return new PreparedDbExtension(preparer);
     }
 

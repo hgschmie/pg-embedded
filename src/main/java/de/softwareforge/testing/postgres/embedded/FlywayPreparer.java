@@ -34,7 +34,7 @@ public final class FlywayPreparer implements DatabasePreparer {
 
     public static FlywayPreparer forClasspathLocation(String... locations) {
         FluentConfiguration f = Flyway.configure()
-            .locations(locations);
+                .locations(locations);
         return new FlywayPreparer(f, Arrays.asList(locations));
     }
 
@@ -51,7 +51,7 @@ public final class FlywayPreparer implements DatabasePreparer {
 
     @Override
     public boolean equals(Object obj) {
-        if (! (obj instanceof FlywayPreparer)) {
+        if (!(obj instanceof FlywayPreparer)) {
             return false;
         }
         return Objects.equals(locations, ((FlywayPreparer) obj).locations);

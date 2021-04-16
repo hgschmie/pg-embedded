@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import org.tukaani.xz.XZInputStream;
 
 final class EmbeddedUtil {
+
     static final Logger LOG = LoggerFactory.getLogger(EmbeddedPostgres.class);
     static final String JDBC_FORMAT = "jdbc:postgresql://localhost:%s/%s?user=%s";
     static final String PG_STOP_MODE = "fast";
@@ -45,7 +46,8 @@ final class EmbeddedUtil {
     static final Duration DEFAULT_PG_STARTUP_WAIT = Duration.ofSeconds(10);
     static final String LOCK_FILE_NAME = "epg-lock";
 
-    private EmbeddedUtil() {}
+    private EmbeddedUtil() {
+    }
 
     static File getWorkingDirectory() {
         final File tempWorkingDirectory = new File(System.getProperty("java.io.tmpdir"), "embedded-pg");
@@ -60,8 +62,7 @@ final class EmbeddedUtil {
     }
 
     /**
-     * Get current operating system string. The string is used in the appropriate
-     * postgres binary name.
+     * Get current operating system string. The string is used in the appropriate postgres binary name.
      *
      * @return Current operating system string.
      */
@@ -79,8 +80,7 @@ final class EmbeddedUtil {
     }
 
     /**
-     * Get the machine architecture string. The string is used in the appropriate
-     * postgres binary name.
+     * Get the machine architecture string. The string is used in the appropriate postgres binary name.
      *
      * @return Current machine architecture string.
      */
@@ -89,8 +89,7 @@ final class EmbeddedUtil {
     }
 
     /**
-     * Unpack archive compressed by tar with xz compression. By default system tar is used (faster). If not found, then the
-     * java implementation takes place.
+     * Unpack archive compressed by tar with xz compression. By default system tar is used (faster). If not found, then the java implementation takes place.
      *
      * @param stream    A stream with the postgres binaries.
      * @param targetDir The directory to extract the content to.

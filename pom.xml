@@ -36,7 +36,7 @@
     <description>Embedded PostgreSQL driver</description>
 
     <properties>
-        <project.build.targetJdk>8</project.build.targetJdk>
+        <project.build.targetJdk>11</project.build.targetJdk>
         <basepom.test.timeout>1800</basepom.test.timeout>
 
         <dep.plugin.exec.version>3.0.0</dep.plugin.exec.version>

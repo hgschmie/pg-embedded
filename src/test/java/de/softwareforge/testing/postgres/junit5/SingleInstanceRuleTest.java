@@ -13,10 +13,6 @@
  */
 package de.softwareforge.testing.postgres.junit5;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -24,8 +20,12 @@ import java.sql.Statement;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class SingleInstanceRuleTest
-{
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+public class SingleInstanceRuleTest {
+
     @RegisterExtension
     public SingleInstancePostgresExtension epg = EmbeddedPostgresExtension.singleInstance();
 

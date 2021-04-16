@@ -18,15 +18,12 @@ import java.sql.SQLException;
 import javax.sql.DataSource;
 
 /**
- * A DatabasePreparer applies an arbitrary set of changes
- * (e.g. database migrations, user creation) to a database
- * before it is presented to the user.
- *
- * The preparation steps are expected to be deterministic.
- * For efficiency reasons, databases created by DatabasePreparer
- * instances may be pooled, using {@link Object#hashCode()} and
- * {@link Object#equals(Object)} to determine equivalence.
+ * A DatabasePreparer applies an arbitrary set of changes (e.g. database migrations, user creation) to a database before it is presented to the user.
+ * <p>
+ * The preparation steps are expected to be deterministic. For efficiency reasons, databases created by DatabasePreparer instances may be pooled, using {@link
+ * Object#hashCode()} and {@link Object#equals(Object)} to determine equivalence.
  */
 public interface DatabasePreparer {
+
     void prepare(DataSource ds) throws SQLException;
 }

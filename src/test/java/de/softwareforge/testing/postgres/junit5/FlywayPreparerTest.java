@@ -13,8 +13,6 @@
  */
 package de.softwareforge.testing.postgres.junit5;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -23,7 +21,10 @@ import de.softwareforge.testing.postgres.embedded.FlywayPreparer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class FlywayPreparerTest {
+
     @RegisterExtension
     public PreparedDbExtension db = EmbeddedPostgresExtension.preparedDatabase(FlywayPreparer.forClasspathLocation("db/testing"));
 

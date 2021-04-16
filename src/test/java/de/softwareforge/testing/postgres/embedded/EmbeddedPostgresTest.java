@@ -13,11 +13,6 @@
  */
 package de.softwareforge.testing.postgres.embedded;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -29,16 +24,20 @@ import org.apache.commons.lang3.SystemUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-public class EmbeddedPostgresTest
-{
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+public class EmbeddedPostgresTest {
+
     @TempDir
     public Path tf;
 
     @Test
-    public void testEmbeddedPg() throws Exception
-    {
+    public void testEmbeddedPg() throws Exception {
         try (EmbeddedPostgres pg = EmbeddedPostgres.start();
-             Connection c = pg.getPostgresDatabase().getConnection()) {
+                Connection c = pg.getPostgresDatabase().getConnection()) {
             Statement s = c.createStatement();
             ResultSet rs = s.executeQuery("SELECT 1");
             assertTrue(rs.next());
@@ -48,8 +47,7 @@ public class EmbeddedPostgresTest
     }
 
     @Test
-    public void testEmbeddedPgCreationWithNestedDataDirectory() throws Exception
-    {
+    public void testEmbeddedPgCreationWithNestedDataDirectory() throws Exception {
         try (EmbeddedPostgres pg = EmbeddedPostgres.builder()
                 .setDataDirectory(Files.createDirectories(tf.resolve("data-dir-parent").resolve("data-dir")))
                 .start()) {
@@ -69,7 +67,7 @@ public class EmbeddedPostgresTest
                 builder = EmbeddedPostgres.builder()
                         .setLocaleConfig("locale", "en_US")
                         .setLocaleConfig("lc-messages", "en_US");
-            } else if (SystemUtils.IS_OS_LINUX){
+            } else if (SystemUtils.IS_OS_LINUX) {
                 builder = EmbeddedPostgres.builder()
                         .setLocaleConfig("locale", "en_US.utf8")
                         .setLocaleConfig("lc-messages", "en_US.utf8");
@@ -77,7 +75,7 @@ public class EmbeddedPostgresTest
                 fail("System not detected!");
             }
             builder.start();
-        } catch (IllegalStateException e){
+        } catch (IllegalStateException e) {
             e.printStackTrace();
             fail("Failed to set locale settings: " + e.getLocalizedMessage());
         }

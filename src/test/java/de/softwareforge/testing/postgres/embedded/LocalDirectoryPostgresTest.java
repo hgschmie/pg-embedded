@@ -13,10 +13,6 @@
  */
 package de.softwareforge.testing.postgres.embedded;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.io.File;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -24,6 +20,10 @@ import java.sql.Statement;
 
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class LocalDirectoryPostgresTest {
 

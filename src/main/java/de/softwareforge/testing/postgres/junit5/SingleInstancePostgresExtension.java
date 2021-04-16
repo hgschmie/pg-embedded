@@ -13,17 +13,17 @@
  */
 package de.softwareforge.testing.postgres.junit5;
 
-import de.softwareforge.testing.postgres.embedded.EmbeddedPostgres;
-import org.junit.jupiter.api.extension.AfterTestExecutionCallback;
-import org.junit.jupiter.api.extension.BeforeTestExecutionCallback;
-import org.junit.jupiter.api.extension.ExtensionContext;
-
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
+
+import de.softwareforge.testing.postgres.embedded.EmbeddedPostgres;
+import org.junit.jupiter.api.extension.AfterTestExecutionCallback;
+import org.junit.jupiter.api.extension.BeforeTestExecutionCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
 
 public class SingleInstancePostgresExtension implements AfterTestExecutionCallback, BeforeTestExecutionCallback {
 
@@ -53,8 +53,7 @@ public class SingleInstancePostgresExtension implements AfterTestExecutionCallba
         return this;
     }
 
-    public EmbeddedPostgres getEmbeddedPostgres()
-    {
+    public EmbeddedPostgres getEmbeddedPostgres() {
         EmbeddedPostgres epg = this.epg;
         if (epg == null) {
             throw new AssertionError("JUnit test not started yet!");

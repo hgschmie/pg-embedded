@@ -13,16 +13,16 @@
  */
 package de.softwareforge.testing.postgres.junit5;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.RegisterExtension;
-
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -38,40 +38,35 @@ public class DatabaseLifecycleTest {
 
     @Test
     @Order(1)
-    public void testCreate1() throws Exception
-    {
+    public void testCreate1() throws Exception {
         createTable(staticExtension, "table1");
         createTable(instanceExtension, "table2");
     }
 
     @Test
     @Order(2)
-    public void testCreate2() throws Exception
-    {
+    public void testCreate2() throws Exception {
         assertTrue(existsTable(staticExtension, "table1"));
         assertFalse(existsTable(instanceExtension, "table2"));
     }
 
     @Test
     @Order(3)
-    public void testCreate3() throws Exception
-    {
+    public void testCreate3() throws Exception {
         assertTrue(existsTable(staticExtension, "table1"));
         assertFalse(existsTable(instanceExtension, "table2"));
     }
 
-    private void createTable(PreparedDbExtension extension, String table) throws SQLException
-    {
+    private void createTable(PreparedDbExtension extension, String table) throws SQLException {
         try (Connection connection = extension.getTestDatabase().getConnection();
-             Statement statement = connection.createStatement()) {
+                Statement statement = connection.createStatement()) {
             statement.execute(String.format("CREATE TABLE public.%s (a INTEGER)", table));
         }
     }
 
-    private boolean existsTable(PreparedDbExtension extension, String table) throws SQLException
-    {
+    private boolean existsTable(PreparedDbExtension extension, String table) throws SQLException {
         try (Connection connection = extension.getTestDatabase().getConnection();
-             Statement statement = connection.createStatement()) {
+                Statement statement = connection.createStatement()) {
             String query = String.format("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = '%s')", table);
             ResultSet resultSet = statement.executeQuery(query);
             resultSet.next();

@@ -13,8 +13,6 @@
  */
 package de.softwareforge.testing.postgres.junit5;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -29,6 +27,8 @@ import de.softwareforge.testing.postgres.embedded.DatabaseConnectionPreparer;
 import de.softwareforge.testing.postgres.embedded.DatabasePreparer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PreparedDbTest {
 
@@ -80,12 +80,13 @@ public class PreparedDbTest {
     @Test
     public void testDbUri() throws Exception {
         try (Connection c = DriverManager.getConnection(dbA1.getDbProvider().createDatabase());
-             Statement stmt = c.createStatement()) {
+                Statement stmt = c.createStatement()) {
             commonAssertion(stmt);
         }
     }
 
     static class SimplePreparer implements DatabaseConnectionPreparer {
+
         private final String name;
 
         public SimplePreparer(String name) {

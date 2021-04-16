@@ -18,5 +18,6 @@ import java.util.Optional;
 
 @FunctionalInterface
 public interface PgDirectoryResolver {
+
     File getDirectory(Optional<File> overrideWorkingDirectory);
 }

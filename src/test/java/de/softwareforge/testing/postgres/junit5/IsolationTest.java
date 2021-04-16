@@ -20,8 +20,8 @@ import java.sql.Statement;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class IsolationTest
-{
+public class IsolationTest {
+
     @RegisterExtension
     public SingleInstancePostgresExtension pg1 = EmbeddedPostgresExtension.singleInstance();
 
@@ -29,8 +29,7 @@ public class IsolationTest
     public SingleInstancePostgresExtension pg2 = EmbeddedPostgresExtension.singleInstance();
 
     @Test
-    public void testIsolation() throws Exception
-    {
+    public void testIsolation() throws Exception {
         try (Connection c = getConnection(pg1)) {
             makeTable(c);
             try (Connection c2 = getConnection(pg2)) {
@@ -39,14 +38,12 @@ public class IsolationTest
         }
     }
 
-    private void makeTable(Connection c) throws SQLException
-    {
+    private void makeTable(Connection c) throws SQLException {
         Statement s = c.createStatement();
         s.execute("CREATE TABLE public.foo (a INTEGER)");
     }
 
-    private Connection getConnection(SingleInstancePostgresExtension epg) throws SQLException
-    {
+    private Connection getConnection(SingleInstancePostgresExtension epg) throws SQLException {
         return epg.getEmbeddedPostgres().getPostgresDatabase().getConnection();
     }
 }

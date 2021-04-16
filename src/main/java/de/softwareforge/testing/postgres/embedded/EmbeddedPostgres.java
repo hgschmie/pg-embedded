@@ -36,7 +36,6 @@ import java.sql.Statement;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,9 +46,9 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
-
 import javax.sql.DataSource;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
@@ -59,12 +58,8 @@ import org.postgresql.ds.PGSimpleDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+public class EmbeddedPostgres implements Closeable {
 
-@SuppressWarnings("PMD.AvoidDuplicateLiterals") // "postgres"
-@SuppressFBWarnings({"RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE", "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"}) // java 11 triggers: https://github.com/spotbugs/spotbugs/issues/756
-public class EmbeddedPostgres implements Closeable
-{
     private static final Logger LOG = LoggerFactory.getLogger(EmbeddedPostgres.class);
     private static final String LOG_PREFIX = EmbeddedPostgres.class.getName() + ".";
     private static final String JDBC_FORMAT = "jdbc:postgresql://localhost:%s/%s?user=%s";
@@ -97,19 +92,17 @@ public class EmbeddedPostgres implements Closeable
     private final ProcessBuilder.Redirect outputRedirector;
 
     EmbeddedPostgres(File parentDirectory, File dataDirectory, boolean cleanDataDirectory,
-        Map<String, String> postgresConfig, Map<String, String> localeConfig, int port, Map<String, String> connectConfig,
-        PgDirectoryResolver pgDirectoryResolver, ProcessBuilder.Redirect errorRedirector, ProcessBuilder.Redirect outputRedirector) throws IOException
-    {
+            Map<String, String> postgresConfig, Map<String, String> localeConfig, int port, Map<String, String> connectConfig,
+            PgDirectoryResolver pgDirectoryResolver, ProcessBuilder.Redirect errorRedirector, ProcessBuilder.Redirect outputRedirector) throws IOException {
         this(parentDirectory, dataDirectory, cleanDataDirectory, postgresConfig, localeConfig, port, connectConfig,
                 pgDirectoryResolver, errorRedirector, outputRedirector, DEFAULT_PG_STARTUP_WAIT, Optional.empty());
     }
 
     EmbeddedPostgres(File parentDirectory, File dataDirectory, boolean cleanDataDirectory,
-                     Map<String, String> postgresConfig, Map<String, String> localeConfig, int port, Map<String, String> connectConfig,
-                     PgDirectoryResolver pgDirectoryResolver, ProcessBuilder.Redirect errorRedirector,
-                     ProcessBuilder.Redirect outputRedirector, Duration pgStartupWait,
-                     Optional<File> overrideWorkingDirectory) throws IOException
-    {
+            Map<String, String> postgresConfig, Map<String, String> localeConfig, int port, Map<String, String> connectConfig,
+            PgDirectoryResolver pgDirectoryResolver, ProcessBuilder.Redirect errorRedirector,
+            ProcessBuilder.Redirect outputRedirector, Duration pgStartupWait,
+            Optional<File> overrideWorkingDirectory) throws IOException {
 
         this.cleanDataDirectory = cleanDataDirectory;
         this.postgresConfig = new HashMap<>(postgresConfig);
@@ -192,14 +185,13 @@ public class EmbeddedPostgres implements Closeable
         return port;
     }
 
-    Map<String, String> getConnectConfig()
-    {
+    Map<String, String> getConnectConfig() {
         return unmodifiableMap(connectConfig);
     }
 
     private static int detectPort() throws IOException {
         try (ServerSocket socket = new ServerSocket(0)) {
-            while(!socket.isBound()) {
+            while (!socket.isBound()) {
                 Thread.sleep(50);
             }
             return socket.getLocalPort();
@@ -228,8 +220,7 @@ public class EmbeddedPostgres implements Closeable
         LOG.info("{} initdb completed in {}", instanceId, watch);
     }
 
-    private void startPostmaster() throws IOException
-    {
+    private void startPostmaster() throws IOException {
         final StopWatch watch = new StopWatch();
         watch.start();
         if (started.getAndSet(true)) {
@@ -253,11 +244,12 @@ public class EmbeddedPostgres implements Closeable
 
         if (outputRedirector.type() == ProcessBuilder.Redirect.Type.PIPE) {
             ProcessOutputLogger.logOutput(LoggerFactory.getLogger("pg-" + instanceId), postmaster);
-        } else if(outputRedirector.type() == ProcessBuilder.Redirect.Type.APPEND) {
+        } else if (outputRedirector.type() == ProcessBuilder.Redirect.Type.APPEND) {
             ProcessOutputLogger.logOutput(LoggerFactory.getLogger(LOG_PREFIX + "pg-" + instanceId), postmaster);
         }
 
-        LOG.info("{} postmaster started as {} on port {}.  Waiting up to {} for server startup to finish.", instanceId, postmaster.toString(), port, pgStartupWait);
+        LOG.info("{} postmaster started as {} on port {}.  Waiting up to {} for server startup to finish.", instanceId, postmaster, port,
+                pgStartupWait);
 
         Runtime.getRuntime().addShutdownHook(newCloserThread());
 
@@ -291,8 +283,7 @@ public class EmbeddedPostgres implements Closeable
         return localeOptions;
     }
 
-    private void waitForServerStartup(StopWatch watch) throws IOException
-    {
+    private void waitForServerStartup(StopWatch watch) throws IOException {
         Throwable lastCause = null;
         final long start = System.nanoTime();
         final long maxWaitNs = TimeUnit.NANOSECONDS.convert(pgStartupWait.toMillis(), TimeUnit.MILLISECONDS);
@@ -316,8 +307,7 @@ public class EmbeddedPostgres implements Closeable
         throw new IOException("Gave up waiting for server to start after " + pgStartupWait.toMillis() + "ms", lastCause);
     }
 
-    private void verifyReady() throws SQLException
-    {
+    private void verifyReady() throws SQLException {
         final InetAddress localhost = InetAddress.getLoopbackAddress();
         try (Socket sock = new Socket()) {
 
@@ -326,9 +316,9 @@ public class EmbeddedPostgres implements Closeable
         } catch (final IOException e) {
             throw new SQLException("connect failed", e);
         }
-        try (Connection c = getPostgresDatabase().getConnection() ;
-             Statement s = c.createStatement();
-             ResultSet rs = s.executeQuery("SELECT 1")) {
+        try (Connection c = getPostgresDatabase().getConnection();
+                Statement s = c.createStatement();
+                ResultSet rs = s.executeQuery("SELECT 1")) {
             if (!rs.next()) {
                 throw new IllegalStateException("expecting single row");
             }
@@ -393,6 +383,7 @@ public class EmbeddedPostgres implements Closeable
         system(pgBin("pg_ctl"), "-D", dir.getPath(), action, "-m", PG_STOP_MODE, "-t", PG_STOP_WAIT_S, "-w");
     }
 
+    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     private void cleanOldDataDirectories(File parentDirectory) {
         final File[] children = parentDirectory.listFiles();
         if (children == null) {
@@ -409,7 +400,7 @@ public class EmbeddedPostgres implements Closeable
                 continue;
             }
             try (FileOutputStream fos = new FileOutputStream(lockFile);
-                 FileLock lock = fos.getChannel().tryLock()) {
+                FileLock lock = fos.getChannel().tryLock()) {
                 if (lock != null) {
                     LOG.info("Found stale data directory {}", dir);
                     if (new File(dir, "postmaster.pid").exists()) {
@@ -450,6 +441,7 @@ public class EmbeddedPostgres implements Closeable
     }
 
     public static class Builder {
+
         private final File parentDirectory = EmbeddedUtil.getWorkingDirectory();
         private Optional<File> overrideWorkingDirectory = Optional.empty(); // use tmpdir
         private File builderDataDirectory;
@@ -587,12 +579,12 @@ public class EmbeddedPostgres implements Closeable
 
         @Override
         public int hashCode() {
-            return Objects.hash(parentDirectory, builderDataDirectory, config, localeConfig, builderCleanDataDirectory, builderPort, connectConfig, pgDirectoryResolver, pgStartupWait, errRedirector, outRedirector);
+            return Objects.hash(parentDirectory, builderDataDirectory, config, localeConfig, builderCleanDataDirectory, builderPort, connectConfig,
+                    pgDirectoryResolver, pgStartupWait, errRedirector, outRedirector);
         }
     }
 
-    private void system(String... command)
-    {
+    private void system(String... command) {
         try {
             final ProcessBuilder builder = new ProcessBuilder(command);
             builder.redirectErrorStream(true);
@@ -602,11 +594,12 @@ public class EmbeddedPostgres implements Closeable
 
             if (outputRedirector.type() == ProcessBuilder.Redirect.Type.PIPE) {
                 ProcessOutputLogger.logOutput(LoggerFactory.getLogger("init-" + instanceId + ":" + FilenameUtils.getName(command[0])), process);
-            } else if(outputRedirector.type() == ProcessBuilder.Redirect.Type.APPEND) {
+            } else if (outputRedirector.type() == ProcessBuilder.Redirect.Type.APPEND) {
                 ProcessOutputLogger.logOutput(LoggerFactory.getLogger(LOG_PREFIX + "init-" + instanceId + ":" + FilenameUtils.getName(command[0])), process);
             }
             if (0 != process.waitFor()) {
-                throw new IllegalStateException(String.format("Process %s failed%n%s", Arrays.asList(command), IOUtils.toString(process.getErrorStream(), StandardCharsets.UTF_8)));
+                throw new IllegalStateException(
+                        String.format("Process %s failed%n%s", Arrays.asList(command), IOUtils.toString(process.getErrorStream(), StandardCharsets.UTF_8)));
             }
         } catch (final RuntimeException e) { // NOPMD
             throw e;

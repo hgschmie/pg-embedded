@@ -13,6 +13,12 @@
  */
 package de.softwareforge.testing.postgres.junit5;
 
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Consumer;
+
+import javax.sql.DataSource;
+
 import de.softwareforge.testing.postgres.embedded.ConnectionInfo;
 import de.softwareforge.testing.postgres.embedded.DatabasePreparer;
 import de.softwareforge.testing.postgres.embedded.EmbeddedPostgres;
@@ -22,11 +28,6 @@ import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
-
-import javax.sql.DataSource;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.function.Consumer;
 
 public class PreparedDbExtension implements BeforeAllCallback, AfterAllCallback, BeforeEachCallback, AfterEachCallback {
 

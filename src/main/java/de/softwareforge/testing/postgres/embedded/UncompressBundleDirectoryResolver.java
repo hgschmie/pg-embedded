@@ -34,6 +34,8 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static java.lang.String.format;
+
 public class UncompressBundleDirectoryResolver implements PgDirectoryResolver {
 
     private static volatile UncompressBundleDirectoryResolver DEFAULT_INSTANCE;
@@ -88,10 +90,14 @@ public class UncompressBundleDirectoryResolver implements PgDirectoryResolver {
                 String pgDigest = Hex.encodeHexString(pgArchiveData.getMessageDigest().digest());
                 File workingDirectory = overrideWorkingDirectory.isPresent() ? overrideWorkingDirectory.get()
                         : EmbeddedUtil.getWorkingDirectory();
-                pgDir = new File(workingDirectory, String.format("PG-%s", pgDigest));
+
+                if(!workingDirectory.setWritable(true, false)) {
+                    LOG.warn(format("Could not make directory %s writable!", workingDirectory));
+                }
+
+                pgDir = new File(workingDirectory, format("PG-%s", pgDigest));
 
                 EmbeddedUtil.mkdirs(pgDir);
-                workingDirectory.setWritable(true, false);
 
                 final File unpackLockFile = new File(pgDir, EmbeddedUtil.LOCK_FILE_NAME);
                 final File pgDirExists = new File(pgDir, ".exists");

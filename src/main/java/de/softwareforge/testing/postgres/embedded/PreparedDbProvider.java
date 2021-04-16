@@ -32,23 +32,19 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.SynchronousQueue;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-
 import javax.sql.DataSource;
 
+import de.softwareforge.testing.postgres.embedded.EmbeddedPostgres.Builder;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.postgresql.ds.PGSimpleDataSource;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+public class PreparedDbProvider {
 
-import de.softwareforge.testing.postgres.embedded.EmbeddedPostgres.Builder;
-
-public class PreparedDbProvider
-{
     private static final String JDBC_FORMAT = "jdbc:postgresql://localhost:%d/%s?user=%s";
 
     /**
-     * Each database cluster's <code>template1</code> database has a unique set of schema
-     * loaded so that the databases may be cloned.
+     * Each database cluster's <code>template1</code> database has a unique set of schema loaded so that the databases may be cloned.
      */
     // @GuardedBy("PreparedDbProvider.class")
     private static final Map<ClusterKey, PrepPipeline> CLUSTERS = new HashMap<>();
@@ -72,11 +68,11 @@ public class PreparedDbProvider
     }
 
     /**
-     * Each schema set has its own database cluster.  The template1 database has the schema preloaded so that
-     * each test case need only create a new database and not re-invoke your preparer.
+     * Each schema set has its own database cluster.  The template1 database has the schema preloaded so that each test case need only create a new database and
+     * not re-invoke your preparer.
      */
-    private static synchronized PrepPipeline createOrFindPreparer(DatabasePreparer preparer, Iterable<Consumer<Builder>> customizers) throws IOException, SQLException
-    {
+    private static synchronized PrepPipeline createOrFindPreparer(DatabasePreparer preparer, Iterable<Consumer<Builder>> customizers)
+            throws IOException, SQLException {
         final ClusterKey key = new ClusterKey(preparer, customizers);
         PrepPipeline result = CLUSTERS.get(key);
         if (result != null) {
@@ -94,38 +90,30 @@ public class PreparedDbProvider
     }
 
     /**
-     * Create a new database, and return it as a JDBC connection string.
-     * NB: No two invocations will return the same database.
+     * Create a new database, and return it as a JDBC connection string. NB: No two invocations will return the same database.
      */
-    public String createDatabase() throws SQLException
-    {
+    public String createDatabase() throws SQLException {
         return getJdbcUri(createNewDB());
     }
 
     /**
-     * Create a new database, and return the backing info.
-     * This allows you to access the host and port.
-     * More common usage is to call createDatabase() and
-     * get the JDBC connection string.
-     * NB: No two invocations will return the same database.
+     * Create a new database, and return the backing info. This allows you to access the host and port. More common usage is to call createDatabase() and get
+     * the JDBC connection string. NB: No two invocations will return the same database.
      */
-    private DbInfo createNewDB() throws SQLException
-    {
-       return dbPreparer.getNextDb();
+    private DbInfo createNewDB() throws SQLException {
+        return dbPreparer.getNextDb();
     }
 
-    public ConnectionInfo createNewDatabase() throws SQLException
-    {
+    public ConnectionInfo createNewDatabase() throws SQLException {
         final DbInfo dbInfo = createNewDB();
-        return dbInfo == null || !dbInfo.isSuccess() ? null : new ConnectionInfo(dbInfo.getDbName(), dbInfo.getPort(), dbInfo.getUser(), dbInfo.getProperties());
+        return dbInfo == null || !dbInfo.isSuccess() ? null
+                : new ConnectionInfo(dbInfo.getDbName(), dbInfo.getPort(), dbInfo.getUser(), dbInfo.getProperties());
     }
 
     /**
-     * Create a new Datasource given DBInfo.
-     * More common usage is to call createDatasource().
+     * Create a new Datasource given DBInfo. More common usage is to call createDatasource().
      */
-    public DataSource createDataSourceFromConnectionInfo(final ConnectionInfo connectionInfo) throws SQLException
-    {
+    public DataSource createDataSourceFromConnectionInfo(final ConnectionInfo connectionInfo) throws SQLException {
         final PGSimpleDataSource ds = new PGSimpleDataSource();
         ds.setPortNumber(connectionInfo.getPort());
         ds.setDatabaseName(connectionInfo.getDbName());
@@ -140,16 +128,13 @@ public class PreparedDbProvider
     }
 
     /**
-     * Create a new database, and return it as a DataSource.
-     * No two invocations will return the same database.
+     * Create a new database, and return it as a DataSource. No two invocations will return the same database.
      */
-    public DataSource createDataSource() throws SQLException
-    {
+    public DataSource createDataSource() throws SQLException {
         return createDataSourceFromConnectionInfo(createNewDatabase());
     }
 
-    private String getJdbcUri(DbInfo db)
-    {
+    private String getJdbcUri(DbInfo db) {
         String additionalParameters = db.getProperties().entrySet().stream()
                 .map(e -> String.format("&%s=%s", e.getKey(), e.getValue()))
                 .collect(Collectors.joining());
@@ -159,8 +144,7 @@ public class PreparedDbProvider
     /**
      * Return configuration tweaks in a format appropriate for otj-jdbc DatabaseModule.
      */
-    public Map<String, String> getConfigurationTweak(String dbModuleName) throws SQLException
-    {
+    public Map<String, String> getConfigurationTweak(String dbModuleName) throws SQLException {
         final DbInfo db = dbPreparer.getNextDb();
         final Map<String, String> result = new HashMap<>();
         result.put("ot.db." + dbModuleName + ".uri", getJdbcUri(db));
@@ -169,21 +153,19 @@ public class PreparedDbProvider
     }
 
     /**
-     * Spawns a background thread that prepares databases ahead of time for speed, and then uses a
-     * synchronous queue to hand the prepared databases off to test cases.
+     * Spawns a background thread that prepares databases ahead of time for speed, and then uses a synchronous queue to hand the prepared databases off to test
+     * cases.
      */
-    private static class PrepPipeline implements Runnable
-    {
+    private static class PrepPipeline implements Runnable {
+
         private final EmbeddedPostgres pg;
         private final SynchronousQueue<DbInfo> nextDatabase = new SynchronousQueue<>();
 
-        PrepPipeline(EmbeddedPostgres pg)
-        {
+        PrepPipeline(EmbeddedPostgres pg) {
             this.pg = pg;
         }
 
-        PrepPipeline start()
-        {
+        PrepPipeline start() {
             final ExecutorService service = Executors.newSingleThreadExecutor(r -> {
                 final Thread t = new Thread(r);
                 t.setDaemon(true);
@@ -195,8 +177,7 @@ public class PreparedDbProvider
             return this;
         }
 
-        DbInfo getNextDb() throws SQLException
-        {
+        DbInfo getNextDb() throws SQLException {
             try {
                 final DbInfo next = nextDatabase.take();
                 if (next.ex != null) {
@@ -210,8 +191,7 @@ public class PreparedDbProvider
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             while (true) {
                 final String newDbName = RandomStringUtils.randomAlphabetic(12).toLowerCase(Locale.ENGLISH);
                 SQLException failure = null;
@@ -234,9 +214,7 @@ public class PreparedDbProvider
         }
     }
 
-    @SuppressFBWarnings({"OBL_UNSATISFIED_OBLIGATION", "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"})
-    private static void create(final DataSource connectDb, final String dbName, final String userName) throws SQLException
-    {
+    private static void create(final DataSource connectDb, final String dbName, final String userName) throws SQLException {
         if (dbName == null) {
             throw new IllegalStateException("the database name must not be null!");
         }
@@ -245,7 +223,7 @@ public class PreparedDbProvider
         }
 
         try (Connection c = connectDb.getConnection();
-             PreparedStatement stmt = c.prepareStatement(String.format("CREATE DATABASE %s OWNER %s ENCODING = 'utf8'", dbName, userName))) {
+                PreparedStatement stmt = c.prepareStatement(String.format("CREATE DATABASE %s OWNER %s ENCODING = 'utf8'", dbName, userName))) {
             stmt.execute();
         }
     }
@@ -280,8 +258,8 @@ public class PreparedDbProvider
         }
     }
 
-    public static class DbInfo
-    {
+    public static class DbInfo {
+
         public static DbInfo ok(final String dbName, final int port, final String user) {
             return ok(dbName, port, user, emptyMap());
         }

@@ -13,11 +13,11 @@
  */
 package de.softwareforge.testing.postgres.junit5;
 
+import java.time.Duration;
+
 import de.softwareforge.testing.postgres.embedded.DatabasePreparer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-
-import java.time.Duration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -31,11 +31,14 @@ public class PreparedDbCustomizerTest {
     @RegisterExtension
     public PreparedDbExtension dbA2 = EmbeddedPostgresExtension.preparedDatabase(EMPTY_PREPARER).customize(builder -> {});
     @RegisterExtension
-    public PreparedDbExtension dbA3 = EmbeddedPostgresExtension.preparedDatabase(EMPTY_PREPARER).customize(builder -> builder.setPGStartupWait(Duration.ofSeconds(10)));
+    public PreparedDbExtension dbA3 = EmbeddedPostgresExtension.preparedDatabase(EMPTY_PREPARER)
+            .customize(builder -> builder.setPGStartupWait(Duration.ofSeconds(10)));
     @RegisterExtension
-    public PreparedDbExtension dbB1 = EmbeddedPostgresExtension.preparedDatabase(EMPTY_PREPARER).customize(builder -> builder.setPGStartupWait(Duration.ofSeconds(11)));
+    public PreparedDbExtension dbB1 = EmbeddedPostgresExtension.preparedDatabase(EMPTY_PREPARER)
+            .customize(builder -> builder.setPGStartupWait(Duration.ofSeconds(11)));
     @RegisterExtension
-    public PreparedDbExtension dbB2 = EmbeddedPostgresExtension.preparedDatabase(EMPTY_PREPARER).customize(builder -> builder.setPGStartupWait(Duration.ofSeconds(11)));
+    public PreparedDbExtension dbB2 = EmbeddedPostgresExtension.preparedDatabase(EMPTY_PREPARER)
+            .customize(builder -> builder.setPGStartupWait(Duration.ofSeconds(11)));
 
     @Test
     public void testCustomizers() {
