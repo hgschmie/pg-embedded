@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class SingleInstanceRuleTest {
 
     @RegisterExtension
-    public SingleInstancePostgresExtension epg = EmbeddedPostgresExtension.singleInstance();
+    public SingleInstancePostgresExtension epg = EmbeddedPostgresExtension.singleInstanceWithDefaults();
 
     @Test
     public void testRule() throws Exception {

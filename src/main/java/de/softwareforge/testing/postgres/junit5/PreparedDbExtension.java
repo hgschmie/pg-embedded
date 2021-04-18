@@ -35,12 +35,14 @@ import static com.google.common.base.Preconditions.checkState;
 public class PreparedDbExtension implements BeforeAllCallback, AfterAllCallback, BeforeEachCallback, AfterEachCallback {
 
     private final DatabasePreparer preparer;
+
     private boolean perClass = false;
     private volatile DataSource dataSource;
     private volatile PreparedDbProvider provider;
     private volatile ConnectionInfo connectionInfo;
 
     private final List<Consumer<EmbeddedPostgres.Builder>> builderCustomizers = new CopyOnWriteArrayList<>();
+
 
     PreparedDbExtension(DatabasePreparer preparer) {
         this.preparer = checkNotNull(preparer, "preparer is null");

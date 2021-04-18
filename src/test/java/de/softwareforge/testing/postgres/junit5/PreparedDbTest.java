@@ -36,11 +36,11 @@ public class PreparedDbTest {
     private final DatabasePreparer prepB = new SimplePreparer("b");
 
     @RegisterExtension
-    public PreparedDbExtension dbA1 = EmbeddedPostgresExtension.preparedDatabase(prepA);
+    public PreparedDbExtension dbA1 = EmbeddedPostgresExtension.preparedDatabaseWithDefaults(prepA);
     @RegisterExtension
-    public PreparedDbExtension dbA2 = EmbeddedPostgresExtension.preparedDatabase(prepA);
+    public PreparedDbExtension dbA2 = EmbeddedPostgresExtension.preparedDatabaseWithDefaults(prepA);
     @RegisterExtension
-    public PreparedDbExtension dbB1 = EmbeddedPostgresExtension.preparedDatabase(prepB);
+    public PreparedDbExtension dbB1 = EmbeddedPostgresExtension.preparedDatabaseWithDefaults(prepB);
 
     @Test
     public void testDbs() throws Exception {

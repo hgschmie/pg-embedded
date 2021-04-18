@@ -13,7 +13,8 @@
 ~   limitations under the License.
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
     <parent>
@@ -38,8 +39,7 @@
     <properties>
         <project.build.targetJdk>11</project.build.targetJdk>
         <basepom.test.timeout>1800</basepom.test.timeout>
-
-        <dep.plugin.exec.version>3.0.0</dep.plugin.exec.version>
+        <basepom.test.fork-count>10</basepom.test.fork-count>
 
         <postgres.version>13.2.0</postgres.version>
 
@@ -48,6 +48,10 @@
         <dep.flyway.version>7.8.0</dep.flyway.version>
         <dep.postgresql.version>42.2.19</dep.postgresql.version>
         <dep.junit5.version>5.7.1</dep.junit5.version>
+
+        <dep.apache-commons-lang3.version>3.12.0</dep.apache-commons-lang3.version>
+        <dep.apache-commons-compress.version>1.20</dep.apache-commons-compress.version>
+        <dep.xz.version>1.9</dep.xz.version>
     </properties>
 
     <licenses>
@@ -94,31 +98,19 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.11</version>
+            <version>${dep.apache-commons-lang3.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
-            <version>1.19</version>
+            <version>${dep.apache-commons-compress.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.tukaani</groupId>
             <artifactId>xz</artifactId>
-            <version>1.5</version>
-        </dependency>
-
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.6</version>
-        </dependency>
-
-        <dependency>
-            <groupId>commons-codec</groupId>
-            <artifactId>commons-codec</artifactId>
-            <version>1.13</version>
+            <version>${dep.xz.version}</version>
         </dependency>
 
         <dependency>
@@ -166,50 +158,4 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-    <!-- <build> -->
-    <!--     <plugins> -->
-    <!--         <plugin> -->
-    <!--             <groupId>org.codehaus.mojo</groupId> -->
-    <!--             <artifactId>exec-maven-plugin</artifactId> -->
-    <!--             <version>${dep.plugin.exec.version}</version> -->
-    <!--             <executions> -->
-    <!--                 <execution> -->
-    <!--                     <phase>generate-resources</phase> -->
-    <!--                     <goals> -->
-    <!--                         <goal>exec</goal> -->
-    <!--                     </goals> -->
-    <!--                 </execution> -->
-    <!--             </executions> -->
-    <!--             <configuration> -->
-    <!--                 <executable>${project.basedir}/src/build/repack-postgres.sh</executable> -->
-    <!--                 <commandlineArgs>${postgres.version}</commandlineArgs> -->
-    <!--             </configuration> -->
-    <!--         </plugin> -->
-    <!--         <plugin> -->
-    <!--             <artifactId>maven-resources-plugin</artifactId> -->
-    <!--             <executions> -->
-    <!--                 <execution> -->
-    <!--                     <id>copy-pg-files</id> -->
-    <!--                     <phase>process-classes</phase> -->
-    <!--                     <goals> -->
-    <!--                         <goal>copy-resources</goal> -->
-    <!--                     </goals> -->
-    <!--                     <configuration> -->
-    <!--                         <outputDirectory>${project.build.outputDirectory}</outputDirectory> -->
-    <!--                         <resources> -->
-    <!--                             <resource> -->
-    <!--                                 <directory>${project.build.directory}/generated-resources</directory> -->
-    <!--                                 <includes> -->
-    <!--                                     <include>*.txz</include> -->
-    <!--                                 </includes> -->
-    <!--                                 <filtering>false</filtering> -->
-    <!--                             </resource> -->
-    <!--                         </resources> -->
-    <!--                     </configuration> -->
-    <!--                 </execution> -->
-    <!--             </executions> -->
-    <!--         </plugin> -->
-    <!--     </plugins> -->
-    <!-- </build> -->
 </project>

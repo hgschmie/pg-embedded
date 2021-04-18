@@ -14,6 +14,8 @@
 package de.softwareforge.testing.postgres.junit5;
 
 import de.softwareforge.testing.postgres.embedded.DatabasePreparer;
+import de.softwareforge.testing.postgres.embedded.EmbeddedPostgres;
+import de.softwareforge.testing.postgres.embedded.EmbeddedPostgres.Builder;
 import org.junit.jupiter.api.extension.Extension;
 
 public final class EmbeddedPostgresExtension {
@@ -28,11 +30,26 @@ public final class EmbeddedPostgresExtension {
     }
 
     /**
+     * Create a vanilla Postgres cluster with standard initializations ({@link EmbeddedPostgres.Builder#withDefaults()}).
+     */
+    public static SingleInstancePostgresExtension singleInstanceWithDefaults() {
+        return singleInstance().customize(EmbeddedPostgres.Builder::withDefaults);
+    }
+
+    /**
      * Returns a {@link Extension} to create a Postgres cluster, shared amongst all test cases in this JVM. The rule contributes Config switches to configure
      * each test case to get its own database.
      */
     public static PreparedDbExtension preparedDatabase(DatabasePreparer preparer) {
         return new PreparedDbExtension(preparer);
+    }
+
+    /**
+     * Returns a {@link Extension} to create a Postgres cluster, shared amongst all test cases in this JVM. The rule contributes Config switches to configure
+     * each test case to get its own database. The cluster has been configured with standard initializations ({@link Builder#withDefaults()}).
+     */
+    public static PreparedDbExtension preparedDatabaseWithDefaults(DatabasePreparer preparer) {
+        return preparedDatabase(preparer).customize(EmbeddedPostgres.Builder::withDefaults);
     }
 
 }

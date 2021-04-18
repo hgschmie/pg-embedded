@@ -42,19 +42,15 @@ final class ProcessOutputLogger implements Runnable {
     public void run() {
         try {
             try {
-                reader.lines().forEach(msg -> {
-                    synchronized (logger) {
-                        logger.info(msg);
-                    }
-                });
+                reader.lines().forEach(logger::info);
             } catch (final UncheckedIOException e) {
-                logger.error("while reading output", e);
+                logger.error("while reading output:", e);
             }
         } finally {
             try {
                 reader.close();
             } catch (final IOException e) {
-                logger.error("caught i/o exception closing reader", e);
+                logger.trace("while closing reader:", e);
             }
         }
     }

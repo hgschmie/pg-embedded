@@ -27,13 +27,14 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
-public class SingleInstancePostgresExtension implements AfterTestExecutionCallback, BeforeTestExecutionCallback {
+public final class SingleInstancePostgresExtension implements AfterTestExecutionCallback, BeforeTestExecutionCallback {
 
     private volatile EmbeddedPostgres epg;
     private volatile Connection postgresConnection;
     private final List<Consumer<EmbeddedPostgres.Builder>> builderCustomizers = new CopyOnWriteArrayList<>();
 
-    SingleInstancePostgresExtension() { }
+    SingleInstancePostgresExtension() {
+    }
 
     @Override
     public void beforeTestExecution(ExtensionContext extensionContext) throws Exception {
@@ -48,7 +49,7 @@ public class SingleInstancePostgresExtension implements AfterTestExecutionCallba
 
         builderCustomizers.forEach(c -> c.accept(builder));
 
-        return builder.start();
+        return builder.build();
     }
 
     public SingleInstancePostgresExtension customize(Consumer<EmbeddedPostgres.Builder> customizer) {

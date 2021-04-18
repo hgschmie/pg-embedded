@@ -81,13 +81,16 @@ public class PreparedDbProvider {
         checkNotNull(preparer, "preparer is null");
         checkNotNull(customizers, "customizers is null");
 
-        final ClusterKey key = new ClusterKey(preparer, customizers);
+        final Builder builder = EmbeddedPostgres.builder();
+        customizers.forEach(c -> c.accept(builder));
+        // create the cluster key after the builder has been customized
+        // this ensures that the exact same builder is used for the key
+        // and to create the instance if necessary
+        final ClusterKey key = new ClusterKey(builder, preparer);
         try {
             return CLUSTERS.computeIfAbsent(key, k -> {
-                final Builder builder = EmbeddedPostgres.builder();
-                customizers.forEach(c -> c.accept(builder));
                 try {
-                    final EmbeddedPostgres pg = builder.start(); //NOPMD
+                    final EmbeddedPostgres pg = builder.build(); //NOPMD
                     preparer.prepare(pg.getTemplateDatabase());
                     return new PrepPipeline(pg).start();
                 } catch (IOException | SQLException e) {
@@ -237,12 +240,9 @@ public class PreparedDbProvider {
         private final DatabasePreparer preparer;
         private final Builder builder;
 
-        ClusterKey(DatabasePreparer preparer, Iterable<Consumer<Builder>> customizers) {
+        ClusterKey(EmbeddedPostgres.Builder builder, DatabasePreparer preparer) {
+            this.builder = checkNotNull(builder, "builder is null");
             this.preparer = checkNotNull(preparer, "preparer is null");
-            checkNotNull(customizers, "customizers is null");
-
-            this.builder = EmbeddedPostgres.builder();
-            customizers.forEach(c -> c.accept(this.builder));
         }
 
         @Override
@@ -254,8 +254,7 @@ public class PreparedDbProvider {
                 return false;
             }
             ClusterKey that = (ClusterKey) o;
-            return Objects.equals(preparer, that.preparer) &&
-                    Objects.equals(builder, that.builder);
+            return preparer.equals(that.preparer) && builder.equals(that.builder);
         }
 
         @Override

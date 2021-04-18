@@ -15,30 +15,28 @@ package de.softwareforge.testing.postgres.junit5;
 
 import java.time.Duration;
 
-import de.softwareforge.testing.postgres.embedded.DatabasePreparer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+import static de.softwareforge.testing.postgres.embedded.DatabasePreparer.NOOP_PREPARER;
 import static de.softwareforge.testing.postgres.embedded.EmbeddedPostgres.DEFAULT_PG_STARTUP_WAIT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 public class PreparedDbCustomizerTest {
 
-    private static final DatabasePreparer EMPTY_PREPARER = ds -> {};
-
     @RegisterExtension
-    public PreparedDbExtension dbA1 = EmbeddedPostgresExtension.preparedDatabase(EMPTY_PREPARER);
+    public PreparedDbExtension dbA1 = EmbeddedPostgresExtension.preparedDatabaseWithDefaults(NOOP_PREPARER);
     @RegisterExtension
-    public PreparedDbExtension dbA2 = EmbeddedPostgresExtension.preparedDatabase(EMPTY_PREPARER).customize(builder -> {});
+    public PreparedDbExtension dbA2 = EmbeddedPostgresExtension.preparedDatabaseWithDefaults(NOOP_PREPARER).customize(builder -> {});
     @RegisterExtension
-    public PreparedDbExtension dbA3 = EmbeddedPostgresExtension.preparedDatabase(EMPTY_PREPARER)
+    public PreparedDbExtension dbA3 = EmbeddedPostgresExtension.preparedDatabaseWithDefaults(NOOP_PREPARER)
             .customize(builder -> builder.setPGStartupWait(DEFAULT_PG_STARTUP_WAIT));
     @RegisterExtension
-    public PreparedDbExtension dbB1 = EmbeddedPostgresExtension.preparedDatabase(EMPTY_PREPARER)
+    public PreparedDbExtension dbB1 = EmbeddedPostgresExtension.preparedDatabaseWithDefaults(NOOP_PREPARER)
             .customize(builder -> builder.setPGStartupWait(Duration.ofSeconds(11)));
     @RegisterExtension
-    public PreparedDbExtension dbB2 = EmbeddedPostgresExtension.preparedDatabase(EMPTY_PREPARER)
+    public PreparedDbExtension dbB2 = EmbeddedPostgresExtension.preparedDatabaseWithDefaults(NOOP_PREPARER)
             .customize(builder -> builder.setPGStartupWait(Duration.ofSeconds(11)));
 
     @Test

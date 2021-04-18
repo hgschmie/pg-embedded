@@ -17,10 +17,10 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.channels.FileLock;
 import java.nio.channels.OverlappingFileLockException;
@@ -36,7 +36,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -46,15 +45,14 @@ import javax.sql.DataSource;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.io.CharStreams;
 import com.google.common.io.Closeables;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.SystemUtils;
-import org.apache.commons.lang3.time.StopWatch;
 import org.postgresql.ds.PGSimpleDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,11 +60,10 @@ import org.slf4j.LoggerFactory;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static de.softwareforge.testing.postgres.embedded.EmbeddedUtil.formatDuration;
 import static java.lang.String.format;
 
-public class EmbeddedPostgres implements Closeable {
-
-    private static final Logger LOG = LoggerFactory.getLogger(EmbeddedPostgres.class);
+public final class EmbeddedPostgres implements Closeable {
 
     static final String[] LOCALHOST_SERVERNAMES = new String[]{"localhost"};
     static final String JDBC_FORMAT = "jdbc:postgresql://localhost:%d/%s?user=%s";
@@ -83,6 +80,8 @@ public class EmbeddedPostgres implements Closeable {
     private static final String PG_DEFAULT_USER = "postgres";
     private static final String PG_TEMPLATE_DB = "template1";
     static final String LOCK_FILE_NAME = "epg-lock";
+
+    private final Logger logger;
 
     private final String instanceId;
     private final File pgDir;
@@ -120,6 +119,9 @@ public class EmbeddedPostgres implements Closeable {
             final Duration pgStartupWait) {
 
         this.instanceId = checkNotNull(instanceId, "instanceId is null");
+
+        this.logger = LoggerFactory.getLogger(toString());
+
         this.pgDir = checkNotNull(postgresInstallDirectory, "postgresInstallDirectory is null");
         this.dataDirectory = checkNotNull(dataDirectory, "dataDirectory is null");
 
@@ -137,7 +139,7 @@ public class EmbeddedPostgres implements Closeable {
         this.pgStartupWait = checkNotNull(pgStartupWait, "pgStartupWait is null");
         this.lockFile = new File(this.dataDirectory, LOCK_FILE_NAME);
 
-        LOG.debug("{} postgres: data directory is {}, postgres directory is {}", instanceId, this.dataDirectory, this.pgDir);
+        logger.debug(format("data dir is %s, install dir is %s", this.dataDirectory, this.pgDir));
     }
 
     public DataSource getTemplateDatabase() throws SQLException {
@@ -172,7 +174,7 @@ public class EmbeddedPostgres implements Closeable {
         ds.setDatabaseName(databaseName);
         ds.setUser(user);
 
-        for (Entry<String, String> entry : properties.entrySet()) {
+        for (final Entry<String, String> entry : properties.entrySet()) {
             ds.setProperty(entry.getKey(), entry.getValue());
         }
 
@@ -201,26 +203,14 @@ public class EmbeddedPostgres implements Closeable {
         EmbeddedUtil.mkdirs(this.dataDirectory);
 
         if (this.cleanDataDirectory || !new File(this.dataDirectory, "postgresql.conf").exists()) {
-            initdb();
+            initDatabase();
         }
 
         lock();
 
-        startPostmaster();
+        startDatabase();
     }
 
-
-    private static int detectPort() throws IOException {
-        try (ServerSocket socket = new ServerSocket(0)) {
-            while (!socket.isBound()) {
-                Thread.sleep(50);
-            }
-            return socket.getLocalPort();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new IOException("Thread interrupted!", e);
-        }
-    }
 
     private synchronized void lock() throws IOException {
         this.lockStream = new FileOutputStream(this.lockFile);
@@ -235,9 +225,7 @@ public class EmbeddedPostgres implements Closeable {
         Closeables.close(lockStream, true);
     }
 
-    private void initdb() throws IOException {
-        final StopWatch watch = new StopWatch();
-        watch.start();
+    private void initDatabase() throws IOException {
         ImmutableList.Builder<String> commandBuilder = ImmutableList.builder();
         commandBuilder.add(pgBin("initdb"))
                 .addAll(createLocaleOptions())
@@ -245,15 +233,12 @@ public class EmbeddedPostgres implements Closeable {
                         "-U", PG_DEFAULT_USER,
                         "-D", this.dataDirectory.getPath(),
                         "-E", "UTF-8");
-        system(commandBuilder.build());
-        LOG.info("{} initdb completed in {}", instanceId, watch);
+        final Stopwatch watch = system(commandBuilder.build());
+        logger.info(format("initdb completed in %s", formatDuration(watch.elapsed())));
     }
 
-    private void startPostmaster() throws IOException {
-        checkState(!started.getAndSet(true), "Postmaster already started!");
-
-        final StopWatch watch = new StopWatch();
-        watch.start();
+    private void startDatabase() throws IOException {
+        checkState(!started.getAndSet(true), "pg already started!");
 
         final ImmutableList.Builder<String> commandBuilder = ImmutableList.builder();
         commandBuilder.add(pgBin("pg_ctl"),
@@ -262,24 +247,28 @@ public class EmbeddedPostgres implements Closeable {
                 "start"
         );
 
-        Process postmaster = spawn("pg", commandBuilder.build());
+        final Stopwatch watch = Stopwatch.createStarted();
+        final Process postmaster = spawn("pg", commandBuilder.build());
 
-        LOG.info("{} postmaster started as {} on port {}.  Waiting up to {} for server startup to finish.", instanceId, postmaster, port,
-                pgStartupWait);
+        logger.info(format("started (pid %d) on port %d. Waiting up to %s for server startup to finish", postmaster.pid(), port,
+                formatDuration(pgStartupWait)));
 
         Runtime.getRuntime().addShutdownHook(newCloserThread());
 
-        waitForServerStartup(watch);
+        checkState(waitForServerStartup(), "Could not start pg, interrupted?");
+        logger.info(format("startup complete in %s", formatDuration(watch.elapsed())));
     }
 
-    private void stopPostmaster(File dataDirectory) throws IOException {
-        ImmutableList.Builder<String> commandBuilder = ImmutableList.builder();
+    private void stopDatabase(File dataDirectory) throws IOException {
+        final ImmutableList.Builder<String> commandBuilder = ImmutableList.builder();
         commandBuilder.add(pgBin("pg_ctl"),
                 "-D", dataDirectory.getPath(),
                 "stop",
                 "-m", PG_STOP_MODE,
                 "-t", PG_STOP_WAIT_S, "-w");
-        system(commandBuilder.build());
+
+        final Stopwatch watch = system(commandBuilder.build());
+        logger.info(format("shutdown complete in %s", formatDuration(watch.elapsed())));
     }
 
     private List<String> createInitOptions() {
@@ -309,26 +298,25 @@ public class EmbeddedPostgres implements Closeable {
         return localeOptions.build();
     }
 
-    private void waitForServerStartup(StopWatch watch) throws IOException {
+    private boolean waitForServerStartup() throws IOException {
         Throwable lastCause = null;
         final long start = System.nanoTime();
         final long maxWaitNs = TimeUnit.NANOSECONDS.convert(pgStartupWait.toMillis(), TimeUnit.MILLISECONDS);
         while (System.nanoTime() - start < maxWaitNs) {
             try {
                 if (verifyReady()) {
-                    LOG.info("{} postmaster startup finished in {}", instanceId, watch);
-                    return;
+                    return true;
                 }
             } catch (final SQLException e) {
                 lastCause = e;
-                LOG.trace("While waiting for server startup", e);
+                logger.trace("while waiting for server startup:", e);
             }
 
             try {
                 Thread.sleep(100);
             } catch (final InterruptedException e) {
                 Thread.currentThread().interrupt();
-                return;
+                return false;
             }
         }
         throw new IOException("Gave up waiting for server to start after " + pgStartupWait.toMillis() + "ms", lastCause);
@@ -359,10 +347,11 @@ public class EmbeddedPostgres implements Closeable {
         final Thread closeThread = new Thread(() -> {
             try {
                 EmbeddedPostgres.this.close();
-            } catch (IOException ex) {
-                LOG.error("Unexpected IOException from Closeables.close", ex);
+            } catch (IOException e) {
+                logger.trace("while closing instance:", e);
             }
         });
+
         closeThread.setName("pg-closer");
         return closeThread;
     }
@@ -372,26 +361,23 @@ public class EmbeddedPostgres implements Closeable {
         if (closed.getAndSet(true)) {
             return;
         }
-        final StopWatch watch = new StopWatch();
-        watch.start();
 
         try {
-            stopPostmaster(this.dataDirectory);
-            LOG.info("{} shut down postmaster in {}", instanceId, watch);
+            stopDatabase(this.dataDirectory);
         } catch (final Exception e) {
-            LOG.error("Could not stop postmaster " + instanceId, e);
+            logger.error("could not stop pg:", e);
         }
 
         unlock();
 
         if (cleanDataDirectory) {
             try {
-                FileUtils.deleteDirectory(dataDirectory);
+                EmbeddedUtil.rmdirs(dataDirectory);
             } catch (Exception e) {
-                LOG.error("Could not clean up directory {}: e", dataDirectory.getAbsolutePath(), e);
+                logger.error(format("Could not clean up directory %s:", dataDirectory.getAbsolutePath()), e);
             }
         } else {
-            LOG.info("Preserved data directory {}", dataDirectory.getAbsolutePath());
+            logger.info(format("preserved data directory %s", dataDirectory.getAbsolutePath()));
         }
     }
 
@@ -427,26 +413,22 @@ public class EmbeddedPostgres implements Closeable {
             try (FileOutputStream fos = new FileOutputStream(lockFile);
                     FileLock lock = fos.getChannel().tryLock()) {
                 if (lock != null) {
-                    LOG.info("Found stale data directory {}", dir);
+                    logger.debug(format("found stale data directory %s", dir));
                     if (new File(dir, "postmaster.pid").exists()) {
                         try {
-                            stopPostmaster(dir);
-                            LOG.info("Shut down orphaned postmaster!");
+                            stopDatabase(dir);
+                            logger.debug("shut down orphaned pg!");
                         } catch (Exception e) {
-                            if (LOG.isDebugEnabled()) {
-                                LOG.warn("Failed to stop postmaster " + dir, e);
-                            } else {
-                                LOG.warn("Failed to stop postmaster " + dir + ": " + e.getMessage());
-                            }
+                            logger.warn(format("failed to stop pg in %s:", dir), e);
                         }
                     }
-                    FileUtils.deleteDirectory(dir);
+                    EmbeddedUtil.rmdirs(dir);
                 }
             } catch (final OverlappingFileLockException e) {
                 // The directory belongs to another instance in this VM.
-                LOG.trace("While cleaning old data directories", e);
+                logger.trace("while cleaning old data directories:", e);
             } catch (final Exception e) {
-                LOG.warn("While cleaning old data directories", e);
+                logger.warn("while cleaning old data directories:", e);
             }
         }
     }
@@ -457,15 +439,18 @@ public class EmbeddedPostgres implements Closeable {
     }
 
 
-    public static EmbeddedPostgres start() throws IOException {
-        return builder().start();
+    /**
+     * Returns a single instance that has been started and configured. The {@link Builder#withDefaults()} configuration has been applied.
+     */
+    public static EmbeddedPostgres defaultInstance() throws IOException {
+        return builderWithDefaults().build();
     }
 
-    public static EmbeddedPostgres.Builder builder() {
+    public static EmbeddedPostgres.Builder builderWithDefaults() {
         return new Builder().withDefaults();
     }
 
-    public static EmbeddedPostgres.Builder builderNoDefaults() {
+    public static EmbeddedPostgres.Builder builder() {
         return new Builder();
     }
 
@@ -476,37 +461,38 @@ public class EmbeddedPostgres implements Closeable {
         builder.redirectOutput(outputRedirector);
         final Process process = builder.start();
 
-        processName = processName != null ? processName : process.info().command().map(FilenameUtils::getName).orElse("<unknown>");
+        processName = processName != null ? processName : process.info().command().map(EmbeddedUtil::getFileBaseName).orElse("<unknown>");
         String name = format("%s (%d)", processName, process.pid());
 
-        Logger outputLogger = LoggerFactory.getLogger(processName + '-' + instanceId);
-        if (outputRedirector.type() == ProcessBuilder.Redirect.Type.APPEND) {
-            outputLogger = LoggerFactory.getLogger(format("%s.%s-%s", this.getClass().getName(), processName, instanceId));
-        }
-
-        ProcessOutputLogger.logOutput(outputLogger, name, process);
+        ProcessOutputLogger.logOutput(logger, name, process);
         return process;
     }
 
 
-    private void system(List<String> commandAndArgs) throws IOException {
+    private Stopwatch system(List<String> commandAndArgs) throws IOException {
         checkArgument(commandAndArgs.size() > 0, "No commandAndArgs given!");
-        String prefix = FilenameUtils.getName(commandAndArgs.get(0));
+        String prefix = EmbeddedUtil.getFileBaseName(commandAndArgs.get(0));
 
+        Stopwatch watch = Stopwatch.createStarted();
         Process process = spawn(prefix, commandAndArgs);
         try {
             if (process.waitFor() != 0) {
-                throw new IllegalStateException(format("Process %s failed%n%s", commandAndArgs,
-                        IOUtils.toString(process.getErrorStream(), StandardCharsets.UTF_8)));
+                try (InputStreamReader reader = new InputStreamReader(process.getErrorStream(), StandardCharsets.UTF_8)) {
+                    throw new IllegalStateException(format("Process %s failed%n%s",
+                            commandAndArgs, CharStreams.toString(reader)));
+                }
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
+
+        return watch;
     }
 
     @Override
     public String toString() {
-        return "EmbeddedPG-" + instanceId;
+        checkNotNull(this.instanceId, "instanceId is null");
+        return this.getClass().getName() + '$' + this.instanceId;
     }
 
     @Override
@@ -546,6 +532,14 @@ public class EmbeddedPostgres implements Closeable {
         Builder() {
         }
 
+        /**
+         * Apply a set of defaults to the database server:
+         * <li>
+         *     <ul>timezone: UTC</ul>
+         *     <ul>synchronous_commit: off</ul>
+         *     <ul>max_connections: 300</ul>
+         * </li>
+         */
         public Builder withDefaults() {
             config.put("timezone", "UTC");
             config.put("synchronous_commit", "off");
@@ -634,14 +628,14 @@ public class EmbeddedPostgres implements Closeable {
             return setPgDirectoryResolver((x) -> directory);
         }
 
-        public EmbeddedPostgres start() throws IOException {
+        public EmbeddedPostgres build() throws IOException {
             // Builder Id
-            final String instanceId = UUID.randomUUID().toString();
+            final String instanceId = RandomStringUtils.randomAlphanumeric(16);
 
             // installation root if nothing has been set by the user.
             final File parentDirectory = EmbeddedUtil.getWorkingDirectory();
 
-            int port = this.port != 0 ? this.port : detectPort();
+            int port = this.port != 0 ? this.port : EmbeddedUtil.allocatePort();
 
             final File installationDirectory = MoreObjects.firstNonNull(this.installationDirectory, parentDirectory);
 

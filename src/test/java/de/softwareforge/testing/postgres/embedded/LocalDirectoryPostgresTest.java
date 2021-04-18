@@ -28,12 +28,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class LocalDirectoryPostgresTest {
 
     private static final File USR_LOCAL = new File("/usr/local");
-    private static final File USR_LOCAL_BIN_POSTGRES = new File("/usr/local/bin/postgres");
+    private static final File USR_LOCAL_BIN_POSTGRES = new File(USR_LOCAL, "/bin/postgres");
 
     @Test
     public void testEmbeddedPg() throws Exception {
         Assumptions.assumeTrue(USR_LOCAL_BIN_POSTGRES.exists(), "PostgreSQL binary must exist");
-        try (EmbeddedPostgres pg = EmbeddedPostgres.builder().setPostgresBinaryDirectory(USR_LOCAL).start();
+        try (EmbeddedPostgres pg = EmbeddedPostgres.builderWithDefaults().setPostgresBinaryDirectory(USR_LOCAL).build();
                 Connection c = pg.getPostgresDatabase().getConnection()) {
             Statement s = c.createStatement();
             ResultSet rs = s.executeQuery("SELECT 1");

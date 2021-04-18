@@ -16,6 +16,7 @@ package de.softwareforge.testing.postgres.embedded;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.ServerSocket;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.Channel;
@@ -23,16 +24,22 @@ import java.nio.channels.CompletionHandler;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.util.Comparator;
 import java.util.concurrent.Phaser;
+import java.util.stream.Stream;
 
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.lang3.SystemUtils;
+import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tukaani.xz.XZInputStream;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
+import static java.lang.String.format;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.WRITE;
 
@@ -48,10 +55,66 @@ final class EmbeddedUtil {
         return new File(SystemUtils.getJavaIoTmpDir(), "embedded-pg");
     }
 
+    //
+    // taken from apache commons io
+    //
+    static String getFileBaseName(final String fileName) {
+        if (fileName == null) {
+            return null;
+        }
+        failIfNullBytePresent(fileName);
+        final int index = indexOfLastSeparator(fileName);
+        return fileName.substring(index + 1);
+    }
+
+    private static void failIfNullBytePresent(final String path) {
+        final int len = path.length();
+        for (int i = 0; i < len; i++) {
+            checkArgument(path.charAt(i) != 0, "Null byte present in file/path name. There are no " +
+                    "known legitimate use cases for such data, but several injection attacks may use it");
+        }
+    }
+
+    private static int indexOfLastSeparator(final String fileName) {
+        if (fileName == null) {
+            return -1;
+        }
+        final int lastUnixPos = fileName.lastIndexOf('/'); // unix
+        final int lastWindowsPos = fileName.lastIndexOf('\\'); // windows
+        return Math.max(lastUnixPos, lastWindowsPos);
+    }
+
+    //
+    // taken from apache commons io
+    //
 
     static void mkdirs(File dir) {
         if (!dir.mkdirs() && !(dir.isDirectory() && dir.exists())) {
             throw new IllegalStateException("could not create " + dir);
+        }
+    }
+
+    static void rmdirs(File dir) throws IOException {
+        try (Stream<Path> walk = Files.walk(dir.toPath())) {
+            walk.sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+        }
+    }
+
+    static String formatDuration(Duration duration) {
+        return DurationFormatUtils.formatDuration(duration.toMillis(), "m' minutes 's' seconds 'S' ms'");
+    }
+
+    static int allocatePort() throws IOException {
+        try (ServerSocket socket = new ServerSocket(0)) {
+            while (!socket.isBound()) {
+                Thread.sleep(50);
+            }
+            return socket.getLocalPort();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Thread interrupted!", e);
         }
     }
 
@@ -118,7 +181,7 @@ final class EmbeddedUtil {
 
                         @Override
                         public void failed(Throwable error, Channel channel) {
-                            LOG.error("Could not write file {}", fsObject.getAbsolutePath(), error);
+                            LOG.error("could not write file " + fsObject.getAbsolutePath(), error);
                             closeChannel(channel);
                         }
 
@@ -126,7 +189,7 @@ final class EmbeddedUtil {
                             try {
                                 channel.close();
                             } catch (IOException e) {
-                                LOG.error("Unexpected error while closing the channel", e);
+                                LOG.error("While closing channel:", e);
                             } finally {
                                 phaser.arriveAndDeregister();
                             }
@@ -135,8 +198,7 @@ final class EmbeddedUtil {
                 } else if (entry.isDirectory()) {
                     mkdirs(fsObject);
                 } else {
-                    throw new UnsupportedOperationException(
-                            String.format("Unsupported entry found: %s", individualFile)
+                    throw new UnsupportedOperationException(format("unsupported entry found: %s", individualFile)
                     );
                 }
 

@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class FlywayPreparerTest {
 
     @RegisterExtension
-    public PreparedDbExtension db = EmbeddedPostgresExtension.preparedDatabase(FlywayPreparer.forClasspathLocation("db/testing"));
+    public PreparedDbExtension db = EmbeddedPostgresExtension.preparedDatabaseWithDefaults(FlywayPreparer.forClasspathLocation("db/testing"));
 
     @Test
     public void testTablesMade() throws Exception {

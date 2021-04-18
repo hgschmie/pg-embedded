@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+import static de.softwareforge.testing.postgres.embedded.DatabasePreparer.NOOP_PREPARER;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -31,10 +32,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class DatabaseLifecycleTest {
 
     @RegisterExtension
-    public static PreparedDbExtension staticExtension = EmbeddedPostgresExtension.preparedDatabase(ds -> {});
+    public static PreparedDbExtension staticExtension = EmbeddedPostgresExtension.preparedDatabaseWithDefaults(NOOP_PREPARER);
 
     @RegisterExtension
-    public PreparedDbExtension instanceExtension = EmbeddedPostgresExtension.preparedDatabase(ds -> {});
+    public PreparedDbExtension instanceExtension = EmbeddedPostgresExtension.preparedDatabaseWithDefaults(NOOP_PREPARER);
 
     @Test
     @Order(1)

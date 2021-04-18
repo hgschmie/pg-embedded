@@ -32,7 +32,7 @@ public class ConnectConfigTest {
     private final CapturingDatabasePreparer preparer = new CapturingDatabasePreparer();
 
     @RegisterExtension
-    public PreparedDbExtension db = EmbeddedPostgresExtension.preparedDatabase(preparer)
+    public PreparedDbExtension db = EmbeddedPostgresExtension.preparedDatabaseWithDefaults(preparer)
             .customize(builder -> builder.setConnectConfig("connectTimeout", "20"));
 
     @Test

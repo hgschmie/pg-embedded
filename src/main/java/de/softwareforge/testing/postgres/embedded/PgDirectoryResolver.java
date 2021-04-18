@@ -15,8 +15,6 @@ package de.softwareforge.testing.postgres.embedded;
 
 import java.io.File;
 
-import javax.annotation.Nullable;
-
 @FunctionalInterface
 public interface PgDirectoryResolver {
 

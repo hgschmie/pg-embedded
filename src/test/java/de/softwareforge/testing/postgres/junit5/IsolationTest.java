@@ -23,10 +23,10 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 public class IsolationTest {
 
     @RegisterExtension
-    public SingleInstancePostgresExtension pg1 = EmbeddedPostgresExtension.singleInstance();
+    public SingleInstancePostgresExtension pg1 = EmbeddedPostgresExtension.singleInstanceWithDefaults();
 
     @RegisterExtension
-    public SingleInstancePostgresExtension pg2 = EmbeddedPostgresExtension.singleInstance();
+    public SingleInstancePostgresExtension pg2 = EmbeddedPostgresExtension.singleInstanceWithDefaults();
 
     @Test
     public void testIsolation() throws Exception {

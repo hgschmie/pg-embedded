@@ -28,8 +28,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
 import com.google.common.base.Suppliers;
+import com.google.common.io.BaseEncoding;
 import com.google.common.io.ByteStreams;
-import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,14 +78,14 @@ public class UncompressBundleDirectoryResolver implements PgDirectoryResolver {
             final String system = EmbeddedUtil.getOS();
             final String machineHardware = EmbeddedUtil.getArchitecture();
 
-            LOG.info("Detected a {} {} system", system, machineHardware);
+            LOG.info(format("Detected a %s %s system", system, machineHardware));
 
             String pgDigest;
             try (InputStream postgresDistributionArchive = pgBinaryResolver.getPgBinary(system, machineHardware)) {
                 checkState(postgresDistributionArchive != null, "No Postgres binary found for " + system + " / " + machineHardware);
                 try (DigestInputStream pgArchiveData = new DigestInputStream(postgresDistributionArchive, MessageDigest.getInstance("MD5"))) {
                     ByteStreams.exhaust(pgArchiveData);
-                    pgDigest = Hex.encodeHexString(pgArchiveData.getMessageDigest().digest());
+                    pgDigest = BaseEncoding.base16().encode(pgArchiveData.getMessageDigest().digest());
                 }
             }
 
@@ -108,12 +108,12 @@ public class UncompressBundleDirectoryResolver implements PgDirectoryResolver {
                         if (unpackLock != null) {
                             try {
                                 checkState(!pgDirExists.exists(), "unpack lock acquired but .exists file is present " + pgDirExists);
-                                LOG.info("Extracting Postgres...");
+                                LOG.info("extracting archive...");
                                 InputStream x = pgBinaryResolver.getPgBinary(system, machineHardware);
                                 EmbeddedUtil.extractTxz(x, pgDir.getPath());
                                 checkState(pgDirExists.createNewFile(), "couldn't make .exists file " + pgDirExists);
                             } catch (Exception e) {
-                                LOG.error("while unpacking Postgres", e);
+                                LOG.error("while unpacking archive:", e);
                             }
                         } else {
                             // the other guy is unpacking for us.
@@ -121,21 +121,18 @@ public class UncompressBundleDirectoryResolver implements PgDirectoryResolver {
                             while (!pgDirExists.exists() && --maxAttempts > 0) { // NOPMD
                                 Thread.sleep(1000L);
                             }
-                            if (!pgDirExists.exists()) {
-                                throw new IllegalStateException(
-                                        "Waited 60 seconds for postgres to be unpacked but it never finished!");
-                            }
+                            checkState(pgDirExists.exists(), "Waited 60 seconds for postgres to be unpacked but it never finished!");
                         }
                     } finally {
                         if (unpackLockFile.exists() && !unpackLockFile.delete()) {
-                            LOG.error("could not remove lock file {}", unpackLockFile.getAbsolutePath());
+                            LOG.error(format("could not remove lock file %s", unpackLockFile.getAbsolutePath()));
                         }
                     }
                 }
             }
 
             KNOWN_INSTALLATIONS.putIfAbsent(pgBinaryResolver, pgDir);
-            LOG.info("Postgres binaries installed at {}", pgDir);
+            LOG.debug(format("Unpacked archive at %s", pgDir));
             return pgDir;
         } catch (final IOException | NoSuchAlgorithmException e) {
             throw new ExceptionInInitializerError(e);

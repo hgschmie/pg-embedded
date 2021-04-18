@@ -36,7 +36,7 @@ public class EmbeddedPostgresTest {
 
     @Test
     public void testEmbeddedPg() throws Exception {
-        try (EmbeddedPostgres pg = EmbeddedPostgres.start();
+        try (EmbeddedPostgres pg = EmbeddedPostgres.defaultInstance();
                 Connection c = pg.getPostgresDatabase().getConnection()) {
             Statement s = c.createStatement();
             ResultSet rs = s.executeQuery("SELECT 1");
@@ -48,9 +48,9 @@ public class EmbeddedPostgresTest {
 
     @Test
     public void testEmbeddedPgCreationWithNestedDataDirectory() throws Exception {
-        try (EmbeddedPostgres pg = EmbeddedPostgres.builder()
+        try (EmbeddedPostgres pg = EmbeddedPostgres.builderWithDefaults()
                 .setDataDirectory(Files.createDirectories(tf.resolve("data-dir-parent").resolve("data-dir")))
-                .start()) {
+                .build()) {
             // nothing to do
         }
     }
@@ -58,7 +58,7 @@ public class EmbeddedPostgresTest {
     @Test
     public void testValidLocaleSettingsPassthrough() throws IOException {
 
-        EmbeddedPostgres.Builder builder = EmbeddedPostgres.builder();
+        EmbeddedPostgres.Builder builder = EmbeddedPostgres.builderWithDefaults();
         if (SystemUtils.IS_OS_WINDOWS) {
             builder.setLocaleConfig("locale", "de-de")
                     .setLocaleConfig("lc-messages", "de-de");
@@ -72,7 +72,7 @@ public class EmbeddedPostgresTest {
             fail("System not detected!");
         }
 
-        try (EmbeddedPostgres pg = builder.start()) {
+        try (EmbeddedPostgres pg = builder.build()) {
             // GNDN
         }
     }

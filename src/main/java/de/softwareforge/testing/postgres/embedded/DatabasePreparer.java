@@ -25,5 +25,7 @@ import javax.sql.DataSource;
  */
 public interface DatabasePreparer {
 
+    DatabasePreparer NOOP_PREPARER = ds -> {};
+
     void prepare(DataSource ds) throws SQLException;
 }
