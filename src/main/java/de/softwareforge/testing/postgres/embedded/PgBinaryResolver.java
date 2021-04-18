@@ -20,7 +20,7 @@ import java.io.InputStream;
 /**
  * A strategy for resolving PostgreSQL binaries.
  *
- * @see BundledPostgresBinaryResolver
+ * @see ZonkyIOPostgresBinaryResolver
  */
 public interface PgBinaryResolver {
 

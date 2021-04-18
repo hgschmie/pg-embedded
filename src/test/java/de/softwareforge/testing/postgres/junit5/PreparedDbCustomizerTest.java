@@ -19,6 +19,7 @@ import de.softwareforge.testing.postgres.embedded.DatabasePreparer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+import static de.softwareforge.testing.postgres.embedded.EmbeddedPostgres.DEFAULT_PG_STARTUP_WAIT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
@@ -32,7 +33,7 @@ public class PreparedDbCustomizerTest {
     public PreparedDbExtension dbA2 = EmbeddedPostgresExtension.preparedDatabase(EMPTY_PREPARER).customize(builder -> {});
     @RegisterExtension
     public PreparedDbExtension dbA3 = EmbeddedPostgresExtension.preparedDatabase(EMPTY_PREPARER)
-            .customize(builder -> builder.setPGStartupWait(Duration.ofSeconds(10)));
+            .customize(builder -> builder.setPGStartupWait(DEFAULT_PG_STARTUP_WAIT));
     @RegisterExtension
     public PreparedDbExtension dbB1 = EmbeddedPostgresExtension.preparedDatabase(EMPTY_PREPARER)
             .customize(builder -> builder.setPGStartupWait(Duration.ofSeconds(11)));

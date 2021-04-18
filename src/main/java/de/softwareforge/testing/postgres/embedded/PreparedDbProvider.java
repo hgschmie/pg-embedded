@@ -13,58 +13,63 @@
  */
 package de.softwareforge.testing.postgres.embedded;
 
-import static java.util.Collections.emptyMap;
-import static java.util.Collections.unmodifiableMap;
-
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.SynchronousQueue;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
 import javax.sql.DataSource;
 
+import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.softwareforge.testing.postgres.embedded.EmbeddedPostgres.Builder;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.postgresql.ds.PGSimpleDataSource;
 
-public class PreparedDbProvider {
+import static com.google.common.base.Preconditions.checkNotNull;
+import static de.softwareforge.testing.postgres.embedded.EmbeddedPostgres.JDBC_FORMAT;
+import static de.softwareforge.testing.postgres.embedded.EmbeddedPostgres.LOCALHOST_SERVERNAMES;
 
-    private static final String JDBC_FORMAT = "jdbc:postgresql://localhost:%d/%s?user=%s";
+public class PreparedDbProvider {
 
     /**
      * Each database cluster's <code>template1</code> database has a unique set of schema loaded so that the databases may be cloned.
      */
-    // @GuardedBy("PreparedDbProvider.class")
-    private static final Map<ClusterKey, PrepPipeline> CLUSTERS = new HashMap<>();
+    private static final ConcurrentMap<ClusterKey, PrepPipeline> CLUSTERS = new ConcurrentHashMap<>();
 
     private final PrepPipeline dbPreparer;
 
-    public static PreparedDbProvider forPreparer(DatabasePreparer preparer) {
-        return forPreparer(preparer, Collections.emptyList());
+    public static PreparedDbProvider forPreparer(DatabasePreparer preparer) throws SQLException, IOException {
+        checkNotNull(preparer, "preparer is null");
+
+        return forPreparer(preparer, ImmutableList.of());
     }
 
-    public static PreparedDbProvider forPreparer(DatabasePreparer preparer, Iterable<Consumer<EmbeddedPostgres.Builder>> customizers) {
+    public static PreparedDbProvider forPreparer(DatabasePreparer preparer, Iterable<Consumer<EmbeddedPostgres.Builder>> customizers)
+            throws SQLException, IOException {
+        checkNotNull(preparer, "preparer is null");
+        checkNotNull(customizers, "customizers is null");
+
         return new PreparedDbProvider(preparer, customizers);
     }
 
-    private PreparedDbProvider(DatabasePreparer preparer, Iterable<Consumer<Builder>> customizers) {
-        try {
-            dbPreparer = createOrFindPreparer(preparer, customizers);
-        } catch (final IOException | SQLException e) {
-            throw new RuntimeException(e);
-        }
+    private PreparedDbProvider(DatabasePreparer preparer, Iterable<Consumer<Builder>> customizers) throws SQLException, IOException {
+        checkNotNull(preparer, "preparer is null");
+        checkNotNull(customizers, "customizers is null");
+
+        dbPreparer = createOrFindPreparer(preparer, customizers);
     }
 
     /**
@@ -73,20 +78,29 @@ public class PreparedDbProvider {
      */
     private static synchronized PrepPipeline createOrFindPreparer(DatabasePreparer preparer, Iterable<Consumer<Builder>> customizers)
             throws IOException, SQLException {
+        checkNotNull(preparer, "preparer is null");
+        checkNotNull(customizers, "customizers is null");
+
         final ClusterKey key = new ClusterKey(preparer, customizers);
-        PrepPipeline result = CLUSTERS.get(key);
-        if (result != null) {
-            return result;
+        try {
+            return CLUSTERS.computeIfAbsent(key, k -> {
+                final Builder builder = EmbeddedPostgres.builder();
+                customizers.forEach(c -> c.accept(builder));
+                try {
+                    final EmbeddedPostgres pg = builder.start(); //NOPMD
+                    preparer.prepare(pg.getTemplateDatabase());
+                    return new PrepPipeline(pg).start();
+                } catch (IOException | SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        } catch (RuntimeException e) {
+            if (e.getCause() != null) {
+                Throwables.propagateIfPossible(e.getCause(), IOException.class);
+                Throwables.propagateIfPossible(e.getCause(), SQLException.class);
+            }
+            throw e;
         }
-
-        final Builder builder = EmbeddedPostgres.builder();
-        customizers.forEach(c -> c.accept(builder));
-        final EmbeddedPostgres pg = builder.start(); //NOPMD
-        preparer.prepare(pg.getTemplateDatabase());
-
-        result = new PrepPipeline(pg).start();
-        CLUSTERS.put(key, result);
-        return result;
     }
 
     /**
@@ -114,14 +128,16 @@ public class PreparedDbProvider {
      * Create a new Datasource given DBInfo. More common usage is to call createDatasource().
      */
     public DataSource createDataSourceFromConnectionInfo(final ConnectionInfo connectionInfo) throws SQLException {
+        checkNotNull(connectionInfo, "connectionInfo is null");
+
         final PGSimpleDataSource ds = new PGSimpleDataSource();
-        ds.setPortNumber(connectionInfo.getPort());
+        ds.setServerNames(LOCALHOST_SERVERNAMES);
+        ds.setPortNumbers(new int[]{connectionInfo.getPort()});
         ds.setDatabaseName(connectionInfo.getDbName());
         ds.setUser(connectionInfo.getUser());
 
-        Set<Entry<String, String>> properties = connectionInfo.getProperties().entrySet();
-        for (Entry<String, String> property : properties) {
-            ds.setProperty(property.getKey(), property.getValue());
+        for (Entry<String, String> entry : connectionInfo.getProperties().entrySet()) {
+            ds.setProperty(entry.getKey(), entry.getValue());
         }
 
         return ds;
@@ -134,22 +150,13 @@ public class PreparedDbProvider {
         return createDataSourceFromConnectionInfo(createNewDatabase());
     }
 
-    private String getJdbcUri(DbInfo db) {
-        String additionalParameters = db.getProperties().entrySet().stream()
+    private String getJdbcUri(DbInfo dbInfo) {
+        checkNotNull(dbInfo, "dbInfo is null");
+
+        String additionalParameters = dbInfo.getProperties().entrySet().stream()
                 .map(e -> String.format("&%s=%s", e.getKey(), e.getValue()))
                 .collect(Collectors.joining());
-        return String.format(JDBC_FORMAT, db.port, db.dbName, db.user) + additionalParameters;
-    }
-
-    /**
-     * Return configuration tweaks in a format appropriate for otj-jdbc DatabaseModule.
-     */
-    public Map<String, String> getConfigurationTweak(String dbModuleName) throws SQLException {
-        final DbInfo db = dbPreparer.getNextDb();
-        final Map<String, String> result = new HashMap<>();
-        result.put("ot.db." + dbModuleName + ".uri", getJdbcUri(db));
-        result.put("ot.db." + dbModuleName + ".ds.user", db.user);
-        return result;
+        return String.format(JDBC_FORMAT, dbInfo.port, dbInfo.dbName, dbInfo.user) + additionalParameters;
     }
 
     /**
@@ -162,7 +169,7 @@ public class PreparedDbProvider {
         private final SynchronousQueue<DbInfo> nextDatabase = new SynchronousQueue<>();
 
         PrepPipeline(EmbeddedPostgres pg) {
-            this.pg = pg;
+            this.pg = checkNotNull(pg, "pg is null");
         }
 
         PrepPipeline start() {
@@ -214,16 +221,13 @@ public class PreparedDbProvider {
         }
     }
 
-    private static void create(final DataSource connectDb, final String dbName, final String userName) throws SQLException {
-        if (dbName == null) {
-            throw new IllegalStateException("the database name must not be null!");
-        }
-        if (userName == null) {
-            throw new IllegalStateException("the user name must not be null!");
-        }
+    private static void create(final DataSource dataSource, final String databaseName, final String user) throws SQLException {
+        checkNotNull(dataSource, "dataSource is null");
+        checkNotNull(databaseName, "databaseName is null");
+        checkNotNull(user, "user is null");
 
-        try (Connection c = connectDb.getConnection();
-                PreparedStatement stmt = c.prepareStatement(String.format("CREATE DATABASE %s OWNER %s ENCODING = 'utf8'", dbName, userName))) {
+        try (Connection c = dataSource.getConnection();
+                PreparedStatement stmt = c.prepareStatement(String.format("CREATE DATABASE %s OWNER %s ENCODING = 'utf8'", databaseName, user))) {
             stmt.execute();
         }
     }
@@ -234,7 +238,9 @@ public class PreparedDbProvider {
         private final Builder builder;
 
         ClusterKey(DatabasePreparer preparer, Iterable<Consumer<Builder>> customizers) {
-            this.preparer = preparer;
+            this.preparer = checkNotNull(preparer, "preparer is null");
+            checkNotNull(customizers, "customizers is null");
+
             this.builder = EmbeddedPostgres.builder();
             customizers.forEach(c -> c.accept(this.builder));
         }
@@ -261,7 +267,7 @@ public class PreparedDbProvider {
     public static class DbInfo {
 
         public static DbInfo ok(final String dbName, final int port, final String user) {
-            return ok(dbName, port, user, emptyMap());
+            return ok(dbName, port, user, ImmutableMap.of());
         }
 
         private static DbInfo ok(final String dbName, final int port, final String user, final Map<String, String> properties) {
@@ -269,20 +275,20 @@ public class PreparedDbProvider {
         }
 
         public static DbInfo error(SQLException e) {
-            return new DbInfo(null, -1, null, emptyMap(), e);
+            return new DbInfo(null, -1, null, ImmutableMap.of(), e);
         }
 
         private final String dbName;
         private final int port;
         private final String user;
-        private final Map<String, String> properties;
+        private final ImmutableMap<String, String> properties;
         private final SQLException ex;
 
         private DbInfo(final String dbName, final int port, final String user, final Map<String, String> properties, final SQLException e) {
             this.dbName = dbName;
             this.port = port;
             this.user = user;
-            this.properties = properties;
+            this.properties = ImmutableMap.copyOf(properties);
             this.ex = e;
         }
 
@@ -299,7 +305,7 @@ public class PreparedDbProvider {
         }
 
         public Map<String, String> getProperties() {
-            return unmodifiableMap(properties);
+            return properties;
         }
 
         public SQLException getException() {

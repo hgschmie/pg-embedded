@@ -57,27 +57,23 @@ public class EmbeddedPostgresTest {
 
     @Test
     public void testValidLocaleSettingsPassthrough() throws IOException {
-        try {
-            EmbeddedPostgres.Builder builder = null;
-            if (SystemUtils.IS_OS_WINDOWS) {
-                builder = EmbeddedPostgres.builder()
-                        .setLocaleConfig("locale", "en-us")
-                        .setLocaleConfig("lc-messages", "en-us");
-            } else if (SystemUtils.IS_OS_MAC) {
-                builder = EmbeddedPostgres.builder()
-                        .setLocaleConfig("locale", "en_US")
-                        .setLocaleConfig("lc-messages", "en_US");
-            } else if (SystemUtils.IS_OS_LINUX) {
-                builder = EmbeddedPostgres.builder()
-                        .setLocaleConfig("locale", "en_US.utf8")
-                        .setLocaleConfig("lc-messages", "en_US.utf8");
-            } else {
-                fail("System not detected!");
-            }
-            builder.start();
-        } catch (IllegalStateException e) {
-            e.printStackTrace();
-            fail("Failed to set locale settings: " + e.getLocalizedMessage());
+
+        EmbeddedPostgres.Builder builder = EmbeddedPostgres.builder();
+        if (SystemUtils.IS_OS_WINDOWS) {
+            builder.setLocaleConfig("locale", "de-de")
+                    .setLocaleConfig("lc-messages", "de-de");
+        } else if (SystemUtils.IS_OS_MAC) {
+            builder.setLocaleConfig("locale", "de_DE")
+                    .setLocaleConfig("lc-messages", "de_DE");
+        } else if (SystemUtils.IS_OS_LINUX) {
+            builder.setLocaleConfig("locale", "de_DE.utf8")
+                    .setLocaleConfig("lc-messages", "de_DE.utf8");
+        } else {
+            fail("System not detected!");
+        }
+
+        try (EmbeddedPostgres pg = builder.start()) {
+            // GNDN
         }
     }
 }

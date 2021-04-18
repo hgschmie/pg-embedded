@@ -42,7 +42,11 @@ final class ProcessOutputLogger implements Runnable {
     public void run() {
         try {
             try {
-                reader.lines().forEach(logger::info);
+                reader.lines().forEach(msg -> {
+                    synchronized (logger) {
+                        logger.info(msg);
+                    }
+                });
             } catch (final UncheckedIOException e) {
                 logger.error("while reading output", e);
             }
@@ -55,9 +59,9 @@ final class ProcessOutputLogger implements Runnable {
         }
     }
 
-    static void logOutput(final Logger logger, final Process process) {
+    static void logOutput(final Logger logger, String name, Process process) {
         final Thread t = new Thread(new ProcessOutputLogger(logger, process));
-        t.setName("output redirector for " + process);
+        t.setName(name);
         t.setDaemon(true);
         t.start();
     }

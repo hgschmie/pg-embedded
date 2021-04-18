@@ -14,10 +14,11 @@
 package de.softwareforge.testing.postgres.embedded;
 
 import java.io.File;
-import java.util.Optional;
+
+import javax.annotation.Nullable;
 
 @FunctionalInterface
 public interface PgDirectoryResolver {
 
-    File getDirectory(Optional<File> overrideWorkingDirectory);
+    File getDirectory(File overrideWorkingDirectory);
 }

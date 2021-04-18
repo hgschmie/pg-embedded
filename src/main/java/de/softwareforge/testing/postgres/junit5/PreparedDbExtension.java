@@ -29,6 +29,9 @@ import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+
 public class PreparedDbExtension implements BeforeAllCallback, AfterAllCallback, BeforeEachCallback, AfterEachCallback {
 
     private final DatabasePreparer preparer;
@@ -40,22 +43,21 @@ public class PreparedDbExtension implements BeforeAllCallback, AfterAllCallback,
     private final List<Consumer<EmbeddedPostgres.Builder>> builderCustomizers = new CopyOnWriteArrayList<>();
 
     PreparedDbExtension(DatabasePreparer preparer) {
-        if (preparer == null) {
-            throw new IllegalStateException("null preparer");
-        }
-        this.preparer = preparer;
+        this.preparer = checkNotNull(preparer, "preparer is null");
     }
 
     public PreparedDbExtension customize(Consumer<EmbeddedPostgres.Builder> customizer) {
-        if (dataSource != null) {
-            throw new AssertionError("already started");
-        }
+        checkNotNull(customizer, "customizer is null");
+        checkState(dataSource == null, "already started");
         builderCustomizers.add(customizer);
+
         return this;
     }
 
     @Override
     public void beforeAll(ExtensionContext extensionContext) throws Exception {
+        checkNotNull(extensionContext, "extensionContext is null");
+
         provider = PreparedDbProvider.forPreparer(preparer, builderCustomizers);
         connectionInfo = provider.createNewDatabase();
         dataSource = provider.createDataSourceFromConnectionInfo(connectionInfo);
@@ -64,6 +66,8 @@ public class PreparedDbExtension implements BeforeAllCallback, AfterAllCallback,
 
     @Override
     public void afterAll(ExtensionContext extensionContext) {
+        checkNotNull(extensionContext, "extensionContext is null");
+
         dataSource = null;
         connectionInfo = null;
         provider = null;
@@ -72,6 +76,8 @@ public class PreparedDbExtension implements BeforeAllCallback, AfterAllCallback,
 
     @Override
     public void beforeEach(ExtensionContext extensionContext) throws Exception {
+        checkNotNull(extensionContext, "extensionContext is null");
+
         if (!perClass) {
             provider = PreparedDbProvider.forPreparer(preparer, builderCustomizers);
             connectionInfo = provider.createNewDatabase();
@@ -81,6 +87,8 @@ public class PreparedDbExtension implements BeforeAllCallback, AfterAllCallback,
 
     @Override
     public void afterEach(ExtensionContext extensionContext) {
+        checkNotNull(extensionContext, "extensionContext is null");
+
         if (!perClass) {
             dataSource = null;
             connectionInfo = null;

@@ -13,9 +13,6 @@
  */
 package de.softwareforge.testing.postgres.embedded;
 
-import static java.nio.file.StandardOpenOption.CREATE;
-import static java.nio.file.StandardOpenOption.WRITE;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,7 +23,6 @@ import java.nio.channels.CompletionHandler;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Duration;
 import java.util.concurrent.Phaser;
 
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
@@ -36,22 +32,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tukaani.xz.XZInputStream;
 
+import static com.google.common.base.Preconditions.checkState;
+import static java.nio.file.StandardOpenOption.CREATE;
+import static java.nio.file.StandardOpenOption.WRITE;
+
 final class EmbeddedUtil {
 
-    static final Logger LOG = LoggerFactory.getLogger(EmbeddedPostgres.class);
-    static final String JDBC_FORMAT = "jdbc:postgresql://localhost:%s/%s?user=%s";
-    static final String PG_STOP_MODE = "fast";
-    static final String PG_STOP_WAIT_S = "5";
-    static final String PG_SUPERUSER = "postgres";
-    static final Duration DEFAULT_PG_STARTUP_WAIT = Duration.ofSeconds(10);
-    static final String LOCK_FILE_NAME = "epg-lock";
+    static final Logger LOG = LoggerFactory.getLogger(EmbeddedUtil.class);
 
     private EmbeddedUtil() {
+        throw new AssertionError("EmbeddedUtil can not be instantiated");
     }
 
     static File getWorkingDirectory() {
-        final File tempWorkingDirectory = new File(System.getProperty("java.io.tmpdir"), "embedded-pg");
-        return new File(System.getProperty("ot.epg.working-dir", tempWorkingDirectory.getPath()));
+        return new File(SystemUtils.getJavaIoTmpDir(), "embedded-pg");
     }
 
 
@@ -68,15 +62,14 @@ final class EmbeddedUtil {
      */
     static String getOS() {
         if (SystemUtils.IS_OS_WINDOWS) {
-            return "Windows";
+            return "windows";
+        } else if (SystemUtils.IS_OS_MAC_OSX) {
+            return "darwin";
+        } else if (SystemUtils.IS_OS_LINUX) {
+            return "linux";
+        } else {
+            throw new UnsupportedOperationException("Unknown OS " + SystemUtils.OS_NAME);
         }
-        if (SystemUtils.IS_OS_MAC_OSX) {
-            return "Darwin";
-        }
-        if (SystemUtils.IS_OS_LINUX) {
-            return "Linux";
-        }
-        throw new UnsupportedOperationException("Unknown OS " + SystemUtils.OS_NAME);
     }
 
     /**
@@ -95,10 +88,8 @@ final class EmbeddedUtil {
      * @param targetDir The directory to extract the content to.
      */
     static void extractTxz(InputStream stream, String targetDir) throws IOException {
-        try (
-                XZInputStream xzIn = new XZInputStream(stream);
-                TarArchiveInputStream tarIn = new TarArchiveInputStream(xzIn)
-        ) {
+        try (XZInputStream xzIn = new XZInputStream(stream);
+                TarArchiveInputStream tarIn = new TarArchiveInputStream(xzIn)) {
             final Phaser phaser = new Phaser(1);
             TarArchiveEntry entry;
 
@@ -112,9 +103,7 @@ final class EmbeddedUtil {
                 } else if (entry.isFile()) {
                     byte[] content = new byte[(int) entry.getSize()];
                     int read = tarIn.read(content, 0, content.length);
-                    if (read == -1) {
-                        throw new IllegalStateException("could not read " + individualFile);
-                    }
+                    checkState(read != -1, "could not read %s", individualFile);
                     mkdirs(fsObject.getParentFile());
 
                     final AsynchronousFileChannel fileChannel = AsynchronousFileChannel.open(fsObject.toPath(), CREATE, WRITE); //NOPMD

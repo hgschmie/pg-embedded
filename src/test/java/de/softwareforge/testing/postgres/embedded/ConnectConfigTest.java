@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.postgresql.ds.common.BaseDataSource;
 
+import static com.google.common.base.Preconditions.checkState;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ConnectConfigTest {
@@ -54,11 +55,9 @@ public class ConnectConfigTest {
         private DataSource dataSource;
 
         @Override
-        public void prepare(DataSource ds) {
-            if (dataSource != null) {
-                throw new IllegalStateException("database preparer has been called multiple times");
-            }
-            dataSource = ds;
+        public void prepare(DataSource dataSource) {
+            checkState(this.dataSource == null, "database preparer has been called multiple times");
+            this.dataSource = dataSource;
         }
 
         public DataSource getDataSource() {

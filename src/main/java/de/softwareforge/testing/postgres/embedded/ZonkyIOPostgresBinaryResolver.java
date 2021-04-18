@@ -14,30 +14,23 @@
 
 package de.softwareforge.testing.postgres.embedded;
 
-import static java.lang.String.format;
-
 import java.io.InputStream;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static java.lang.String.format;
+
 /**
- * Resolves pre-bundled binaries from within the JAR file.
+ * Resolves pre-bundled binaries from the classpath. This matches the prebundled versions of postgres from https://github.com/zonkyio/embedded-postgres-binaries
  */
-final class BundledPostgresBinaryResolver implements PgBinaryResolver {
+enum ZonkyIOPostgresBinaryResolver implements PgBinaryResolver {
+
+    INSTANCE;
 
     @Override
     public InputStream getPgBinary(String system, String machineHardware) {
-        return EmbeddedPostgres.class.getResourceAsStream(format("/postgresql-%s-%s.txz", system, machineHardware));
-    }
+        checkNotNull(system, "system is null");
+        checkNotNull(machineHardware, "machineHardware is null");
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        return o != null && getClass() == o.getClass();
-    }
-
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
+        return EmbeddedPostgres.class.getResourceAsStream(format("/postgres-%s-%s.txz", system, machineHardware));
     }
 }

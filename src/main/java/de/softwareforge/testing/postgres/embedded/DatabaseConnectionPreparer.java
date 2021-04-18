@@ -18,6 +18,9 @@ import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
+/**
+ * Prepares a given database connection for use.
+ */
 public interface DatabaseConnectionPreparer extends DatabasePreparer {
 
     @Override

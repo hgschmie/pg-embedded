@@ -18,6 +18,9 @@ LINUX_DIST=dist/postgresql-$VERSION-linux-x64-binaries.tar.gz
 OSX_DIST=dist/postgresql-$VERSION-osx-binaries.zip
 WINDOWS_DIST=dist/postgresql-$VERSION-win-binaries.zip
 
+#
+# from https://www.enterprisedb.com/download-postgresql-binaries
+#
 mkdir -p dist/ target/generated-resources/
 [ -e $LINUX_DIST ] || curl -L -o $LINUX_DIST "https://get.enterprisedb.com/postgresql/postgresql-$VERSION-linux-x64-binaries.tar.gz"
 [ -e $OSX_DIST ] || curl -L -o $OSX_DIST "https://get.enterprisedb.com/postgresql/postgresql-$VERSION-osx-binaries.zip"
