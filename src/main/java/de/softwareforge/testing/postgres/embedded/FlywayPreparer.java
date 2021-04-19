@@ -14,51 +14,47 @@
 package de.softwareforge.testing.postgres.embedded;
 
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.function.Consumer;
 
 import javax.sql.DataSource;
 
+import com.google.common.collect.ImmutableList;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.configuration.FluentConfiguration;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 // TODO: Detect missing migration files.
 // cf. https://github.com/flyway/flyway/issues/1496
 // There is also a related @Ignored test in otj-sql.
 
-public final class FlywayPreparer implements DatabasePreparer {
+public class FlywayPreparer implements DatabasePreparer {
 
-    private final FluentConfiguration flyway;
-    private final List<String> locations;
+    private final ImmutableList.Builder<Consumer<FluentConfiguration>> customizers = ImmutableList.builder();
 
     public static FlywayPreparer forClasspathLocation(String... locations) {
-        FluentConfiguration f = Flyway.configure()
-                .locations(locations);
-        return new FlywayPreparer(f, Arrays.asList(locations));
+        FlywayPreparer preparer = new FlywayPreparer();
+        preparer.customize(c -> c.locations(locations));
+        return preparer;
     }
 
-    private FlywayPreparer(FluentConfiguration flyway, List<String> locations) {
-        this.flyway = flyway;
-        this.locations = locations;
+    protected FlywayPreparer() {
+    }
+
+    public FlywayPreparer customize(Consumer<FluentConfiguration> customizer) {
+        checkNotNull(customizer, "customizer is null");
+        customizers.add(customizer);
+
+        return this;
     }
 
     @Override
     public void prepare(DataSource ds) throws SQLException {
-        flyway.dataSource(ds);
-        flyway.load().migrate();
-    }
+        final FluentConfiguration config = Flyway.configure();
 
-    @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof FlywayPreparer)) {
-            return false;
-        }
-        return Objects.equals(locations, ((FlywayPreparer) obj).locations);
-    }
+        customizers.build().forEach(c -> c.accept(config));
 
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(locations);
+        config.dataSource(ds);
+        config.load().migrate();
     }
 }
