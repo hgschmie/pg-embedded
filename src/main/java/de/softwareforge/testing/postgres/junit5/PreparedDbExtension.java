@@ -32,7 +32,7 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
-public class PreparedDbExtension implements BeforeAllCallback, AfterAllCallback, BeforeEachCallback, AfterEachCallback {
+public final class PreparedDbExtension implements BeforeAllCallback, AfterAllCallback, BeforeEachCallback, AfterEachCallback {
 
     private final DatabasePreparer preparer;
 
@@ -99,24 +99,17 @@ public class PreparedDbExtension implements BeforeAllCallback, AfterAllCallback,
     }
 
     public DataSource getTestDatabase() {
-        if (dataSource == null) {
-            throw new AssertionError("not initialized");
-        }
+        checkState(dataSource != null, "dataSource not initialized (called outside test lifecycle?");
         return dataSource;
     }
 
     public ConnectionInfo getConnectionInfo() {
-        if (connectionInfo == null) {
-            throw new AssertionError("not initialized");
-        }
+        checkState(connectionInfo != null, "connectionInfo not initialized (called outside test lifecycle?");
         return connectionInfo;
     }
 
     public PreparedDbProvider getDbProvider() {
-        if (provider == null) {
-            throw new AssertionError("not initialized");
-        }
+        checkState(connectionInfo != null, "provider not initialized (called outside test lifecycle?");
         return provider;
     }
-
 }
