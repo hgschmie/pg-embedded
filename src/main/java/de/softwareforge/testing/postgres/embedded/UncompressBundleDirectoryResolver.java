@@ -46,30 +46,30 @@ public class UncompressBundleDirectoryResolver implements PgDirectoryResolver {
     private static final Supplier<UncompressBundleDirectoryResolver> DEFAULT_INSTANCE_HOLDER =
             Suppliers.memoize(UncompressBundleDirectoryResolver::new);
 
-    private static final Map<PgBinaryResolver, File> KNOWN_INSTALLATIONS = new ConcurrentHashMap<>();
+    private static final Map<PgArchiveResolver, File> KNOWN_INSTALLATIONS = new ConcurrentHashMap<>();
 
     private final Lock prepareBinariesLock = new ReentrantLock();
 
-    private final PgBinaryResolver pgBinaryResolver;
+    private final PgArchiveResolver pgArchiveResolver;
 
     public static synchronized UncompressBundleDirectoryResolver getDefault() {
         return DEFAULT_INSTANCE_HOLDER.get();
     }
 
     private UncompressBundleDirectoryResolver() {
-        this(ZonkyIOPostgresBinaryResolver.INSTANCE);
+        this(ZonkyIOPostgresArchiveResolver.INSTANCE);
     }
 
-    public UncompressBundleDirectoryResolver(PgBinaryResolver pgBinaryResolver) {
-        this.pgBinaryResolver = checkNotNull(pgBinaryResolver, "pgBinaryResolver is null");
+    public UncompressBundleDirectoryResolver(PgArchiveResolver pgArchiveResolver) {
+        this.pgArchiveResolver = checkNotNull(pgArchiveResolver, "pgArchiveResolver is null");
     }
 
     @Override
     public File getDirectory(final File installationDirectory) {
         prepareBinariesLock.lock();
         try {
-            if (KNOWN_INSTALLATIONS.containsKey(pgBinaryResolver)) {
-                File pgDir = KNOWN_INSTALLATIONS.get(pgBinaryResolver);
+            if (KNOWN_INSTALLATIONS.containsKey(pgArchiveResolver)) {
+                File pgDir = KNOWN_INSTALLATIONS.get(pgArchiveResolver);
                 if (pgDir.exists()) {
                     return pgDir;
                 }
@@ -81,9 +81,9 @@ public class UncompressBundleDirectoryResolver implements PgDirectoryResolver {
             LOG.info(format("Detected a %s %s system", system, machineHardware));
 
             String pgDigest;
-            try (InputStream postgresDistributionArchive = pgBinaryResolver.getPgBinary(system, machineHardware)) {
-                checkState(postgresDistributionArchive != null, "No Postgres binary found for " + system + " / " + machineHardware);
-                try (DigestInputStream pgArchiveData = new DigestInputStream(postgresDistributionArchive, MessageDigest.getInstance("MD5"))) {
+            try (InputStream pgArchive = pgArchiveResolver.locatePgArchive(system, machineHardware)) {
+                checkState(pgArchive != null, "No Postgres archive found for " + system + " / " + machineHardware);
+                try (DigestInputStream pgArchiveData = new DigestInputStream(pgArchive, MessageDigest.getInstance("MD5"))) {
                     ByteStreams.exhaust(pgArchiveData);
                     pgDigest = BaseEncoding.base16().encode(pgArchiveData.getMessageDigest().digest());
                 }
@@ -109,7 +109,7 @@ public class UncompressBundleDirectoryResolver implements PgDirectoryResolver {
                             try {
                                 checkState(!pgDirExists.exists(), "unpack lock acquired but .exists file is present " + pgDirExists);
                                 LOG.info("extracting archive...");
-                                InputStream x = pgBinaryResolver.getPgBinary(system, machineHardware);
+                                InputStream x = pgArchiveResolver.locatePgArchive(system, machineHardware);
                                 EmbeddedUtil.extractTxz(x, pgDir.getPath());
                                 checkState(pgDirExists.createNewFile(), "couldn't make .exists file " + pgDirExists);
                             } catch (Exception e) {
@@ -131,7 +131,7 @@ public class UncompressBundleDirectoryResolver implements PgDirectoryResolver {
                 }
             }
 
-            KNOWN_INSTALLATIONS.putIfAbsent(pgBinaryResolver, pgDir);
+            KNOWN_INSTALLATIONS.putIfAbsent(pgArchiveResolver, pgDir);
             LOG.debug(format("Unpacked archive at %s", pgDir));
             return pgDir;
         } catch (final IOException | NoSuchAlgorithmException e) {

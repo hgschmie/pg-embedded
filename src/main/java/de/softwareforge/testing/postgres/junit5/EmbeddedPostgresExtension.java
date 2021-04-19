@@ -24,6 +24,8 @@ public final class EmbeddedPostgresExtension {
 
     /**
      * Create a vanilla Postgres cluster -- just initialized, no customizations applied.
+     *
+     * @return A {@link SingleInstancePostgresExtension} object.
      */
     public static SingleInstancePostgresExtension singleInstance() {
         return new SingleInstancePostgresExtension();
@@ -31,6 +33,8 @@ public final class EmbeddedPostgresExtension {
 
     /**
      * Create a vanilla Postgres cluster with standard initializations ({@link EmbeddedPostgres.Builder#withDefaults()}).
+     *
+     * @return A {@link SingleInstancePostgresExtension} object.
      */
     public static SingleInstancePostgresExtension singleInstanceWithDefaults() {
         return singleInstance().customize(EmbeddedPostgres.Builder::withDefaults);
@@ -39,6 +43,9 @@ public final class EmbeddedPostgresExtension {
     /**
      * Returns a {@link Extension} to create a Postgres cluster, shared amongst all test cases in this JVM. The rule contributes Config switches to configure
      * each test case to get its own database.
+     *
+     * @param preparer A {@link DatabasePreparer} that will initialize any {@link javax.sql.DataSource} objects before use.
+     * @return A {@link PreparedDbExtension} object.
      */
     public static PreparedDbExtension preparedDatabase(DatabasePreparer preparer) {
         return new PreparedDbExtension(preparer);
@@ -47,6 +54,9 @@ public final class EmbeddedPostgresExtension {
     /**
      * Returns a {@link Extension} to create a Postgres cluster, shared amongst all test cases in this JVM. The rule contributes Config switches to configure
      * each test case to get its own database. The cluster has been configured with standard initializations ({@link Builder#withDefaults()}).
+     *
+     * @param preparer A {@link DatabasePreparer} that will initialize any {@link javax.sql.DataSource} objects before use.
+     * @return A {@link PreparedDbExtension} object.
      */
     public static PreparedDbExtension preparedDatabaseWithDefaults(DatabasePreparer preparer) {
         return preparedDatabase(preparer).customize(EmbeddedPostgres.Builder::withDefaults);

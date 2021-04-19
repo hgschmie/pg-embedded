@@ -20,16 +20,17 @@ import java.io.InputStream;
 /**
  * A strategy for resolving PostgreSQL binaries.
  *
- * @see ZonkyIOPostgresBinaryResolver
+ * @see ZonkyIOPostgresArchiveResolver
  */
-public interface PgBinaryResolver {
+public interface PgArchiveResolver {
 
     /**
-     * Returns an input stream with the postgress binary for the given systen and hardware architecture.
+     * Returns an input stream with the postgres archive for the given systen and hardware architecture.
      *
      * @param system          a system identification (Darwin, Linux...)
      * @param machineHardware a machine hardware architecture (x86_64...)
      * @return the binary
+     * @throws IOException if no archive could be found.
      */
-    InputStream getPgBinary(String system, String machineHardware) throws IOException;
+    InputStream locatePgArchive(String system, String machineHardware) throws IOException;
 }

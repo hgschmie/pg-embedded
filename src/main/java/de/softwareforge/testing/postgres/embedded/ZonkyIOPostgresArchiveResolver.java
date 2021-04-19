@@ -20,14 +20,14 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
 
 /**
- * Resolves pre-bundled binaries from the classpath. This matches the prebundled versions of postgres from https://github.com/zonkyio/embedded-postgres-binaries
+ * Resolves pre-bundled archives from the classpath. This matches the prebundled versions of postgres from https://github.com/zonkyio/embedded-postgres-binaries
  */
-enum ZonkyIOPostgresBinaryResolver implements PgBinaryResolver {
+enum ZonkyIOPostgresArchiveResolver implements PgArchiveResolver {
 
     INSTANCE;
 
     @Override
-    public InputStream getPgBinary(String system, String machineHardware) {
+    public InputStream locatePgArchive(String system, String machineHardware) {
         checkNotNull(system, "system is null");
         checkNotNull(machineHardware, "machineHardware is null");
 

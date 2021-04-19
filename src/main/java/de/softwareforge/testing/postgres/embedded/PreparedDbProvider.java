@@ -75,6 +75,12 @@ public class PreparedDbProvider {
     /**
      * Each schema set has its own database cluster.  The template1 database has the schema preloaded so that each test case need only create a new database and
      * not re-invoke your preparer.
+     *
+     * @param preparer    A preparer for the datasource to preconfigure the data source before use.
+     * @param customizers Customizers to customize the {@link EmbeddedPostgres.Builder} that creates the database.
+     * @return pipelined preparer for the data source.
+     * @throws IOException  If the database could not be started.
+     * @throws SQLException If an error happens during initialization of the data source.
      */
     private static synchronized PrepPipeline createOrFindPreparer(DatabasePreparer preparer, Iterable<Consumer<Builder>> customizers)
             throws IOException, SQLException {
@@ -108,6 +114,9 @@ public class PreparedDbProvider {
 
     /**
      * Create a new database, and return it as a JDBC connection string. NB: No two invocations will return the same database.
+     *
+     * @return The JDBI connection string for a new database.
+     * @throws SQLException If an error happens during initialization of the data source.
      */
     public String createDatabase() throws SQLException {
         return getJdbcUri(createNewDB());
@@ -116,6 +125,9 @@ public class PreparedDbProvider {
     /**
      * Create a new database, and return the backing info. This allows you to access the host and port. More common usage is to call createDatabase() and get
      * the JDBC connection string. NB: No two invocations will return the same database.
+     * @throws SQLException If an error happens during initialization of the data source.
+     *
+     * @return The connection information for the new database.
      */
     private DbInfo createNewDB() throws SQLException {
         return dbPreparer.getNextDb();
@@ -128,7 +140,11 @@ public class PreparedDbProvider {
     }
 
     /**
-     * Create a new Datasource given DBInfo. More common usage is to call createDatasource().
+     * Create a new Datasource given ConnectionInfo. More common usage is to call createDatasource().
+     * @param connectionInfo {@link ConnectionInfo} describing the datasource.
+     *
+     * @return A {@link DataSource} object for the {@link ConnectionInfo}.
+     * @throws SQLException If an error happens during initialization of the data source.
      */
     public DataSource createDataSourceFromConnectionInfo(final ConnectionInfo connectionInfo) throws SQLException {
         checkNotNull(connectionInfo, "connectionInfo is null");
@@ -148,6 +164,9 @@ public class PreparedDbProvider {
 
     /**
      * Create a new database, and return it as a DataSource. No two invocations will return the same database.
+     *
+     * @return An initialized {@link DataSource} object.
+     * @throws SQLException If an error happens during initialization of the data source.
      */
     public DataSource createDataSource() throws SQLException {
         return createDataSourceFromConnectionInfo(createNewDatabase());

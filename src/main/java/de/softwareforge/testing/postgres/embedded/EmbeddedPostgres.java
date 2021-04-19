@@ -441,6 +441,9 @@ public final class EmbeddedPostgres implements Closeable {
 
     /**
      * Returns a single instance that has been started and configured. The {@link Builder#withDefaults()} configuration has been applied.
+     *
+     * @return configured instance.
+     * @throws IOException If the instance could not be built.
      */
     public static EmbeddedPostgres defaultInstance() throws IOException {
         return builderWithDefaults().build();
@@ -534,11 +537,13 @@ public final class EmbeddedPostgres implements Closeable {
 
         /**
          * Apply a set of defaults to the database server:
-         * <li>
-         *     <ul>timezone: UTC</ul>
-         *     <ul>synchronous_commit: off</ul>
-         *     <ul>max_connections: 300</ul>
-         * </li>
+         * <ul>
+         *     <li>timezone: UTC</li>
+         *     <li>synchronous_commit: off</li>
+         *     <li>max_connections: 300</li>
+         * </ul>
+         *
+         * @return The builder itself.
          */
         public Builder withDefaults() {
             config.put("timezone", "UTC");

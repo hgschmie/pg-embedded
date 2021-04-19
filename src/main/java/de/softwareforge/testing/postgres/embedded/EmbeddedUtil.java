@@ -119,7 +119,7 @@ final class EmbeddedUtil {
     }
 
     /**
-     * Get current operating system string. The string is used in the appropriate postgres binary name.
+     * Get current operating system string. The string is used in the appropriate postgres archive name.
      *
      * @return Current operating system string.
      */
@@ -136,7 +136,7 @@ final class EmbeddedUtil {
     }
 
     /**
-     * Get the machine architecture string. The string is used in the appropriate postgres binary name.
+     * Get the machine architecture string. The string is used in the appropriate postgres archive name.
      *
      * @return Current machine architecture string.
      */
