@@ -38,7 +38,6 @@
     <properties>
         <project.build.targetJdk>11</project.build.targetJdk>
         <basepom.test.timeout>1800</basepom.test.timeout>
-        <basepom.test.fork-count>10</basepom.test.fork-count>
 
         <postgres.version>13.2.0</postgres.version>
 
