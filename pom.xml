@@ -27,12 +27,12 @@
         <connection>scm:git:git://github.com/hgschmie/pg-embedded.git</connection>
         <developerConnection>scm:git:git@github.com:hgschmie/pg-embedded.git</developerConnection>
         <url>https://github.com/hgschmie/pg-embedded</url>
-        <tag>pg-embedded-1.1</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <groupId>de.softwareforge.testing</groupId>
     <artifactId>pg-embedded</artifactId>
-    <version>1.1</version>
+    <version>1.2-SNAPSHOT</version>
     <description>Embedded PostgreSQL driver</description>
 
     <properties>
