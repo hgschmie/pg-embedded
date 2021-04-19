@@ -78,7 +78,7 @@ public class UncompressBundleDirectoryResolver implements PgDirectoryResolver {
             final String system = EmbeddedUtil.getOS();
             final String machineHardware = EmbeddedUtil.getArchitecture();
 
-            LOG.info(format("Detected a %s %s system", system, machineHardware));
+            LOG.debug(format("Detected a %s %s system", system, machineHardware));
 
             String pgDigest;
             try (InputStream pgArchive = pgArchiveResolver.locatePgArchive(system, machineHardware)) {

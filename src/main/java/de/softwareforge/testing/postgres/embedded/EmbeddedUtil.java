@@ -103,7 +103,7 @@ final class EmbeddedUtil {
     }
 
     static String formatDuration(Duration duration) {
-        return DurationFormatUtils.formatDuration(duration.toMillis(), "m' minutes 's' seconds 'S' ms'");
+        return DurationFormatUtils.formatDuration(duration.toMillis(), "s' seconds 'S' ms'");
     }
 
     static int allocatePort() throws IOException {

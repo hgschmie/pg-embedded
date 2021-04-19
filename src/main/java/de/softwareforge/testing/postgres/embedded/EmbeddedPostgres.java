@@ -236,12 +236,12 @@ public final class EmbeddedPostgres implements Closeable {
                         "-U", PG_DEFAULT_USER,
                         "-D", this.dataDirectory.getPath(),
                         "-E", "UTF-8");
-        final Stopwatch watch = system(commandBuilder.build());
+        final Stopwatch watch = system(commandBuilder.build(), true);
         logger.info(format("initdb completed in %s", formatDuration(watch.elapsed())));
     }
 
     private void startDatabase() throws IOException {
-        checkState(!started.getAndSet(true), "pg already started!");
+        checkState(!started.getAndSet(true), "database already started!");
 
         final ImmutableList.Builder<String> commandBuilder = ImmutableList.builder();
         commandBuilder.add(pgBin("pg_ctl"),
@@ -251,10 +251,10 @@ public final class EmbeddedPostgres implements Closeable {
         );
 
         final Stopwatch watch = Stopwatch.createStarted();
-        final Process postmaster = spawn("pg", commandBuilder.build());
+        final Process postmaster = spawn("pg", commandBuilder.build(), true);
 
-        logger.info(format("started (pid %d) on port %d. Waiting up to %s for server startup to finish", postmaster.pid(), port,
-                formatDuration(pgStartupWait)));
+        logger.info(format("started as pid %d on port %d", postmaster.pid(), port));
+        logger.debug(format("Waiting up to %s for server startup to finish", formatDuration(pgStartupWait)));
 
         Runtime.getRuntime().addShutdownHook(newCloserThread());
 
@@ -270,7 +270,7 @@ public final class EmbeddedPostgres implements Closeable {
                 "-m", PG_STOP_MODE,
                 "-t", PG_STOP_WAIT_S, "-w");
 
-        final Stopwatch watch = system(commandBuilder.build());
+        final Stopwatch watch = system(commandBuilder.build(), true);
         logger.info(format("shutdown complete in %s", formatDuration(watch.elapsed())));
     }
 
@@ -420,9 +420,9 @@ public final class EmbeddedPostgres implements Closeable {
                     if (new File(dir, "postmaster.pid").exists()) {
                         try {
                             stopDatabase(dir);
-                            logger.debug("shut down orphaned pg!");
+                            logger.debug("shut down orphaned database!");
                         } catch (Exception e) {
-                            logger.warn(format("failed to stop pg in %s:", dir), e);
+                            logger.warn(format("failed to orphaned database in %s:", dir), e);
                         }
                     }
                     EmbeddedUtil.rmdirs(dir);
@@ -460,7 +460,7 @@ public final class EmbeddedPostgres implements Closeable {
         return new Builder();
     }
 
-    private Process spawn(@Nullable String processName, List<String> commandAndArgs) throws IOException {
+    private Process spawn(@Nullable String processName, List<String> commandAndArgs, boolean debug) throws IOException {
         final ProcessBuilder builder = new ProcessBuilder(commandAndArgs);
         builder.redirectErrorStream(true);
         builder.redirectError(errorRedirector);
@@ -470,17 +470,17 @@ public final class EmbeddedPostgres implements Closeable {
         processName = processName != null ? processName : process.info().command().map(EmbeddedUtil::getFileBaseName).orElse("<unknown>");
         String name = format("%s (%d)", processName, process.pid());
 
-        ProcessOutputLogger.logOutput(logger, name, process);
+        ProcessOutputLogger.logOutput(debug, logger, name, process);
         return process;
     }
 
 
-    private Stopwatch system(List<String> commandAndArgs) throws IOException {
+    private Stopwatch system(List<String> commandAndArgs, boolean debug) throws IOException {
         checkArgument(commandAndArgs.size() > 0, "No commandAndArgs given!");
         String prefix = EmbeddedUtil.getFileBaseName(commandAndArgs.get(0));
 
         Stopwatch watch = Stopwatch.createStarted();
-        Process process = spawn(prefix, commandAndArgs);
+        Process process = spawn(prefix, commandAndArgs, debug);
         try {
             if (process.waitFor() != 0) {
                 try (InputStreamReader reader = new InputStreamReader(process.getErrorStream(), StandardCharsets.UTF_8)) {
