@@ -68,8 +68,12 @@ public final class EmbeddedPostgres implements Closeable {
     static final String[] LOCALHOST_SERVERNAMES = new String[]{"localhost"};
     static final String JDBC_FORMAT = "jdbc:postgresql://localhost:%d/%s?user=%s";
 
+    // default user used for databases
+    public static final String PG_DEFAULT_USER = "postgres";
+
     @VisibleForTesting
     public static final Duration DEFAULT_PG_STARTUP_WAIT = Duration.ofSeconds(10);
+
     // folders need to be at least 10 minutes old to be considered for deletion.
     private static final long MINIMUM_AGE_IN_MS = Duration.ofMinutes(10).toMillis();
     // prefix for data folders in the parent that might be deleted
@@ -77,7 +81,6 @@ public final class EmbeddedPostgres implements Closeable {
 
     private static final String PG_STOP_MODE = "fast";
     private static final String PG_STOP_WAIT_S = "5";
-    private static final String PG_DEFAULT_USER = "postgres";
     private static final String PG_TEMPLATE_DB = "template1";
     static final String LOCK_FILE_NAME = "epg-lock";
 

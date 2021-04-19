@@ -41,6 +41,7 @@ import org.postgresql.ds.PGSimpleDataSource;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static de.softwareforge.testing.postgres.embedded.EmbeddedPostgres.JDBC_FORMAT;
 import static de.softwareforge.testing.postgres.embedded.EmbeddedPostgres.LOCALHOST_SERVERNAMES;
+import static de.softwareforge.testing.postgres.embedded.EmbeddedPostgres.PG_DEFAULT_USER;
 
 public class PreparedDbProvider {
 
@@ -125,9 +126,9 @@ public class PreparedDbProvider {
     /**
      * Create a new database, and return the backing info. This allows you to access the host and port. More common usage is to call createDatabase() and get
      * the JDBC connection string. NB: No two invocations will return the same database.
-     * @throws SQLException If an error happens during initialization of the data source.
      *
      * @return The connection information for the new database.
+     * @throws SQLException If an error happens during initialization of the data source.
      */
     private DbInfo createNewDB() throws SQLException {
         return dbPreparer.getNextDb();
@@ -141,8 +142,8 @@ public class PreparedDbProvider {
 
     /**
      * Create a new Datasource given ConnectionInfo. More common usage is to call createDatasource().
-     * @param connectionInfo {@link ConnectionInfo} describing the datasource.
      *
+     * @param connectionInfo {@link ConnectionInfo} describing the datasource.
      * @return A {@link DataSource} object for the {@link ConnectionInfo}.
      * @throws SQLException If an error happens during initialization of the data source.
      */
@@ -225,13 +226,13 @@ public class PreparedDbProvider {
                 final String newDbName = RandomStringUtils.randomAlphabetic(12).toLowerCase(Locale.ENGLISH);
                 SQLException failure = null;
                 try {
-                    create(pg.getPostgresDatabase(), newDbName, "postgres");
+                    create(pg.getPostgresDatabase(), newDbName, PG_DEFAULT_USER);
                 } catch (SQLException e) {
                     failure = e;
                 }
                 try {
                     if (failure == null) {
-                        nextDatabase.put(DbInfo.ok(newDbName, pg.getPort(), "postgres", pg.getConnectConfig()));
+                        nextDatabase.put(DbInfo.ok(newDbName, pg.getPort(), PG_DEFAULT_USER, pg.getConnectConfig()));
                     } else {
                         nextDatabase.put(DbInfo.error(failure));
                     }
