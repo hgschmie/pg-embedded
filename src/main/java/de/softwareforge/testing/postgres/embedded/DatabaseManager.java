@@ -15,7 +15,7 @@ package de.softwareforge.testing.postgres.embedded;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
-import static de.softwareforge.testing.postgres.embedded.SchemaInfo.PG_DEFAULT_USER;
+import static de.softwareforge.testing.postgres.embedded.DatabaseInfo.PG_DEFAULT_USER;
 import static java.lang.String.format;
 
 import de.softwareforge.testing.postgres.embedded.EmbeddedPostgres.BuilderCustomizer;
@@ -40,39 +40,39 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Manages the various schemas within a postgres instance.
+ * Manages the various databases within a postgres instance.
  */
-public class SchemaManager implements AutoCloseable {
+public class DatabaseManager implements AutoCloseable {
 
-    public static final Logger LOG = LoggerFactory.getLogger(SchemaManager.class);
+    public static final Logger LOG = LoggerFactory.getLogger(DatabaseManager.class);
 
     private final AtomicBoolean closed = new AtomicBoolean();
     private final AtomicBoolean started = new AtomicBoolean();
 
-    private final SchemaPreparer schemaPreparer;
+    private final DatabasePreparer databasePreparer;
     private final Set<EmbeddedPostgres.BuilderCustomizer> customizers;
     private final boolean multiMode;
 
-    private volatile SchemaProvider schemaProvider = null;
+    private volatile InstanceProvider instanceProvider = null;
     private volatile EmbeddedPostgres pg = null;
 
-    private SchemaManager(SchemaPreparer schemaPreparer,
+    private DatabaseManager(DatabasePreparer databasePreparer,
             Set<EmbeddedPostgres.BuilderCustomizer> customizers,
             boolean multiMode) {
-        this.schemaPreparer = checkNotNull(schemaPreparer, "schemaPreparer is null");
+        this.databasePreparer = checkNotNull(databasePreparer, "databasePreparer is null");
         this.customizers = checkNotNull(customizers, "customizers is null");
         this.multiMode = multiMode;
     }
 
-    public static Builder<SchemaManager> multiSchema() {
-        return new PreparedDbProviderBuilder(true);
+    public static Builder<DatabaseManager> multiDatabases() {
+        return new DatabaseManagerBuilder(true);
     }
 
-    public static Builder<SchemaManager> singleSchema() {
-        return new PreparedDbProviderBuilder(false);
+    public static Builder<DatabaseManager> singleDatabase() {
+        return new DatabaseManagerBuilder(false);
     }
 
-    public SchemaManager start() throws IOException, SQLException {
+    public DatabaseManager start() throws IOException, SQLException {
         if (!started.getAndSet(true)) {
             EmbeddedPostgres.Builder builder = EmbeddedPostgres.builder();
             for (BuilderCustomizer customizer : customizers) {
@@ -81,12 +81,12 @@ public class SchemaManager implements AutoCloseable {
 
             this.pg = builder.build();
 
-            DataSource dataSourceToPrepare = multiMode ? pg.getTemplateDatabase() : pg.getDatabase();
-            schemaPreparer.prepare(dataSourceToPrepare);
+            DataSource dataSourceToPrepare = multiMode ? pg.createTemplateDataSource() : pg.createDefaultDataSource();
+            databasePreparer.prepare(dataSourceToPrepare);
 
-            this.schemaProvider = multiMode ? new SchemaProviderPipeline() : () -> pg.getConnectionInfo();
+            this.instanceProvider = multiMode ? new InstanceProviderPipeline() : () -> pg.createDefaultDatabaseInfo();
 
-            this.schemaProvider.start();
+            this.instanceProvider.start();
         }
 
         return this;
@@ -96,19 +96,19 @@ public class SchemaManager implements AutoCloseable {
     public void close() throws Exception {
         checkState(started.get(), "not yet started!");
         if (!closed.getAndSet(true)) {
-            schemaProvider.close();
+            instanceProvider.close();
             pg.close();
         }
     }
 
-    public SchemaInfo getConnectionInfo() throws SQLException {
+    public DatabaseInfo getDatabaseInfo() throws SQLException {
         checkState(started.get(), "not yet started!");
 
-        SchemaInfo schemaInfo = schemaProvider.get();
-        if (schemaInfo.exception().isEmpty()) {
-            return schemaInfo;
+        DatabaseInfo databaseInfo = instanceProvider.get();
+        if (databaseInfo.exception().isEmpty()) {
+            return databaseInfo;
         } else {
-            throw schemaInfo.exception().get();
+            throw databaseInfo.exception().get();
         }
     }
 
@@ -117,7 +117,7 @@ public class SchemaManager implements AutoCloseable {
         return pg;
     }
 
-    private interface SchemaProvider extends Supplier<SchemaInfo>, AutoCloseable {
+    private interface InstanceProvider extends Supplier<DatabaseInfo>, AutoCloseable {
 
         default void start() {
         }
@@ -126,21 +126,21 @@ public class SchemaManager implements AutoCloseable {
         default void close() {
         }
 
-        SchemaInfo get();
+        DatabaseInfo get();
     }
 
-    private final class SchemaProviderPipeline implements SchemaProvider, Runnable {
+    private final class InstanceProviderPipeline implements InstanceProvider, Runnable {
 
         private final ExecutorService executor;
-        private final SynchronousQueue<SchemaInfo> nextDatabase = new SynchronousQueue<>();
+        private final SynchronousQueue<DatabaseInfo> nextDatabase = new SynchronousQueue<>();
 
         private final AtomicBoolean closed = new AtomicBoolean();
 
-        public SchemaProviderPipeline() {
+        public InstanceProviderPipeline() {
             this.executor = Executors.newSingleThreadExecutor(
                     new ThreadFactoryBuilder()
                             .setDaemon(true)
-                            .setNameFormat("schema-creator-" + pg.instanceId() + "-%d")
+                            .setNameFormat("instance-creator-" + pg.instanceId() + "-%d")
                             .build());
 
         }
@@ -163,13 +163,13 @@ public class SchemaManager implements AutoCloseable {
                 try {
                     final String newDbName = RandomStringUtils.randomAlphabetic(12).toLowerCase(Locale.ROOT);
                     try {
-                        createDatabase(pg.getDatabase(), newDbName, PG_DEFAULT_USER);
-                        nextDatabase.put(SchemaInfo.builder().dbName(newDbName).port(pg.getPort()).properties(pg.getConnectConfig()).build());
+                        createDatabase(pg.createDefaultDataSource(), newDbName, PG_DEFAULT_USER);
+                        nextDatabase.put(DatabaseInfo.builder().dbName(newDbName).port(pg.getPort()).properties(pg.getConnectionProperties()).build());
                     } catch (SQLException e) {
                         // https://www.postgresql.org/docs/13/errcodes-appendix.html - 57P01 admin_shutdown
                         if (!e.getSQLState().equals("57P01")) {
-                            LOG.warn("Caught SQL Exception:", e);
-                            nextDatabase.put(SchemaInfo.forException(e));
+                            LOG.warn("Caught SQL Exception (" + e.getSQLState() + "):", e);
+                            nextDatabase.put(DatabaseInfo.forException(e));
                         }
                     }
                 } catch (InterruptedException e) {
@@ -182,7 +182,7 @@ public class SchemaManager implements AutoCloseable {
         }
 
         @Override
-        public SchemaInfo get() {
+        public DatabaseInfo get() {
             try {
                 return nextDatabase.take();
             } catch (final InterruptedException e) {
@@ -201,7 +201,7 @@ public class SchemaManager implements AutoCloseable {
 
     public abstract static class Builder<T> {
 
-        protected SchemaPreparer schemaPreparer = SchemaPreparer.NOOP_PREPARER;
+        protected DatabasePreparer databasePreparer = DatabasePreparer.NOOP_PREPARER;
         protected ImmutableSet.Builder<EmbeddedPostgres.BuilderCustomizer> customizers = ImmutableSet.builder();
         protected final boolean multiMode;
 
@@ -209,8 +209,8 @@ public class SchemaManager implements AutoCloseable {
             this.multiMode = multiMode;
         }
 
-        public Builder<T> withPreparer(SchemaPreparer schemaPreparer) {
-            this.schemaPreparer = checkNotNull(schemaPreparer, "schemaPreparer is null");
+        public Builder<T> withPreparer(DatabasePreparer databasePreparer) {
+            this.databasePreparer = checkNotNull(databasePreparer, "databasePreparer is null");
             return this;
         }
 
@@ -222,15 +222,15 @@ public class SchemaManager implements AutoCloseable {
         public abstract T build();
     }
 
-    public static class PreparedDbProviderBuilder extends Builder<SchemaManager> {
+    public static class DatabaseManagerBuilder extends Builder<DatabaseManager> {
 
-        public PreparedDbProviderBuilder(boolean useTemplate) {
-            super(useTemplate);
+        public DatabaseManagerBuilder(boolean multiMode) {
+            super(multiMode);
         }
 
         @Override
-        public SchemaManager build() {
-            return new SchemaManager(schemaPreparer, customizers.build(), multiMode);
+        public DatabaseManager build() {
+            return new DatabaseManager(databasePreparer, customizers.build(), multiMode);
         }
     }
 }

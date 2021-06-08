@@ -14,43 +14,43 @@
 package de.softwareforge.testing.postgres.junit5;
 
 import de.softwareforge.testing.postgres.embedded.EmbeddedPostgres;
-import de.softwareforge.testing.postgres.embedded.SchemaManager;
-import de.softwareforge.testing.postgres.embedded.SchemaPreparer;
+import de.softwareforge.testing.postgres.embedded.DatabaseManager;
+import de.softwareforge.testing.postgres.embedded.DatabasePreparer;
 
 /**
- * Create a new cluster that supports multiple schemas. Each schema is cloned from a template.
+ * Create a new cluster that supports multiple databases. Each database is cloned from a template.
  */
-public final class SingleSchemaBuilder {
+public final class SingleDatabaseBuilder {
 
-    private SingleSchemaBuilder() {
-        throw new AssertionError("MultiSchemaBuilder can not be instantiated");
+    private SingleDatabaseBuilder() {
+        throw new AssertionError("MultiDatabaseBuilder can not be instantiated");
     }
 
     /**
      * Create a vanilla database -- just initialized, no customizations applied.
      */
-    public static SchemaManager.Builder<EmbeddedPgExtension> instance() {
+    public static DatabaseManager.Builder<EmbeddedPgExtension> instance() {
         return EmbeddedPgExtension.singleDatabase();
     }
 
     /**
      * Create a vanilla database with standard initializations ({@link EmbeddedPostgres.Builder#withDefaults()}).
      */
-    public static SchemaManager.Builder<EmbeddedPgExtension> instanceWithDefaults() {
+    public static DatabaseManager.Builder<EmbeddedPgExtension> instanceWithDefaults() {
         return EmbeddedPgExtension.singleDatabase().withCustomizer(EmbeddedPostgres.Builder::withDefaults);
     }
 
     /**
-     * Create a vanilla database and execute a {@link SchemaPreparer} for initialization on it.
+     * Create a vanilla database and execute a {@link DatabasePreparer} for initialization on it.
      */
-    public static SchemaManager.Builder<EmbeddedPgExtension> preparedInstance(SchemaPreparer preparer) {
+    public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstance(DatabasePreparer preparer) {
         return EmbeddedPgExtension.singleDatabase().withPreparer(preparer);
     }
 
     /**
-     * Create a vanilla database with defaults and execute a {@link SchemaPreparer} for initialization on it.
+     * Create a vanilla database with defaults and execute a {@link DatabasePreparer} for initialization on it.
      */
-    public static SchemaManager.Builder<EmbeddedPgExtension> preparedInstanceWithDefaults(SchemaPreparer preparer) {
+    public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstanceWithDefaults(DatabasePreparer preparer) {
         return EmbeddedPgExtension.singleDatabase().withPreparer(preparer).withCustomizer(EmbeddedPostgres.Builder::withDefaults);
     }
 }

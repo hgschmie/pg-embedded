@@ -27,7 +27,7 @@ import org.flywaydb.core.api.configuration.FluentConfiguration;
 // cf. https://github.com/flyway/flyway/issues/1496
 // There is also a related @Ignored test in otj-sql.
 
-public class FlywayPreparer implements SchemaPreparer {
+public class FlywayPreparer implements DatabasePreparer {
 
     private final ImmutableList.Builder<Consumer<FluentConfiguration>> customizers = ImmutableList.builder();
 

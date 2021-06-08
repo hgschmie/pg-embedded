@@ -1,14 +1,27 @@
-OpenTable Embedded PostgreSQL Component
-=======================================
+# Embedded Postgres for Java
 
-Allows embedding PostgreSQL into Java application code with
-no external dependencies.  Excellent for allowing you to unit
-test with a "real" Postgres without requiring end users to install
-and set up a database cluster.
-
-[![Build Status](https://travis-ci.org/opentable/otj-pg-embedded.svg)](https://travis-ci.org/opentable/otj-pg-embedded)
+Start a real Postgres engine for unit tests or local development.
 
 ## Basic Usage
+
+A postgres instance is started and stopped with the `EmbeddedPostgres` class:
+
+```java
+try (EmbeddedPostgres pg = EmbeddedPostgres.defaultInstance()) {
+    Connection c = pg.getDatabase().getConnection();
+    Statement s = c.createStatement()) {
+    try (ResultSet rs = s.executeQuery("SELECT 1")) {
+        if (rs.next()) {
+            return rs.getInt(1));
+        }
+    }
+}
+```
+
+
+
+
+
 
 In your JUnit test just add:
 

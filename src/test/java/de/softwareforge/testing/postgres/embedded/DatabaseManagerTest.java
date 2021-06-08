@@ -18,35 +18,35 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import org.junit.jupiter.api.Test;
 
-public class PreparedDbProviderTest {
+public class DatabaseManagerTest {
 
     @Test
     public void testSingleDatabase() throws Exception {
-        try (SchemaManager provider = SchemaManager.singleSchema()
+        try (DatabaseManager manager = DatabaseManager.singleDatabase()
                 .withCustomizer(EmbeddedPostgres.Builder::withDefaults)
                 .build()
                 .start()) {
 
-            // every call to getConnectionInfo returns the same schema
-            SchemaInfo firstSchemaInfo = provider.getConnectionInfo();
-            SchemaInfo secondSchemaInfo = provider.getConnectionInfo();
+            // every call to getConnectionInfo returns the same db
+            DatabaseInfo firstDatabaseInfo = manager.getDatabaseInfo();
+            DatabaseInfo secondDatabaseInfo = manager.getDatabaseInfo();
 
-            assertEquals(firstSchemaInfo, secondSchemaInfo);
+            assertEquals(firstDatabaseInfo, secondDatabaseInfo);
         }
     }
 
     @Test
     public void testMultiDatabase() throws Exception {
-        try (SchemaManager provider = SchemaManager.multiSchema()
+        try (DatabaseManager manager = DatabaseManager.multiDatabases()
                 .withCustomizer(EmbeddedPostgres.Builder::withDefaults)
                 .build()
                 .start()) {
 
-            // every call to getConnectionInfo returns a new schema
-            SchemaInfo firstSchemaInfo = provider.getConnectionInfo();
-            SchemaInfo secondSchemaInfo = provider.getConnectionInfo();
+            // every call to getConnectionInfo returns a new db
+            DatabaseInfo firstDatabaseInfo = manager.getDatabaseInfo();
+            DatabaseInfo secondDatabaseInfo = manager.getDatabaseInfo();
 
-            assertNotEquals(firstSchemaInfo, secondSchemaInfo);
+            assertNotEquals(firstDatabaseInfo, secondDatabaseInfo);
         }
     }
 }

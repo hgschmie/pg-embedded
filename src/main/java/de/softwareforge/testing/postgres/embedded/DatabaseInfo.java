@@ -24,7 +24,7 @@ import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableMap;
 
 @AutoValue
-public abstract class SchemaInfo {
+public abstract class DatabaseInfo {
 
     public static final String JDBC_FORMAT = "jdbc:postgresql://localhost:%d/%s?user=%s";
 
@@ -44,17 +44,17 @@ public abstract class SchemaInfo {
     public abstract Optional<SQLException> exception();
 
     public static Builder builder() {
-        return new AutoValue_SchemaInfo.Builder()
+        return new AutoValue_DatabaseInfo.Builder()
                 .dbName(PG_DEFAULT_DB)
                 .user(PG_DEFAULT_USER);
     }
 
-    public static SchemaInfo forException(SQLException e) {
+    public static DatabaseInfo forException(SQLException e) {
         return builder().exception(e).port(-1).build();
     }
 
     public String asJdbcUrl() {
-        checkState(exception().isEmpty(), "SchemaInfo contains SQLException: %s", exception());
+        checkState(exception().isEmpty(), "DatabaseInfo contains SQLException: %s", exception());
 
         String additionalParameters = properties().entrySet().stream()
                 .map(e -> String.format("&%s=%s", e.getKey(), e.getValue()))
@@ -63,9 +63,9 @@ public abstract class SchemaInfo {
     }
 
     public DataSource asDataSource() throws SQLException {
-        checkState(exception().isEmpty(), "SchemaInfo contains SQLException: %s", exception());
+        checkState(exception().isEmpty(), "DatabaseInfo contains SQLException: %s", exception());
 
-        return EmbeddedPostgres.getDatabase(user(), dbName(), port(), properties());
+        return EmbeddedPostgres.createDataSource(user(), dbName(), port(), properties());
     }
 
     public String asString() {
@@ -97,7 +97,7 @@ public abstract class SchemaInfo {
 
         public abstract Builder properties(ImmutableMap<String, String> properties);
 
-        public abstract SchemaInfo build();
+        public abstract DatabaseInfo build();
 
     }
 }

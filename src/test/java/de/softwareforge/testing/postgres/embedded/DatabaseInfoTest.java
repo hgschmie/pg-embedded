@@ -23,16 +23,16 @@ import java.util.concurrent.ThreadLocalRandom;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 
-public class SchemaInfoTest {
+public class DatabaseInfoTest {
 
     @Test
     public void testMinimal() {
-        SchemaInfo schemaInfo = SchemaInfo.builder().port(12345).build();
-        assertEquals(SchemaInfo.PG_DEFAULT_USER, schemaInfo.user());
-        assertEquals(SchemaInfo.PG_DEFAULT_DB, schemaInfo.dbName());
-        assertEquals(12345, schemaInfo.port());
-        assertTrue(schemaInfo.properties().isEmpty());
-        assertTrue(schemaInfo.exception().isEmpty());
+        DatabaseInfo databaseInfo = DatabaseInfo.builder().port(12345).build();
+        assertEquals(DatabaseInfo.PG_DEFAULT_USER, databaseInfo.user());
+        assertEquals(DatabaseInfo.PG_DEFAULT_DB, databaseInfo.dbName());
+        assertEquals(12345, databaseInfo.port());
+        assertTrue(databaseInfo.properties().isEmpty());
+        assertTrue(databaseInfo.exception().isEmpty());
     }
 
     @Test
@@ -44,26 +44,26 @@ public class SchemaInfoTest {
         String propertyName = RandomStringUtils.randomAlphabetic(12).toLowerCase(Locale.ROOT);
         String propertyValue = RandomStringUtils.randomAlphabetic(12).toLowerCase(Locale.ROOT);
 
-        SchemaInfo schemaInfo = SchemaInfo.builder()
+        DatabaseInfo databaseInfo = DatabaseInfo.builder()
                 .dbName(dbName)
                 .user(user)
                 .port(port)
                 .addProperty(propertyName, propertyValue)
                 .build();
 
-        assertEquals(user, schemaInfo.user());
-        assertEquals(dbName, schemaInfo.dbName());
-        assertEquals(port, schemaInfo.port());
-        assertEquals(1, schemaInfo.properties().size());
-        assertEquals(propertyValue, schemaInfo.properties().get(propertyName));
-        assertTrue(schemaInfo.exception().isEmpty());
+        assertEquals(user, databaseInfo.user());
+        assertEquals(dbName, databaseInfo.dbName());
+        assertEquals(port, databaseInfo.port());
+        assertEquals(1, databaseInfo.properties().size());
+        assertEquals(propertyValue, databaseInfo.properties().get(propertyName));
+        assertTrue(databaseInfo.exception().isEmpty());
     }
 
     @Test
     public void testException() {
-        SchemaInfo schemaInfo = SchemaInfo.forException(new SQLException());
-        assertTrue(schemaInfo.exception().isPresent());
-        assertEquals(SQLException.class, schemaInfo.exception().get().getClass());
+        DatabaseInfo databaseInfo = DatabaseInfo.forException(new SQLException());
+        assertTrue(databaseInfo.exception().isPresent());
+        assertEquals(SQLException.class, databaseInfo.exception().get().getClass());
     }
 
 }

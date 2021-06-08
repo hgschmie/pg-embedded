@@ -28,10 +28,10 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 public class IsolationTest {
 
     @RegisterExtension
-    public EmbeddedPgExtension pg1 = SingleSchemaBuilder.instanceWithDefaults().build();
+    public EmbeddedPgExtension pg1 = SingleDatabaseBuilder.instanceWithDefaults().build();
 
     @RegisterExtension
-    public EmbeddedPgExtension pg2 = SingleSchemaBuilder.instanceWithDefaults().build();
+    public EmbeddedPgExtension pg2 = SingleDatabaseBuilder.instanceWithDefaults().build();
 
     @Test
     public void testDoubleTable() throws Exception {

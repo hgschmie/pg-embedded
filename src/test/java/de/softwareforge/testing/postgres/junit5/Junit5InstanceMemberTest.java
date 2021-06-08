@@ -27,10 +27,10 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 public class Junit5InstanceMemberTest {
 
     @RegisterExtension
-    public EmbeddedPgExtension singleDatabase = SingleSchemaBuilder.instanceWithDefaults().build();
+    public EmbeddedPgExtension singleDatabase = SingleDatabaseBuilder.instanceWithDefaults().build();
 
     @RegisterExtension
-    public EmbeddedPgExtension multiDatabase = MultiSchemaBuilder.instanceWithDefaults().build();
+    public EmbeddedPgExtension multiDatabase = MultiDatabaseBuilder.instanceWithDefaults().build();
 
     @Test
     @Order(1)

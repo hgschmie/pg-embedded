@@ -149,6 +149,7 @@
             <groupId>com.google.auto.value</groupId>
             <artifactId>auto-value</artifactId>
             <version>${dep.auto-value.version}</version>
+            <optional>true</optional>
             <scope>provided</scope>
         </dependency>
 

@@ -17,7 +17,7 @@ import static com.google.common.base.Preconditions.checkState;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import de.softwareforge.testing.postgres.junit5.EmbeddedPgExtension;
-import de.softwareforge.testing.postgres.junit5.SingleSchemaBuilder;
+import de.softwareforge.testing.postgres.junit5.SingleDatabaseBuilder;
 
 import java.sql.SQLException;
 import java.util.Map;
@@ -32,15 +32,15 @@ public class ConnectConfigTest {
     private final CapturingDatabasePreparer preparer = new CapturingDatabasePreparer();
 
     @RegisterExtension
-    public EmbeddedPgExtension db = SingleSchemaBuilder.preparedInstanceWithDefaults(preparer)
-            .withCustomizer(builder -> builder.setConnectConfig("connectTimeout", "20"))
+    public EmbeddedPgExtension db = SingleDatabaseBuilder.preparedInstanceWithDefaults(preparer)
+            .withCustomizer(builder -> builder.addConnectionProperty("connectTimeout", "20"))
             .build();
 
     @Test
     public void test() throws SQLException {
-        SchemaInfo schemaInfo = db.getConnectionInfo();
+        DatabaseInfo databaseInfo = db.getConnectionInfo();
 
-        Map<String, String> properties = schemaInfo.properties();
+        Map<String, String> properties = databaseInfo.properties();
         assertEquals(1, properties.size());
         assertEquals("20", properties.get("connectTimeout"));
 
@@ -51,7 +51,7 @@ public class ConnectConfigTest {
         assertEquals("20", preparerDataSource.getProperty("connectTimeout"));
     }
 
-    private class CapturingDatabasePreparer implements SchemaPreparer {
+    private class CapturingDatabasePreparer implements DatabasePreparer {
 
         private DataSource dataSource;
 

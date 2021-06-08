@@ -17,13 +17,13 @@ import java.sql.SQLException;
 import javax.sql.DataSource;
 
 /**
- * A SchemaPreparer applies an arbitrary set of changes (e.g. database migrations, user creation) to a schema before it is presented to the user.
+ * A DatabasePreparer applies an arbitrary set of changes (e.g. database migrations, user creation) to a database represented by the {@link DataSource}.
  * <p>
  * The preparation steps are expected to be deterministic.
  */
-public interface SchemaPreparer {
+public interface DatabasePreparer {
 
-    SchemaPreparer NOOP_PREPARER = ds -> {};
+    DatabasePreparer NOOP_PREPARER = ds -> {};
 
     void prepare(DataSource ds) throws SQLException;
 }

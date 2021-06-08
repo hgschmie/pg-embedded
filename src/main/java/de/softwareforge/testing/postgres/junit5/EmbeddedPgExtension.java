@@ -16,9 +16,10 @@ package de.softwareforge.testing.postgres.junit5;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
+import de.softwareforge.testing.postgres.embedded.DatabaseInfo;
+import de.softwareforge.testing.postgres.embedded.DatabaseManager;
+import de.softwareforge.testing.postgres.embedded.DatabaseManager.DatabaseManagerBuilder;
 import de.softwareforge.testing.postgres.embedded.EmbeddedPostgres;
-import de.softwareforge.testing.postgres.embedded.SchemaInfo;
-import de.softwareforge.testing.postgres.embedded.SchemaManager;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -37,25 +38,25 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
 
     private static final Logger LOG = LoggerFactory.getLogger(EmbeddedPgExtension.class);
 
-    private final SchemaManager.Builder<SchemaManager> preparedDbProviderBuilder;
+    private final DatabaseManager.Builder<DatabaseManager> preparedDbProviderBuilder;
 
     // whether the instance is created per test method or once for all test methods.
     // depends on whether the instance is bound as a static field or a per instance field.
     // if the beforeAll method is not called, it operates in per-test mode, otherwise only
     // a single instance of the preparer is created;
     private volatile boolean perTestMode = true;
-    private volatile SchemaManager schemaManager = null;
+    private volatile DatabaseManager databaseManager = null;
 
-    private EmbeddedPgExtension(SchemaManager.Builder<SchemaManager> preparedDbProviderBuilder) {
+    private EmbeddedPgExtension(DatabaseManager.Builder<DatabaseManager> preparedDbProviderBuilder) {
         this.preparedDbProviderBuilder = preparedDbProviderBuilder;
     }
 
-    public static NewExtensionBuilder multiDatabase() {
-        return new NewExtensionBuilder(true);
+    public static EmbeddedPgExtensionBuilder multiDatabase() {
+        return new EmbeddedPgExtensionBuilder(true);
     }
 
-    public static NewExtensionBuilder singleDatabase() {
-        return new NewExtensionBuilder(false);
+    public static EmbeddedPgExtensionBuilder singleDatabase() {
+        return new EmbeddedPgExtensionBuilder(false);
     }
 
     /**
@@ -67,17 +68,19 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
 
     @VisibleForTesting
     EmbeddedPostgres getEmbeddedPostgres() {
-        return schemaManager.getEmbeddedPostgres();
+        return databaseManager.getEmbeddedPostgres();
     }
 
     /**
-     * Returns a {@link SchemaInfo} describing the database connection.
+     * Returns a {@link DatabaseInfo} describing the database connection.
      */
-    public SchemaInfo getConnectionInfo() throws SQLException {
-        checkState(schemaManager != null, "no before method has been called!");
-        SchemaInfo schemaInfo = schemaManager.getConnectionInfo();
-        LOG.info("Connection to {}", schemaInfo);
-        return schemaInfo;
+    public DatabaseInfo getConnectionInfo() throws SQLException {
+        checkState(databaseManager != null, "no before method has been called!");
+        DatabaseInfo databaseInfo = databaseManager.getDatabaseInfo();
+        if (databaseInfo.exception().isEmpty()) {
+            LOG.info("Connection to {}", databaseInfo.asJdbcUrl());
+        }
+        return databaseInfo;
     }
 
     @Override
@@ -114,30 +117,30 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
     }
 
     private void startDbProvider() throws SQLException, IOException {
-        this.schemaManager = preparedDbProviderBuilder.build();
-        this.schemaManager.start();
+        this.databaseManager = preparedDbProviderBuilder.build();
+        this.databaseManager.start();
     }
 
     private void stopDbProvider() throws Exception {
-        SchemaManager provider = this.schemaManager;
+        DatabaseManager provider = this.databaseManager;
 
         this.perTestMode = true;
-        this.schemaManager = null;
+        this.databaseManager = null;
         if (provider != null) {
             provider.close();
         }
     }
 
-    static class NewExtensionBuilder extends SchemaManager.Builder<EmbeddedPgExtension> {
+    static class EmbeddedPgExtensionBuilder extends DatabaseManager.Builder<EmbeddedPgExtension> {
 
-        private NewExtensionBuilder(boolean useTemplate) {
-            super(useTemplate);
+        private EmbeddedPgExtensionBuilder(boolean multiMode) {
+            super(multiMode);
         }
 
         @Override
         public EmbeddedPgExtension build() {
-            SchemaManager.Builder<SchemaManager> preparedDbProviderBuilder = new SchemaManager.PreparedDbProviderBuilder(multiMode)
-                    .withPreparer(schemaPreparer);
+            DatabaseManager.Builder<DatabaseManager> preparedDbProviderBuilder = new DatabaseManagerBuilder(multiMode)
+                    .withPreparer(databasePreparer);
             customizers.build().forEach(preparedDbProviderBuilder::withCustomizer);
             return new EmbeddedPgExtension(preparedDbProviderBuilder);
         }

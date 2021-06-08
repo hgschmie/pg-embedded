@@ -43,7 +43,7 @@ public class EmbeddedPostgresTest {
     @Test
     public void testEmbeddedPg() throws Exception {
         try (EmbeddedPostgres pg = EmbeddedPostgres.defaultInstance();
-                Connection c = pg.getDatabase().getConnection();
+                Connection c = pg.createDefaultDataSource().getConnection();
                 Statement s = c.createStatement()) {
             try (ResultSet rs = s.executeQuery("SELECT 1")) {
                 assertTrue(rs.next());
@@ -65,10 +65,10 @@ public class EmbeddedPostgresTest {
 
     @Test
     public void testDatasources() throws Exception {
-        try (EmbeddedPostgres pg = EmbeddedPostgres.builderWithDefaults().setConnectConfig(CONNECT_TIMEOUT.getName(), "20").build()) {
-            DataSource ds1 = pg.getDatabase();
+        try (EmbeddedPostgres pg = EmbeddedPostgres.builderWithDefaults().addConnectionProperty(CONNECT_TIMEOUT.getName(), "20").build()) {
+            DataSource ds1 = pg.createDefaultDataSource();
 
-            DataSource ds2 = pg.getConnectionInfo().asDataSource();
+            DataSource ds2 = pg.createDefaultDatabaseInfo().asDataSource();
 
             assertSame(ds1.getClass(), ds2.getClass());
 
@@ -102,11 +102,11 @@ public class EmbeddedPostgresTest {
         } else {
             fail("System not detected!");
         }
-        builder.setLocaleConfig("locale", locale)
-                .setLocaleConfig("lc-messages", lcMessages);
+        builder.addLocaleConfiguration("locale", locale)
+                .addLocaleConfiguration("lc-messages", lcMessages);
 
         try (EmbeddedPostgres pg = builder.build()) {
-            Map<String, String> localeConfig = pg.getLocaleConfig();
+            Map<String, String> localeConfig = pg.getLocaleConfiguration();
             assertEquals(locale, localeConfig.get("locale"));
             assertEquals(lcMessages, localeConfig.get("lc-messages"));
         }
