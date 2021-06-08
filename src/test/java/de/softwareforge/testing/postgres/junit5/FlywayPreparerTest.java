@@ -13,28 +13,67 @@
  */
 package de.softwareforge.testing.postgres.junit5;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import de.softwareforge.testing.postgres.embedded.FlywayPreparer;
+import de.softwareforge.testing.postgres.embedded.SchemaInfo;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class FlywayPreparerTest {
 
     @RegisterExtension
-    public PreparedDbExtension db = EmbeddedPostgresExtension.preparedDatabaseWithDefaults(FlywayPreparer.forClasspathLocation("db/testing"));
+    public static EmbeddedPgExtension singleDatabase = SingleSchemaBuilder.preparedInstanceWithDefaults(FlywayPreparer.forClasspathLocation("db/testing"))
+            .build();
+
+    @RegisterExtension
+    public static EmbeddedPgExtension multiDatabase = MultiSchemaBuilder.preparedInstanceWithDefaults(FlywayPreparer.forClasspathLocation("db/testing"))
+            .build();
+
 
     @Test
-    public void testTablesMade() throws Exception {
-        try (Connection c = db.getTestDatabase().getConnection();
+    public void testSingleTables() throws Exception {
+
+        SchemaInfo firstSchemaInfo = singleDatabase.getConnectionInfo();
+        SchemaInfo secondSchemaInfo = singleDatabase.getConnectionInfo();
+
+        // get the same database on every call
+        assertEquals(firstSchemaInfo, secondSchemaInfo);
+
+        // make sure tables exist
+        assertEquals("bar", fetchData(firstSchemaInfo));
+    }
+
+    @Test
+    public void testMultiTables() throws Exception {
+
+        SchemaInfo firstSchemaInfo = multiDatabase.getConnectionInfo();
+        SchemaInfo secondSchemaInfo = multiDatabase.getConnectionInfo();
+
+        // different databases
+        assertNotEquals(firstSchemaInfo, secondSchemaInfo);
+
+        // both database contain the data
+        assertEquals("bar", fetchData(firstSchemaInfo));
+        assertEquals("bar", fetchData(secondSchemaInfo));
+    }
+
+    private static String fetchData(SchemaInfo schemaInfo) throws SQLException {
+        try (Connection c = schemaInfo.asDataSource().getConnection();
                 Statement s = c.createStatement()) {
-            ResultSet rs = s.executeQuery("SELECT * FROM foo");
-            rs.next();
-            assertEquals("bar", rs.getString(1));
+            try (ResultSet rs = s.executeQuery("SELECT * FROM foo")) {
+                if (!rs.next()) {
+                    return null;
+                }
+                return rs.getString(1);
+            }
         }
     }
 }

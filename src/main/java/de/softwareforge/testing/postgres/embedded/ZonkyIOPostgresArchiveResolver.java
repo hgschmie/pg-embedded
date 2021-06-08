@@ -14,10 +14,10 @@
 
 package de.softwareforge.testing.postgres.embedded;
 
-import java.io.InputStream;
-
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
+
+import java.io.InputStream;
 
 /**
  * Resolves pre-bundled archives from the classpath. This matches the prebundled versions of postgres from https://github.com/zonkyio/embedded-postgres-binaries

@@ -13,22 +13,17 @@
  */
 package de.softwareforge.testing.postgres.embedded;
 
-import java.sql.Connection;
 import java.sql.SQLException;
-
 import javax.sql.DataSource;
 
 /**
- * Prepares a given database connection for use.
+ * A SchemaPreparer applies an arbitrary set of changes (e.g. database migrations, user creation) to a schema before it is presented to the user.
+ * <p>
+ * The preparation steps are expected to be deterministic.
  */
-public interface DatabaseConnectionPreparer extends DatabasePreparer {
+public interface SchemaPreparer {
 
-    @Override
-    default void prepare(DataSource ds) throws SQLException {
-        try (Connection c = ds.getConnection()) {
-            prepare(c);
-        }
-    }
+    SchemaPreparer NOOP_PREPARER = ds -> {};
 
-    void prepare(Connection conn) throws SQLException;
+    void prepare(DataSource ds) throws SQLException;
 }

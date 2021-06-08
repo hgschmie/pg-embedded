@@ -13,44 +13,45 @@
  */
 package de.softwareforge.testing.postgres.embedded;
 
+import static com.google.common.base.Preconditions.checkState;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import de.softwareforge.testing.postgres.junit5.EmbeddedPgExtension;
+import de.softwareforge.testing.postgres.junit5.SingleSchemaBuilder;
+
 import java.sql.SQLException;
 import java.util.Map;
-
 import javax.sql.DataSource;
 
-import de.softwareforge.testing.postgres.junit5.EmbeddedPostgresExtension;
-import de.softwareforge.testing.postgres.junit5.PreparedDbExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.postgresql.ds.common.BaseDataSource;
-
-import static com.google.common.base.Preconditions.checkState;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ConnectConfigTest {
 
     private final CapturingDatabasePreparer preparer = new CapturingDatabasePreparer();
 
     @RegisterExtension
-    public PreparedDbExtension db = EmbeddedPostgresExtension.preparedDatabaseWithDefaults(preparer)
-            .customize(builder -> builder.setConnectConfig("connectTimeout", "20"));
+    public EmbeddedPgExtension db = SingleSchemaBuilder.preparedInstanceWithDefaults(preparer)
+            .withCustomizer(builder -> builder.setConnectConfig("connectTimeout", "20"))
+            .build();
 
     @Test
     public void test() throws SQLException {
-        ConnectionInfo connectionInfo = db.getConnectionInfo();
+        SchemaInfo schemaInfo = db.getConnectionInfo();
 
-        Map<String, String> properties = connectionInfo.getProperties();
+        Map<String, String> properties = schemaInfo.properties();
         assertEquals(1, properties.size());
         assertEquals("20", properties.get("connectTimeout"));
 
-        BaseDataSource testDatabase = (BaseDataSource) db.getTestDatabase();
+        BaseDataSource testDatabase = (BaseDataSource) db.getDatabase();
         assertEquals("20", testDatabase.getProperty("connectTimeout"));
 
         BaseDataSource preparerDataSource = (BaseDataSource) preparer.getDataSource();
         assertEquals("20", preparerDataSource.getProperty("connectTimeout"));
     }
 
-    private class CapturingDatabasePreparer implements DatabasePreparer {
+    private class CapturingDatabasePreparer implements SchemaPreparer {
 
         private DataSource dataSource;
 

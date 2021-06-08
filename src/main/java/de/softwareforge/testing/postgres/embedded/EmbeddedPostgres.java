@@ -11,9 +11,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package de.softwareforge.testing.postgres.embedded;
 
-import java.io.Closeable;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+import static de.softwareforge.testing.postgres.embedded.EmbeddedUtil.formatDuration;
+import static de.softwareforge.testing.postgres.embedded.SchemaInfo.PG_DEFAULT_DB;
+import static de.softwareforge.testing.postgres.embedded.SchemaInfo.PG_DEFAULT_USER;
+import static java.lang.String.format;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -39,7 +47,6 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
-
 import javax.annotation.Nullable;
 import javax.sql.DataSource;
 
@@ -57,19 +64,15 @@ import org.postgresql.ds.PGSimpleDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
-import static de.softwareforge.testing.postgres.embedded.EmbeddedUtil.formatDuration;
-import static java.lang.String.format;
-
-public final class EmbeddedPostgres implements Closeable {
+/**
+ * Manages a single, embedded Postgres instance.
+ */
+public final class EmbeddedPostgres implements AutoCloseable {
 
     static final String[] LOCALHOST_SERVERNAMES = new String[]{"localhost"};
     static final String JDBC_FORMAT = "jdbc:postgresql://localhost:%d/%s?user=%s";
 
-    // default user used for databases
-    public static final String PG_DEFAULT_USER = "postgres";
+    private static final String PG_TEMPLATE_DB = "template1";
 
     @VisibleForTesting
     public static final Duration DEFAULT_PG_STARTUP_WAIT = Duration.ofSeconds(10);
@@ -81,7 +84,6 @@ public final class EmbeddedPostgres implements Closeable {
 
     private static final String PG_STOP_MODE = "fast";
     private static final String PG_STOP_WAIT_S = "5";
-    private static final String PG_TEMPLATE_DB = "template1";
     static final String LOCK_FILE_NAME = "epg-lock";
 
     private final Logger logger;
@@ -146,26 +148,22 @@ public final class EmbeddedPostgres implements Closeable {
     }
 
     public DataSource getTemplateDatabase() throws SQLException {
-        return getDatabase(PG_DEFAULT_USER, PG_TEMPLATE_DB);
+        return getDatabase(PG_DEFAULT_USER, PG_TEMPLATE_DB, getPort(), this.connectConfig);
     }
 
-    public DataSource getTemplateDatabase(Map<String, String> properties) throws SQLException {
-        return getDatabase(PG_DEFAULT_USER, PG_TEMPLATE_DB, properties);
+    public DataSource getDatabase() throws SQLException {
+        return getDatabase(PG_DEFAULT_USER, PG_DEFAULT_DB, getPort(), this.connectConfig);
     }
 
-    public DataSource getPostgresDatabase() throws SQLException {
-        return getDatabase(PG_DEFAULT_USER, PG_DEFAULT_USER);
-    }
-
-    public DataSource getPostgresDatabase(Map<String, String> properties) throws SQLException {
-        return getDatabase(PG_DEFAULT_USER, PG_DEFAULT_USER, properties);
+    public SchemaInfo getConnectionInfo() {
+        return SchemaInfo.builder().port(getPort()).properties(this.connectConfig).build();
     }
 
     public DataSource getDatabase(String user, String databaseName) throws SQLException {
-        return getDatabase(user, databaseName, this.connectConfig);
+        return getDatabase(user, databaseName, getPort(), this.connectConfig);
     }
 
-    public DataSource getDatabase(String user, String databaseName, Map<String, String> properties) throws SQLException {
+    public static DataSource getDatabase(String user, String databaseName, int port, Map<String, String> properties) throws SQLException {
         checkNotNull(user, "user is null");
         checkNotNull(databaseName, "databaseName is null");
         checkNotNull(properties, "properties is null");
@@ -182,13 +180,6 @@ public final class EmbeddedPostgres implements Closeable {
         }
 
         return ds;
-    }
-
-    public String getJdbcUrl(String user, String databaseName) {
-        checkNotNull(user, "user is null");
-        checkNotNull(databaseName, "databaseName is null");
-
-        return format(JDBC_FORMAT, port, databaseName, user);
     }
 
     public int getPort() {
@@ -237,7 +228,7 @@ public final class EmbeddedPostgres implements Closeable {
                         "-D", this.dataDirectory.getPath(),
                         "-E", "UTF-8");
         final Stopwatch watch = system(commandBuilder.build(), true);
-        logger.info(format("initdb completed in %s", formatDuration(watch.elapsed())));
+        logger.debug(format("initdb completed in %s", formatDuration(watch.elapsed())));
     }
 
     private void startDatabase() throws IOException {
@@ -259,7 +250,7 @@ public final class EmbeddedPostgres implements Closeable {
         Runtime.getRuntime().addShutdownHook(newCloserThread());
 
         checkState(waitForServerStartup(), "Could not start pg, interrupted?");
-        logger.info(format("startup complete in %s", formatDuration(watch.elapsed())));
+        logger.debug(format("startup complete in %s", formatDuration(watch.elapsed())));
     }
 
     private void stopDatabase(File dataDirectory) throws IOException {
@@ -271,7 +262,7 @@ public final class EmbeddedPostgres implements Closeable {
                 "-t", PG_STOP_WAIT_S, "-w");
 
         final Stopwatch watch = system(commandBuilder.build(), true);
-        logger.info(format("shutdown complete in %s", formatDuration(watch.elapsed())));
+        logger.debug(format("shutdown complete in %s", formatDuration(watch.elapsed())));
     }
 
     private List<String> createInitOptions() {
@@ -336,7 +327,7 @@ public final class EmbeddedPostgres implements Closeable {
         }
 
         // check JDBC connection
-        try (Connection c = getPostgresDatabase().getConnection();
+        try (Connection c = getDatabase().getConnection();
                 Statement s = c.createStatement();
                 ResultSet rs = s.executeQuery("SELECT 1")) {
             checkState(rs.next(), "expecting single row");
@@ -380,9 +371,20 @@ public final class EmbeddedPostgres implements Closeable {
                 logger.error(format("Could not clean up directory %s:", dataDirectory.getAbsolutePath()), e);
             }
         } else {
-            logger.info(format("preserved data directory %s", dataDirectory.getAbsolutePath()));
+            logger.debug(format("preserved data directory %s", dataDirectory.getAbsolutePath()));
         }
     }
+
+    @VisibleForTesting
+    File getDataDirectory() {
+        return dataDirectory;
+    }
+
+    @VisibleForTesting
+    Map<String, String> getLocaleConfig() {
+        return localeConfig;
+    }
+
 
     @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     private void cleanOldDataDirectories(File parentDirectory) {
@@ -493,6 +495,10 @@ public final class EmbeddedPostgres implements Closeable {
         }
 
         return watch;
+    }
+
+    public String instanceId() {
+        return instanceId;
     }
 
     @Override
@@ -667,31 +673,14 @@ public final class EmbeddedPostgres implements Closeable {
 
             return embeddedPostgres;
         }
+    }
 
-        // equals and hashcode are needed for the PreparedDb extension to correctly identify existing preparers.
+    /**
+     * Callback interface to customize a builder in progress.
+     */
+    @FunctionalInterface
+    public interface BuilderCustomizer {
 
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-            Builder builder = (Builder) o;
-            return cleanDataDirectory == builder.cleanDataDirectory && port == builder.port && Objects
-                    .equals(installationDirectory, builder.installationDirectory) && Objects.equals(dataDirectory, builder.dataDirectory) && config
-                    .equals(builder.config) && localeConfig.equals(builder.localeConfig) && connectConfig.equals(builder.connectConfig) && pgDirectoryResolver
-                    .equals(builder.pgDirectoryResolver) && pgStartupWait.equals(builder.pgStartupWait) && errRedirector.equals(builder.errRedirector)
-                    && outRedirector
-                    .equals(builder.outRedirector);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(installationDirectory, dataDirectory, config, localeConfig, cleanDataDirectory, port, connectConfig, pgDirectoryResolver,
-                    pgStartupWait,
-                    errRedirector, outRedirector);
-        }
+        void customize(Builder builder) throws SQLException;
     }
 }

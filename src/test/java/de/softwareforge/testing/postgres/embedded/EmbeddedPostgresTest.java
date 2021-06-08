@@ -13,67 +13,102 @@
  */
 package de.softwareforge.testing.postgres.embedded;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.postgresql.PGProperty.CONNECT_TIMEOUT;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.Map;
+import javax.sql.DataSource;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import org.postgresql.ds.PGSimpleDataSource;
 
 public class EmbeddedPostgresTest {
 
     @TempDir
-    public Path tf;
+    public Path tempDir;
 
     @Test
     public void testEmbeddedPg() throws Exception {
         try (EmbeddedPostgres pg = EmbeddedPostgres.defaultInstance();
-                Connection c = pg.getPostgresDatabase().getConnection()) {
-            Statement s = c.createStatement();
-            ResultSet rs = s.executeQuery("SELECT 1");
-            assertTrue(rs.next());
-            assertEquals(1, rs.getInt(1));
-            assertFalse(rs.next());
+                Connection c = pg.getDatabase().getConnection();
+                Statement s = c.createStatement()) {
+            try (ResultSet rs = s.executeQuery("SELECT 1")) {
+                assertTrue(rs.next());
+                assertEquals(1, rs.getInt(1));
+                assertFalse(rs.next());
+            }
         }
     }
 
     @Test
     public void testEmbeddedPgCreationWithNestedDataDirectory() throws Exception {
+        Path dataPath = Files.createDirectories(tempDir.resolve("data-dir-parent").resolve("data-dir"));
         try (EmbeddedPostgres pg = EmbeddedPostgres.builderWithDefaults()
-                .setDataDirectory(Files.createDirectories(tf.resolve("data-dir-parent").resolve("data-dir")))
+                .setDataDirectory(dataPath)
                 .build()) {
-            // nothing to do
+            assertEquals(dataPath, pg.getDataDirectory().toPath());
         }
+    }
+
+    @Test
+    public void testDatasources() throws Exception {
+        try (EmbeddedPostgres pg = EmbeddedPostgres.builderWithDefaults().setConnectConfig(CONNECT_TIMEOUT.getName(), "20").build()) {
+            DataSource ds1 = pg.getDatabase();
+
+            DataSource ds2 = pg.getConnectionInfo().asDataSource();
+
+            assertSame(ds1.getClass(), ds2.getClass());
+
+            PGSimpleDataSource pds1 = (PGSimpleDataSource) ds1;
+            PGSimpleDataSource pds2 = (PGSimpleDataSource) ds2;
+
+            assertArrayEquals(pds1.getServerNames(), pds2.getServerNames());
+            assertArrayEquals(pds1.getPortNumbers(), pds2.getPortNumbers());
+            assertEquals(pds1.getUser(), pds2.getUser());
+            assertEquals(pds1.getConnectTimeout(), pds2.getConnectTimeout());
+            assertEquals(20, pds1.getConnectTimeout());
+        }
+
     }
 
     @Test
     public void testValidLocaleSettingsPassthrough() throws IOException {
 
+        String locale = "";
+        String lcMessages = "";
         EmbeddedPostgres.Builder builder = EmbeddedPostgres.builderWithDefaults();
         if (SystemUtils.IS_OS_WINDOWS) {
-            builder.setLocaleConfig("locale", "de-de")
-                    .setLocaleConfig("lc-messages", "de-de");
+            locale = "de-de";
+            lcMessages = "de-de";
         } else if (SystemUtils.IS_OS_MAC) {
-            builder.setLocaleConfig("locale", "de_DE")
-                    .setLocaleConfig("lc-messages", "de_DE");
+            locale = "de_DE";
+            lcMessages = "de_DE";
         } else if (SystemUtils.IS_OS_LINUX) {
-            builder.setLocaleConfig("locale", "de_DE.utf8")
-                    .setLocaleConfig("lc-messages", "de_DE.utf8");
+            locale = "de_DE.utf8";
+            lcMessages = "de_DE.utf8";
         } else {
             fail("System not detected!");
         }
+        builder.setLocaleConfig("locale", locale)
+                .setLocaleConfig("lc-messages", lcMessages);
 
         try (EmbeddedPostgres pg = builder.build()) {
-            // GNDN
+            Map<String, String> localeConfig = pg.getLocaleConfig();
+            assertEquals(locale, localeConfig.get("locale"));
+            assertEquals(lcMessages, localeConfig.get("lc-messages"));
         }
     }
 }

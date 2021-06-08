@@ -13,6 +13,12 @@
  */
 package de.softwareforge.testing.postgres.embedded;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
+import static java.lang.String.format;
+import static java.nio.file.StandardOpenOption.CREATE;
+import static java.nio.file.StandardOpenOption.WRITE;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,12 +42,6 @@ import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tukaani.xz.XZInputStream;
-
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
-import static java.lang.String.format;
-import static java.nio.file.StandardOpenOption.CREATE;
-import static java.nio.file.StandardOpenOption.WRITE;
 
 final class EmbeddedUtil {
 
@@ -70,8 +70,8 @@ final class EmbeddedUtil {
     private static void failIfNullBytePresent(final String path) {
         final int len = path.length();
         for (int i = 0; i < len; i++) {
-            checkArgument(path.charAt(i) != 0, "Null byte present in file/path name. There are no " +
-                    "known legitimate use cases for such data, but several injection attacks may use it");
+            checkArgument(path.charAt(i) != 0,
+                    "Null byte present in file/path name.");
         }
     }
 

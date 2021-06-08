@@ -13,6 +13,10 @@
  */
 package de.softwareforge.testing.postgres.embedded;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+import static java.lang.String.format;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -32,10 +36,6 @@ import com.google.common.io.BaseEncoding;
 import com.google.common.io.ByteStreams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
-import static java.lang.String.format;
 
 public class UncompressBundleDirectoryResolver implements PgDirectoryResolver {
 

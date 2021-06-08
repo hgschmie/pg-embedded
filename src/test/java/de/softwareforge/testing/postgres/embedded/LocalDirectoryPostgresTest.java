@@ -13,6 +13,10 @@
  */
 package de.softwareforge.testing.postgres.embedded;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -21,10 +25,6 @@ import java.sql.Statement;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 public class LocalDirectoryPostgresTest {
 
     private static final File USR_LOCAL = new File("/usr/local");
@@ -32,14 +32,16 @@ public class LocalDirectoryPostgresTest {
 
     @Test
     public void testEmbeddedPg() throws Exception {
-        Assumptions.assumeTrue(USR_LOCAL_BIN_POSTGRES.exists(), "PostgreSQL binary must exist");
+        Assumptions.assumeTrue(USR_LOCAL_BIN_POSTGRES.exists(), "Skipping test, PostgreSQL binary not found in /usr/local/bin");
+
         try (EmbeddedPostgres pg = EmbeddedPostgres.builderWithDefaults().setPostgresBinaryDirectory(USR_LOCAL).build();
-                Connection c = pg.getPostgresDatabase().getConnection()) {
-            Statement s = c.createStatement();
-            ResultSet rs = s.executeQuery("SELECT 1");
-            assertTrue(rs.next());
-            assertEquals(1, rs.getInt(1));
-            assertFalse(rs.next());
+                Connection c = pg.getDatabase().getConnection();
+                Statement s = c.createStatement()) {
+            try (ResultSet rs = s.executeQuery("SELECT 1")) {
+                assertTrue(rs.next());
+                assertEquals(1, rs.getInt(1));
+                assertFalse(rs.next());
+            }
         }
     }
 }

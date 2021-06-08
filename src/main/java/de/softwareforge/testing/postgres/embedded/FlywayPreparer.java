@@ -13,22 +13,21 @@
  */
 package de.softwareforge.testing.postgres.embedded;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.sql.SQLException;
 import java.util.function.Consumer;
-
 import javax.sql.DataSource;
 
 import com.google.common.collect.ImmutableList;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.configuration.FluentConfiguration;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 // TODO: Detect missing migration files.
 // cf. https://github.com/flyway/flyway/issues/1496
 // There is also a related @Ignored test in otj-sql.
 
-public class FlywayPreparer implements DatabasePreparer {
+public class FlywayPreparer implements SchemaPreparer {
 
     private final ImmutableList.Builder<Consumer<FluentConfiguration>> customizers = ImmutableList.builder();
 
