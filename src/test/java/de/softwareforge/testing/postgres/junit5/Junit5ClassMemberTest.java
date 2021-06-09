@@ -57,14 +57,14 @@ public class Junit5ClassMemberTest {
 
 
     static int createTable(EmbeddedPgExtension extension, String table) throws SQLException {
-        try (Connection connection = extension.getDatabase().getConnection();
+        try (Connection connection = extension.createDataSource().getConnection();
                 Statement statement = connection.createStatement()) {
             return statement.executeUpdate(format("CREATE TABLE public.%s (a INTEGER)", table));
         }
     }
 
     static boolean existsTable(EmbeddedPgExtension extension, String table) throws SQLException {
-        try (Connection connection = extension.getDatabase().getConnection();
+        try (Connection connection = extension.createDataSource().getConnection();
                 Statement statement = connection.createStatement()) {
             String query = format("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = '%s')", table);
             try (ResultSet resultSet = statement.executeQuery(query)) {

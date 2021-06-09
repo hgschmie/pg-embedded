@@ -41,8 +41,8 @@ public class FlywayPreparerTest {
     @Test
     public void testSingleTables() throws Exception {
 
-        DatabaseInfo firstDatabaseInfo = singleDatabase.getConnectionInfo();
-        DatabaseInfo secondDatabaseInfo = singleDatabase.getConnectionInfo();
+        DatabaseInfo firstDatabaseInfo = singleDatabase.createDatabaseInfo();
+        DatabaseInfo secondDatabaseInfo = singleDatabase.createDatabaseInfo();
 
         // get the same database on every call
         assertEquals(firstDatabaseInfo, secondDatabaseInfo);
@@ -54,8 +54,8 @@ public class FlywayPreparerTest {
     @Test
     public void testMultiTables() throws Exception {
 
-        DatabaseInfo firstDatabaseInfo = multiDatabase.getConnectionInfo();
-        DatabaseInfo secondDatabaseInfo = multiDatabase.getConnectionInfo();
+        DatabaseInfo firstDatabaseInfo = multiDatabase.createDatabaseInfo();
+        DatabaseInfo secondDatabaseInfo = multiDatabase.createDatabaseInfo();
 
         // different databases
         assertNotEquals(firstDatabaseInfo, secondDatabaseInfo);

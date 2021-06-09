@@ -18,7 +18,7 @@ import de.softwareforge.testing.postgres.embedded.DatabaseManager;
 import de.softwareforge.testing.postgres.embedded.DatabasePreparer;
 
 /**
- * Create a new cluster that supports multiple databases. Each database is cloned from a template.
+ * Create a new cluster that supports only a single database.
  */
 public final class SingleDatabaseBuilder {
 

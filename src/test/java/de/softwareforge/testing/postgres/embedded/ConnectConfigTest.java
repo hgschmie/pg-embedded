@@ -38,13 +38,13 @@ public class ConnectConfigTest {
 
     @Test
     public void test() throws SQLException {
-        DatabaseInfo databaseInfo = db.getConnectionInfo();
+        DatabaseInfo databaseInfo = db.createDatabaseInfo();
 
         Map<String, String> properties = databaseInfo.properties();
         assertEquals(1, properties.size());
         assertEquals("20", properties.get("connectTimeout"));
 
-        BaseDataSource testDatabase = (BaseDataSource) db.getDatabase();
+        BaseDataSource testDatabase = (BaseDataSource) db.createDataSource();
         assertEquals("20", testDatabase.getProperty("connectTimeout"));
 
         BaseDataSource preparerDataSource = (BaseDataSource) preparer.getDataSource();
