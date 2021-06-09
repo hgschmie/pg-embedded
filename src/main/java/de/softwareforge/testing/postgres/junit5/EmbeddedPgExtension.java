@@ -38,7 +38,7 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
 
     private static final Logger LOG = LoggerFactory.getLogger(EmbeddedPgExtension.class);
 
-    private final DatabaseManager.Builder<DatabaseManager> preparedDbProviderBuilder;
+    private final DatabaseManager.Builder<DatabaseManager> databaseManagerBuilder;
 
     // whether the instance is created per test method or once for all test methods.
     // depends on whether the instance is bound as a static field or a per instance field.
@@ -47,8 +47,8 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
     private volatile boolean perTestMode = true;
     private volatile DatabaseManager databaseManager = null;
 
-    private EmbeddedPgExtension(DatabaseManager.Builder<DatabaseManager> preparedDbProviderBuilder) {
-        this.preparedDbProviderBuilder = preparedDbProviderBuilder;
+    private EmbeddedPgExtension(DatabaseManager.Builder<DatabaseManager> databaseManagerBuilder) {
+        this.databaseManagerBuilder = databaseManagerBuilder;
     }
 
     public static EmbeddedPgExtensionBuilder multiDatabase() {
@@ -94,8 +94,9 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
     public void afterAll(ExtensionContext extensionContext) throws Exception {
         checkNotNull(extensionContext, "extensionContext is null");
 
-        if (!perTestMode) {
+        if (!this.perTestMode) {
             stopDbProvider();
+            this.perTestMode = true;
         }
     }
 
@@ -103,7 +104,7 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
     public void beforeEach(ExtensionContext extensionContext) throws Exception {
         checkNotNull(extensionContext, "extensionContext is null");
 
-        if (perTestMode) {
+        if (this.perTestMode) {
             startDbProvider();
         }
     }
@@ -112,20 +113,19 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
     public void afterEach(ExtensionContext extensionContext) throws Exception {
         checkNotNull(extensionContext, "extensionContext is null");
 
-        if (perTestMode) {
+        if (this.perTestMode) {
             stopDbProvider();
         }
     }
 
     private void startDbProvider() throws SQLException, IOException {
-        this.databaseManager = preparedDbProviderBuilder.build();
+        this.databaseManager = databaseManagerBuilder.build();
         this.databaseManager.start();
     }
 
     private void stopDbProvider() throws Exception {
         DatabaseManager provider = this.databaseManager;
 
-        this.perTestMode = true;
         this.databaseManager = null;
         if (provider != null) {
             provider.close();
@@ -140,10 +140,10 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
 
         @Override
         public EmbeddedPgExtension build() {
-            DatabaseManager.Builder<DatabaseManager> preparedDbProviderBuilder = new DatabaseManagerBuilder(multiMode)
+            DatabaseManager.Builder<DatabaseManager> databaseManagerBuilder = new DatabaseManagerBuilder(multiMode)
                     .withPreparer(databasePreparer);
-            customizers.build().forEach(preparedDbProviderBuilder::withCustomizer);
-            return new EmbeddedPgExtension(preparedDbProviderBuilder);
+            customizers.build().forEach(databaseManagerBuilder::withCustomizer);
+            return new EmbeddedPgExtension(databaseManagerBuilder);
         }
     }
 }
