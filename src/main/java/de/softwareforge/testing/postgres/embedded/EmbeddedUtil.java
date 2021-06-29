@@ -29,6 +29,7 @@ import java.nio.channels.Channel;
 import java.nio.channels.CompletionHandler;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Comparator;
@@ -159,17 +160,24 @@ final class EmbeddedUtil {
             while ((entry = tarIn.getNextTarEntry()) != null) { //NOPMD
                 final String individualFile = entry.getName();
                 final File fsObject = new File(targetDir, individualFile);
+                final Path fsPath = fsObject.toPath();
+                if (Files.exists(fsPath, LinkOption.NOFOLLOW_LINKS) && !Files.isDirectory(fsPath, LinkOption.NOFOLLOW_LINKS)) {
+                    Files.delete(fsPath);
+                    LOG.debug("Deleting existing entry %s", fsPath);
+                }
 
                 if (entry.isSymbolicLink() || entry.isLink()) {
                     Path target = FileSystems.getDefault().getPath(entry.getLinkName());
-                    Files.createSymbolicLink(fsObject.toPath(), target);
+                    Files.createSymbolicLink(fsPath, target);
                 } else if (entry.isFile()) {
+
+
                     byte[] content = new byte[(int) entry.getSize()];
                     int read = tarIn.read(content, 0, content.length);
                     checkState(read != -1, "could not read %s", individualFile);
                     mkdirs(fsObject.getParentFile());
 
-                    final AsynchronousFileChannel fileChannel = AsynchronousFileChannel.open(fsObject.toPath(), CREATE, WRITE); //NOPMD
+                    final AsynchronousFileChannel fileChannel = AsynchronousFileChannel.open(fsPath, CREATE, WRITE); //NOPMD
                     final ByteBuffer buffer = ByteBuffer.wrap(content); //NOPMD
 
                     phaser.register();
