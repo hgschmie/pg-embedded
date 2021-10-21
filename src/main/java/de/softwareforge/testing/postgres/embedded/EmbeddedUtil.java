@@ -36,6 +36,7 @@ import java.util.Comparator;
 import java.util.concurrent.Phaser;
 import java.util.stream.Stream;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.lang3.SystemUtils;
@@ -95,6 +96,7 @@ final class EmbeddedUtil {
         }
     }
 
+    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE")
     static void rmdirs(File dir) throws IOException {
         try (Stream<Path> walk = Files.walk(dir.toPath())) {
             walk.sorted(Comparator.reverseOrder())

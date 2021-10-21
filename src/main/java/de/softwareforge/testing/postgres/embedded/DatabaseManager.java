@@ -35,6 +35,7 @@ import javax.sql.DataSource;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -136,7 +137,7 @@ public class DatabaseManager implements AutoCloseable {
 
         private final AtomicBoolean closed = new AtomicBoolean();
 
-        public InstanceProviderPipeline() {
+        InstanceProviderPipeline() {
             this.executor = Executors.newSingleThreadExecutor(
                     new ThreadFactoryBuilder()
                             .setDaemon(true)
@@ -192,6 +193,7 @@ public class DatabaseManager implements AutoCloseable {
         }
     }
 
+    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE")
     private static void createDatabase(final DataSource dataSource, final String databaseName, final String user) throws SQLException {
         try (Connection c = dataSource.getConnection();
                 Statement stmt = c.createStatement()) {
