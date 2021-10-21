@@ -15,14 +15,15 @@ package de.softwareforge.testing.postgres.junit5;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static de.softwareforge.testing.postgres.junit5.EmbeddedPgExtension.TestMode.TESTMODE_KEY;
 
 import de.softwareforge.testing.postgres.embedded.DatabaseInfo;
 import de.softwareforge.testing.postgres.embedded.DatabaseManager;
 import de.softwareforge.testing.postgres.embedded.DatabaseManager.DatabaseManagerBuilder;
 import de.softwareforge.testing.postgres.embedded.EmbeddedPostgres;
 
-import java.io.IOException;
 import java.sql.SQLException;
+import java.util.UUID;
 import javax.sql.DataSource;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -31,6 +32,8 @@ import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.ExtensionContext.Namespace;
+import org.junit.jupiter.api.extension.ExtensionContext.Store;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,13 +41,11 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
 
     private static final Logger LOG = LoggerFactory.getLogger(EmbeddedPgExtension.class);
 
+    // multiple instances must use different namespaces
+    private final Namespace PG_NAMESPACE = Namespace.create(UUID.randomUUID());
+
     private final DatabaseManager.Builder<DatabaseManager> databaseManagerBuilder;
 
-    // whether the instance is created per test method or once for all test methods.
-    // depends on whether the instance is bound as a static field or a per instance field.
-    // if the beforeAll method is not called, it operates in per-test mode, otherwise only
-    // a single instance of the preparer is created;
-    private volatile boolean perTestMode = true;
     private volatile DatabaseManager databaseManager = null;
 
     private EmbeddedPgExtension(DatabaseManager.Builder<DatabaseManager> databaseManagerBuilder) {
@@ -85,18 +86,27 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
     }
 
     @Override
-    public void beforeAll(ExtensionContext context) throws Exception {
-        this.perTestMode = false;
-        startDbProvider();
+    public void beforeAll(ExtensionContext extensionContext) throws Exception {
+        checkNotNull(extensionContext, "extensionContext is null");
+
+        Store pgStore = extensionContext.getStore(PG_NAMESPACE);
+
+        TestMode testMode = pgStore.getOrComputeIfAbsent(TESTMODE_KEY,
+                k -> new TestMode(extensionContext.getUniqueId(), databaseManagerBuilder.build()),
+                TestMode.class);
+
+        this.databaseManager = testMode.start(extensionContext.getUniqueId());
     }
 
     @Override
     public void afterAll(ExtensionContext extensionContext) throws Exception {
         checkNotNull(extensionContext, "extensionContext is null");
 
-        if (!this.perTestMode) {
-            stopDbProvider();
-            this.perTestMode = true;
+        Store pgStore = extensionContext.getStore(PG_NAMESPACE);
+        TestMode testMode = pgStore.get(TESTMODE_KEY, TestMode.class);
+
+        if (testMode != null) {
+            this.databaseManager = testMode.stop(extensionContext.getUniqueId());
         }
     }
 
@@ -104,31 +114,23 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
     public void beforeEach(ExtensionContext extensionContext) throws Exception {
         checkNotNull(extensionContext, "extensionContext is null");
 
-        if (this.perTestMode) {
-            startDbProvider();
-        }
+        Store pgStore = extensionContext.getStore(PG_NAMESPACE);
+        TestMode testMode = pgStore.getOrComputeIfAbsent(TESTMODE_KEY,
+                k -> new TestMode(extensionContext.getUniqueId(), databaseManagerBuilder.build()),
+                TestMode.class);
+
+        this.databaseManager = testMode.start(extensionContext.getUniqueId());
     }
 
     @Override
     public void afterEach(ExtensionContext extensionContext) throws Exception {
         checkNotNull(extensionContext, "extensionContext is null");
 
-        if (this.perTestMode) {
-            stopDbProvider();
-        }
-    }
+        Store pgStore = extensionContext.getStore(PG_NAMESPACE);
+        TestMode testMode = pgStore.get(TESTMODE_KEY, TestMode.class);
 
-    private void startDbProvider() throws SQLException, IOException {
-        this.databaseManager = databaseManagerBuilder.build();
-        this.databaseManager.start();
-    }
-
-    private void stopDbProvider() throws Exception {
-        DatabaseManager provider = this.databaseManager;
-
-        this.databaseManager = null;
-        if (provider != null) {
-            provider.close();
+        if (testMode != null) {
+            this.databaseManager = testMode.stop(extensionContext.getUniqueId());
         }
     }
 
@@ -144,6 +146,36 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
                     .withPreparer(databasePreparer);
             customizers.build().forEach(databaseManagerBuilder::withCustomizer);
             return new EmbeddedPgExtension(databaseManagerBuilder);
+        }
+    }
+
+    static final class TestMode {
+
+        static final Object TESTMODE_KEY = new Object();
+
+        private final String id;
+        private final DatabaseManager databaseManager;
+
+        private TestMode(String id, DatabaseManager databaseManager) {
+            this.id = id;
+            this.databaseManager = databaseManager;
+        }
+
+        public DatabaseManager start(String id) throws Exception {
+            if (this.id.equals(id)) {
+                databaseManager.start();
+            }
+
+            return databaseManager;
+        }
+
+        public DatabaseManager stop(String id) throws Exception {
+            if (this.id.equals(id)) {
+                databaseManager.close();
+                return null;
+            }
+
+            return databaseManager;
         }
     }
 }
