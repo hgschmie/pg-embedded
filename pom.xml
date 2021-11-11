@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.basepom</groupId>
         <artifactId>basepom-oss</artifactId>
-        <version>41</version>
+        <version>42</version>
     </parent>
 
 
@@ -34,17 +34,28 @@
     <artifactId>pg-embedded</artifactId>
     <version>3.1-SNAPSHOT</version>
     <description>Embedded PostgreSQL driver</description>
+    <url>https://pg-embedded.softwareforge.de/</url>
 
     <properties>
         <project.build.targetJdk>11</project.build.targetJdk>
+        <project.moduleName>de.softwareforge.testing.postgres</project.moduleName>
         <basepom.test.timeout>1800</basepom.test.timeout>
 
-        <postgres.version>13.2.0</postgres.version>
+        <scm-publish.url>scm:git:git@github.com:hgschmie/pg-embedded.github.io.git</scm-publish.url>
+        <maven.site.deploy.skip>true</maven.site.deploy.skip>
 
-        <dep.slf4j.version>1.7.31</dep.slf4j.version>
+        <!-- site requires full javadoc generation -->
+        <basepom.javadoc.skip>false</basepom.javadoc.skip>
+
+        <dep.plugin.jxr.version>3.0.0</dep.plugin.jxr.version>
+        <dep.plugin.scm-publish.version>3.1.0</dep.plugin.scm-publish.version>
+        <dep.plugin.project-info-reports.version>3.1.1</dep.plugin.project-info-reports.version>
+
+        <dep.postgres.version>13.4.0</dep.postgres.version>
+        <dep.slf4j.version>1.7.32</dep.slf4j.version>
         <dep.guava.version>30.1.1-jre</dep.guava.version>
         <dep.flyway.version>7.11.0</dep.flyway.version>
-        <dep.postgresql.version>42.2.22</dep.postgresql.version>
+        <dep.postgresql-jdbc.version>42.3.1</dep.postgresql-jdbc.version>
         <dep.junit5.version>5.8.1</dep.junit5.version>
         <dep.auto-value.version>1.8.2</dep.auto-value.version>
 
@@ -74,7 +85,7 @@
             <dependency>
                 <groupId>io.zonky.test.postgres</groupId>
                 <artifactId>embedded-postgres-binaries-bom</artifactId>
-                <version>${postgres.version}</version>
+                <version>${dep.postgres.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -122,13 +133,14 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>${dep.postgresql.version}</version>
+            <version>${dep.postgresql-jdbc.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-annotations</artifactId>
             <version>${dep.spotbugs.version}</version>
+            <optional>true</optional>
         </dependency>
 
         <dependency>
@@ -172,4 +184,74 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-scm-publish-plugin</artifactId>
+                    <version>${dep.plugin.scm-publish.version}</version>
+                    <configuration>
+                        <pubScmUrl>${scm-publish.url}</pubScmUrl>
+                        <scmBranch>main</scmBranch>
+                        <scmPubCheckoutDirectory>${java.io.tmpdir}/gh-pages-publish</scmPubCheckoutDirectory>
+                        <content>${project.build.directory}/site</content>
+                        <subDirectory>${project.version}</subDirectory>
+                        <localCheckout>true</localCheckout>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <configuration>
+                        <links>
+                            <link>https://docs.oracle.com/en/java/javase/${project.build.targetJdk}/docs/api/</link>
+                            <link>https://junit.org/junit5/docs/${dep.junit5.version}/api/</link>
+                            <link>https://javadoc.io/doc/com.google.guava/guava/${dep.guava.version}/</link>
+                        </links>
+                        <nodeprecated>true</nodeprecated>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <configuration>
+                        <archive>
+                            <manifestEntries combine.children="append">
+                                <Automatic-Module-Name>${project.moduleName}</Automatic-Module-Name>
+                            </manifestEntries>
+                        </archive>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <dependencies>
+                    <!-- Fluido is listed here for version update checking only -->
+                    <dependency>
+                        <groupId>org.apache.maven.skins</groupId>
+                        <artifactId>maven-fluido-skin</artifactId>
+                        <version>1.9</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-scm-publish-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>publish-docs</id>
+                        <phase>site-deploy</phase>
+                        <goals>
+                            <goal>publish-scm</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
