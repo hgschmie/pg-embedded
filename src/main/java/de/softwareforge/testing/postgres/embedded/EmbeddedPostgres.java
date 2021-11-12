@@ -58,8 +58,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.io.CharStreams;
 import com.google.common.io.Closeables;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.SystemUtils;
 import org.postgresql.ds.PGSimpleDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -355,7 +353,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
         final ImmutableList.Builder<String> localeOptions = ImmutableList.builder();
 
         localeConfiguration.forEach((key, value) -> {
-            if (SystemUtils.IS_OS_WINDOWS) {
+            if (value.length() > 0) {
                 localeOptions.add("--" + key + "=" + value);
             } else {
                 localeOptions.add("--" + key, value);
@@ -681,7 +679,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
 
         public EmbeddedPostgres build() throws IOException {
             // Builder Id
-            final String instanceId = RandomStringUtils.randomAlphanumeric(16);
+            final String instanceId = EmbeddedUtil.randomAlphaNumeric(16);
 
             int port = this.port != 0 ? this.port : EmbeddedUtil.allocatePort();
 

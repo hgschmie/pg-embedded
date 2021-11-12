@@ -33,14 +33,17 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Comparator;
+import java.util.Locale;
 import java.util.concurrent.Phaser;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Stream;
 
+import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
-import org.apache.commons.lang3.SystemUtils;
-import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tukaani.xz.XZInputStream;
@@ -49,12 +52,36 @@ final class EmbeddedUtil {
 
     static final Logger LOG = LoggerFactory.getLogger(EmbeddedUtil.class);
 
+    static final String OS_NAME;
+    static final String OS_ARCH;
+    static final boolean IS_OS_WINDOWS;
+    static final boolean IS_OS_MAC;
+    static final boolean IS_OS_LINUX;
+
+    private static final String ALPHANUM;
+    private static final String LOWERCASE;
+
+    static {
+        OS_NAME = getSystemProperty("os.name");
+        OS_ARCH = getSystemProperty("os.arch");
+
+        IS_OS_WINDOWS = getOsMatchesName("Windows");
+        IS_OS_LINUX = getOsMatchesName("Linux");
+        IS_OS_MAC = getOsMatchesName("Mac");
+
+        String numbers = sequence('0', 10);
+        LOWERCASE = sequence('a', 26);
+        String uppercase = sequence('A', 26);
+        ALPHANUM = numbers + LOWERCASE + uppercase;
+    }
+
     private EmbeddedUtil() {
         throw new AssertionError("EmbeddedUtil can not be instantiated");
     }
 
     static File getWorkingDirectory() {
-        return new File(SystemUtils.getJavaIoTmpDir(), "embedded-pg");
+        File tmpDir = new File(System.getProperty("java.io.tmpdir"));
+        return new File(tmpDir, "embedded-pg");
     }
 
     //
@@ -106,7 +133,36 @@ final class EmbeddedUtil {
     }
 
     static String formatDuration(Duration duration) {
-        return DurationFormatUtils.formatDuration(duration.toMillis(), "s' seconds 'S' ms'");
+        long millis = duration.toMillis();
+        long hours = 0;
+        long minutes = 0;
+        long secs = 0;
+        long ms = 0;
+        ImmutableList.Builder<String> builder = ImmutableList.builder();
+        if (millis == 0) {
+            builder.add("0 ms");
+        } else {
+            long seconds = millis / 1000L;
+            hours = seconds / 3600L;
+            minutes = (seconds % 3600L) / 60L;
+            secs = (seconds % 60L);
+            ms = millis % 1000L;
+
+            if (hours != 0) {
+                builder.add(hours + " hours");
+            }
+            if (minutes != 0) {
+                builder.add(minutes + " minutes");
+            }
+            if (secs != 0) {
+                builder.add(secs + " seconds");
+            }
+            if (ms != 0) {
+                builder.add(ms + " ms");
+            }
+        }
+
+        return Joiner.on(' ').join(builder.build());
     }
 
     static int allocatePort() throws IOException {
@@ -127,14 +183,14 @@ final class EmbeddedUtil {
      * @return Current operating system string.
      */
     static String getOS() {
-        if (SystemUtils.IS_OS_WINDOWS) {
+        if (IS_OS_WINDOWS) {
             return "windows";
-        } else if (SystemUtils.IS_OS_MAC_OSX) {
+        } else if (IS_OS_MAC) {
             return "darwin";
-        } else if (SystemUtils.IS_OS_LINUX) {
+        } else if (IS_OS_LINUX) {
             return "linux";
         } else {
-            throw new UnsupportedOperationException("Unknown OS " + SystemUtils.OS_NAME);
+            throw new UnsupportedOperationException("Unknown OS: " + OS_NAME);
         }
     }
 
@@ -144,7 +200,7 @@ final class EmbeddedUtil {
      * @return Current machine architecture string.
      */
     static String getArchitecture() {
-        return "amd64".equals(SystemUtils.OS_ARCH) ? "x86_64" : SystemUtils.OS_ARCH;
+        return "amd64".equals(OS_ARCH) ? "x86_64" : OS_ARCH;
     }
 
     /**
@@ -172,7 +228,6 @@ final class EmbeddedUtil {
                     Path target = FileSystems.getDefault().getPath(entry.getLinkName());
                     Files.createSymbolicLink(fsPath, target);
                 } else if (entry.isFile()) {
-
 
                     byte[] content = new byte[(int) entry.getSize()];
                     int read = tarIn.read(content, 0, content.length);
@@ -219,5 +274,42 @@ final class EmbeddedUtil {
 
             phaser.arriveAndAwaitAdvance();
         }
+    }
+
+    private static String sequence(char start, int count) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < count; i++) {
+            sb.append((char) (start + i));
+        }
+        return sb.toString();
+    }
+
+    static String randomAlphaNumeric(int length) {
+        return randomString(ALPHANUM, length);
+    }
+
+    static String randomLowercase(int length) {
+        return randomString(LOWERCASE, length);
+    }
+
+    private static String randomString(String alphabet, int length) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            int random = ThreadLocalRandom.current().nextInt(alphabet.length());
+            sb.append(alphabet.charAt(random));
+        }
+        return sb.toString();
+    }
+
+    private static String getSystemProperty(String propertyName) {
+        try {
+            return Strings.nullToEmpty(System.getProperty(propertyName, ""));
+        } catch (SecurityException e) {
+            return "<unknown>";
+        }
+    }
+
+    private static boolean getOsMatchesName(final String osNamePrefix) {
+        return OS_NAME.toLowerCase(Locale.ROOT).startsWith(osNamePrefix.toLowerCase(Locale.ROOT));
     }
 }

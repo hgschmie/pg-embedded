@@ -30,7 +30,6 @@ import java.sql.Statement;
 import java.util.Map;
 import javax.sql.DataSource;
 
-import org.apache.commons.lang3.SystemUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.postgresql.ds.PGSimpleDataSource;
@@ -90,13 +89,13 @@ public class EmbeddedPostgresTest {
         String locale = "";
         String lcMessages = "";
         EmbeddedPostgres.Builder builder = EmbeddedPostgres.builderWithDefaults();
-        if (SystemUtils.IS_OS_WINDOWS) {
+        if (EmbeddedUtil.IS_OS_WINDOWS) {
             locale = "de-de";
             lcMessages = "de-de";
-        } else if (SystemUtils.IS_OS_MAC) {
+        } else if (EmbeddedUtil.IS_OS_MAC) {
             locale = "de_DE";
             lcMessages = "de_DE";
-        } else if (SystemUtils.IS_OS_LINUX) {
+        } else if (EmbeddedUtil.IS_OS_LINUX) {
             locale = "de_DE.utf8";
             lcMessages = "de_DE.utf8";
         } else {

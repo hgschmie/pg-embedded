@@ -36,7 +36,6 @@ import javax.sql.DataSource;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -162,7 +161,7 @@ public class DatabaseManager implements AutoCloseable {
         public void run() {
             while (!closed.get()) {
                 try {
-                    final String newDbName = RandomStringUtils.randomAlphabetic(12).toLowerCase(Locale.ROOT);
+                    final String newDbName = EmbeddedUtil.randomLowercase(12);
                     try {
                         createDatabase(pg.createDefaultDataSource(), newDbName, PG_DEFAULT_USER);
                         nextDatabase.put(DatabaseInfo.builder().dbName(newDbName).port(pg.getPort()).properties(pg.getConnectionProperties()).build());

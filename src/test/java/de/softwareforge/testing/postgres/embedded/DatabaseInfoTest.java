@@ -17,10 +17,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.sql.SQLException;
-import java.util.Locale;
 import java.util.concurrent.ThreadLocalRandom;
 
-import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 
 public class DatabaseInfoTest {
@@ -37,12 +35,12 @@ public class DatabaseInfoTest {
 
     @Test
     public void testFull() {
-        String dbName = RandomStringUtils.randomAlphabetic(12).toLowerCase(Locale.ROOT);
-        String user = RandomStringUtils.randomAlphabetic(12).toLowerCase(Locale.ROOT);
+        String dbName = EmbeddedUtil.randomLowercase(12);
+        String user = EmbeddedUtil.randomLowercase(12);
         int port = ThreadLocalRandom.current().nextInt(65536);
 
-        String propertyName = RandomStringUtils.randomAlphabetic(12).toLowerCase(Locale.ROOT);
-        String propertyValue = RandomStringUtils.randomAlphabetic(12).toLowerCase(Locale.ROOT);
+        String propertyName = EmbeddedUtil.randomLowercase(12);
+        String propertyValue = EmbeddedUtil.randomLowercase(12);
 
         DatabaseInfo databaseInfo = DatabaseInfo.builder()
                 .dbName(dbName)
