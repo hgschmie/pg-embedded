@@ -47,6 +47,7 @@
 
         <!-- site requires full javadoc generation -->
         <basepom.javadoc.skip>false</basepom.javadoc.skip>
+        <basepom.javadoc.show>protected</basepom.javadoc.show>
 
         <dep.plugin.jxr.version>3.0.0</dep.plugin.jxr.version>
         <dep.plugin.scm-publish.version>3.1.0</dep.plugin.scm-publish.version>
@@ -233,11 +234,14 @@
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <configuration>
                         <links>
-                            <link>https://docs.oracle.com/en/java/javase/${project.build.targetJdk}/docs/api/</link>
                             <link>https://junit.org/junit5/docs/${dep.junit5.version}/api/</link>
                             <link>https://javadoc.io/doc/com.google.guava/guava/${dep.guava.version}/</link>
                         </links>
-                        <nodeprecated>true</nodeprecated>
+                        <author>false</author>
+                        <detectJavaApiLink>true</detectJavaApiLink>
+                        <linksource>true</linksource>
+                        <nodeprecated>false</nodeprecated>
+                        <nohelp>true</nohelp>
                     </configuration>
                 </plugin>
                 <plugin>
