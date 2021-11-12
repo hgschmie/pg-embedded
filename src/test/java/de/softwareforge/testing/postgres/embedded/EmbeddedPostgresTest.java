@@ -27,6 +27,7 @@ import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
 
@@ -84,7 +85,7 @@ public class EmbeddedPostgresTest {
     }
 
     @Test
-    public void testValidLocaleSettingsPassthrough() throws IOException {
+    public void testInitDbOptions() throws IOException {
 
         String locale = "";
         String lcMessages = "";
@@ -101,13 +102,20 @@ public class EmbeddedPostgresTest {
         } else {
             fail("System not detected!");
         }
-        builder.addLocaleConfiguration("locale", locale)
-                .addLocaleConfiguration("lc-messages", lcMessages);
+        builder.addInitDbConfiguration("locale", locale)
+                .addInitDbConfiguration("lc-messages", lcMessages)
+                .addInitDbConfiguration("no-sync", "");
 
         try (EmbeddedPostgres pg = builder.build()) {
             Map<String, String> localeConfig = pg.getLocaleConfiguration();
             assertEquals(locale, localeConfig.get("locale"));
             assertEquals(lcMessages, localeConfig.get("lc-messages"));
+            assertEquals("", localeConfig.get("no-sync"));
+
+            List<String> options = pg.createLocaleOptions();
+            assertTrue(options.contains("--locale=" + locale));
+            assertTrue(options.contains("--lc-messages=" + lcMessages));
+            assertTrue(options.contains("--no-sync"));
         }
     }
 }

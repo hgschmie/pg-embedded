@@ -25,7 +25,7 @@ import java.io.InputStream;
 public interface PgArchiveResolver {
 
     /**
-     * Returns an input stream with the postgres archive for the given systen and hardware architecture.
+     * Returns an input stream with the PostgreSQL archive for the given systen and hardware architecture.
      *
      * @param system          a system identification (Darwin, Linux...)
      * @param machineHardware a machine hardware architecture (x86_64...)

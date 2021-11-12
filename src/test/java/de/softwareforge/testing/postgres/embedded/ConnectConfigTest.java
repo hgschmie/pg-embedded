@@ -51,7 +51,7 @@ public class ConnectConfigTest {
         assertEquals("20", preparerDataSource.getProperty("connectTimeout"));
     }
 
-    private class CapturingDatabasePreparer implements DatabasePreparer {
+    private static class CapturingDatabasePreparer implements DatabasePreparer {
 
         private DataSource dataSource;
 

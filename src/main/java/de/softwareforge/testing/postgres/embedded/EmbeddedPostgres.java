@@ -63,12 +63,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Manages a single, embedded Postgres instance.
+ * Manages an embedded PostgreSQL server instance.
  */
 public final class EmbeddedPostgres implements AutoCloseable {
 
-    static final String[] LOCALHOST_SERVERNAMES = new String[]{"localhost"};
-    static final String JDBC_FORMAT = "jdbc:postgresql://localhost:%d/%s?user=%s";
+    static final String[] LOCALHOST_SERVER_NAMES = new String[]{"localhost"};
 
     private static final String PG_TEMPLATE_DB = "template1";
 
@@ -77,11 +76,12 @@ public final class EmbeddedPostgres implements AutoCloseable {
 
     // folders need to be at least 10 minutes old to be considered for deletion.
     private static final long MINIMUM_AGE_IN_MS = Duration.ofMinutes(10).toMillis();
+
     // prefix for data folders in the parent that might be deleted
     private static final String DATA_DIRECTORY_PREFIX = "epd-";
 
     private static final String PG_STOP_MODE = "fast";
-    private static final String PG_STOP_WAIT_S = "5";
+    private static final String PG_STOP_WAIT_SECONDS = "5";
     static final String LOCK_FILE_NAME = "epg-lock";
 
     private final Logger logger;
@@ -124,7 +124,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
     }
 
     /**
-     * Returns a new builder.
+     * Returns a new {@link Builder}.
      */
     public static EmbeddedPostgres.Builder builder() {
         return new Builder();
@@ -168,30 +168,34 @@ public final class EmbeddedPostgres implements AutoCloseable {
     }
 
     /**
-     * Creates a {@link DatabaseInfo} object describing the default database (normally <pre>postgres</pre>).
+     * Creates a {@link DatabaseInfo} object describing the default database (the <pre>postgres</pre>).
      */
     public DatabaseInfo createDefaultDatabaseInfo() {
         return DatabaseInfo.builder().port(getPort()).properties(this.connectionProperties).build();
     }
 
     /**
-     * Creates a {@link DataSource} object that connects to the template database (normally <pre>template1</pre>). Any modification to this database will be
-     * visible in new database created with <pre>CREATE DATABASE...</pre>.
+     * Creates a {@link DataSource} object that connects to the standard system database (normally <pre>template1</pre>).
+     * <p>
+     * Any modification to this database will be propagated to any new database that is created with <pre>CREATE DATABASE...</pre> unless another database is
+     * explicitly named as the template..
      */
     public DataSource createTemplateDataSource() throws SQLException {
         return createDataSource(PG_DEFAULT_USER, PG_TEMPLATE_DB, getPort(), this.connectionProperties);
     }
 
     /**
-     * Creates a {@link DataSource} object that connects to the default databases (normally <pre>postgres</pre>).
+     * Creates a {@link DataSource} object that connects to the default database (<pre>postgres</pre>).
      */
     public DataSource createDefaultDataSource() throws SQLException {
         return createDataSource(PG_DEFAULT_USER, PG_DEFAULT_DB, getPort(), this.connectionProperties);
     }
 
     /**
-     * Creates a {@link DataSource} with a specific user and database name. Creating the DataSource does <b>not</b> also create the database or the user itself.
-     * Those must be creates e.g. with a {@link DatabasePreparer}.
+     * Creates a {@link DataSource} with a specific user and database name.
+     * <p>
+     * Creating the DataSource does <b>not</b> create the database or the user itself. This must be done by the calling code (e.g. with a {@link
+     * DatabasePreparer}).
      */
     public DataSource createDataSource(String user, String databaseName) throws SQLException {
         return createDataSource(user, databaseName, getPort(), this.connectionProperties);
@@ -204,7 +208,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
 
         final PGSimpleDataSource ds = new PGSimpleDataSource();
 
-        ds.setServerNames(LOCALHOST_SERVERNAMES);
+        ds.setServerNames(LOCALHOST_SERVER_NAMES);
         ds.setPortNumbers(new int[]{port});
         ds.setDatabaseName(databaseName);
         ds.setUser(user);
@@ -217,21 +221,22 @@ public final class EmbeddedPostgres implements AutoCloseable {
     }
 
     /**
-     * Returns the TCP port for this Postgres instance.
+     * Returns the network port for the PostgreSQL server instance.
      */
     public int getPort() {
         return port;
     }
 
     /**
-     * Returns the connection properties for this instance.
+     * Returns the connection properties for the PostgreSQL server instance.
      */
     ImmutableMap<String, String> getConnectionProperties() {
         return connectionProperties;
     }
 
     /**
-     * Returns the instance id for this postgres instance.
+     * Returns the instance id for the PostgreSQL server instance. This id is an alphanumeric string that can be used to differentiate between multiple embedded
+     * PostgreSQL server instances.
      */
     public String instanceId() {
         return instanceId;
@@ -239,8 +244,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
 
     @Override
     public String toString() {
-        checkNotNull(this.instanceId, "instanceId is null");
-        return this.getClass().getName() + '$' + this.instanceId;
+        return this.getClass().getName() + "$" + this.instanceId;
     }
 
     @Override
@@ -297,7 +301,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
                         "-U", PG_DEFAULT_USER,
                         "-D", this.dataDirectory.getPath(),
                         "-E", "UTF-8");
-        final Stopwatch watch = system(commandBuilder.build(), true);
+        final Stopwatch watch = system(commandBuilder.build());
         logger.debug(format("initdb completed in %s", formatDuration(watch.elapsed())));
     }
 
@@ -312,7 +316,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
         );
 
         final Stopwatch watch = Stopwatch.createStarted();
-        final Process postmaster = spawn("pg", commandBuilder.build(), true);
+        final Process postmaster = spawn("pg", commandBuilder.build());
 
         logger.info(format("started as pid %d on port %d", postmaster.pid(), port));
         logger.debug(format("Waiting up to %s for server startup to finish", formatDuration(serverStartupWait)));
@@ -329,9 +333,9 @@ public final class EmbeddedPostgres implements AutoCloseable {
                 "-D", dataDirectory.getPath(),
                 "stop",
                 "-m", PG_STOP_MODE,
-                "-t", PG_STOP_WAIT_S, "-w");
+                "-t", PG_STOP_WAIT_SECONDS, "-w");
 
-        final Stopwatch watch = system(commandBuilder.build(), true);
+        final Stopwatch watch = system(commandBuilder.build());
         logger.debug(format("shutdown complete in %s", formatDuration(watch.elapsed())));
     }
 
@@ -349,14 +353,15 @@ public final class EmbeddedPostgres implements AutoCloseable {
         return initOptions.build();
     }
 
-    private List<String> createLocaleOptions() {
+    @VisibleForTesting
+    List<String> createLocaleOptions() {
         final ImmutableList.Builder<String> localeOptions = ImmutableList.builder();
 
         localeConfiguration.forEach((key, value) -> {
             if (value.length() > 0) {
                 localeOptions.add("--" + key + "=" + value);
             } else {
-                localeOptions.add("--" + key, value);
+                localeOptions.add("--" + key);
             }
         });
         return localeOptions.build();
@@ -482,7 +487,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
             }
 
             // file must have a minimum age. This can not be the same check as
-            // the exists b/c non-existant files return 0 (epoch) as lastModified so
+            // the exists b/c non-existent files return 0 (epoch) as lastModified so
             // they are considered "ancient".
             if (System.currentTimeMillis() - lockFile.lastModified() < MINIMUM_AGE_IN_MS) {
                 continue;
@@ -495,7 +500,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
                     if (new File(dir, "postmaster.pid").exists()) {
                         try {
                             stopDatabase(dir);
-                            logger.debug("shut down orphaned database!");
+                            logger.debug("shutting down orphaned database!");
                         } catch (Exception e) {
                             logger.warn(format("failed to orphaned database in %s:", dir), e);
                         }
@@ -512,11 +517,11 @@ public final class EmbeddedPostgres implements AutoCloseable {
     }
 
     private String pgBin(String binaryName) {
-        final String extension = SystemUtils.IS_OS_WINDOWS ? ".exe" : "";
+        final String extension = EmbeddedUtil.IS_OS_WINDOWS ? ".exe" : "";
         return new File(this.pgDir, "bin/" + binaryName + extension).getPath();
     }
 
-    private Process spawn(@Nullable String processName, List<String> commandAndArgs, boolean debug) throws IOException {
+    private Process spawn(@Nullable String processName, List<String> commandAndArgs) throws IOException {
         final ProcessBuilder builder = new ProcessBuilder(commandAndArgs);
         builder.redirectErrorStream(true);
         builder.redirectError(errorRedirector);
@@ -526,17 +531,17 @@ public final class EmbeddedPostgres implements AutoCloseable {
         processName = processName != null ? processName : process.info().command().map(EmbeddedUtil::getFileBaseName).orElse("<unknown>");
         String name = format("%s (%d)", processName, process.pid());
 
-        ProcessOutputLogger.logOutput(debug, logger, name, process);
+        ProcessOutputLogger.logOutput(logger, name, process);
         return process;
     }
 
 
-    private Stopwatch system(List<String> commandAndArgs, boolean debug) throws IOException {
+    private Stopwatch system(List<String> commandAndArgs) throws IOException {
         checkArgument(commandAndArgs.size() > 0, "No commandAndArgs given!");
         String prefix = EmbeddedUtil.getFileBaseName(commandAndArgs.get(0));
 
         Stopwatch watch = Stopwatch.createStarted();
-        Process process = spawn(prefix, commandAndArgs, debug);
+        Process process = spawn(prefix, commandAndArgs);
         try {
             if (process.waitFor() != 0) {
                 try (InputStreamReader reader = new InputStreamReader(process.getErrorStream(), StandardCharsets.UTF_8)) {
@@ -553,14 +558,24 @@ public final class EmbeddedPostgres implements AutoCloseable {
 
 
     /**
-     * Callback interface to customize a builder in progress.
+     * Callback interface to customize a builder during creation.
      */
     @FunctionalInterface
     public interface BuilderCustomizer {
 
-        void customize(Builder builder) throws SQLException;
+        /**
+         * Callback to customize a given {@link Builder}.
+         *
+         * @param builder The builder instance. Any method on the builder can be called.
+         * @throws SQLException For any SQL related problems.
+         * @throws IOException  For any IO related problem.
+         */
+        void customize(Builder builder) throws IOException, SQLException;
     }
 
+    /**
+     * Creates a new {@link EmbeddedPostgres} instance and starts it.
+     */
     public static class Builder {
 
         private File installationDirectory = null;
@@ -597,6 +612,12 @@ public final class EmbeddedPostgres implements AutoCloseable {
             return this;
         }
 
+        /**
+         * Sets the time that the builder will wait for the PostgreSQL server instance to start. Default is 10 seconds.
+         *
+         * @param serverStartupWait Startup wait time. Must not be null or negative.
+         * @return The builder itself.
+         */
         public Builder setServerStartupWait(Duration serverStartupWait) {
             checkNotNull(serverStartupWait, "serverStartupWait is null");
             checkArgument(!serverStartupWait.isNegative(), "Negative durations are not permitted.");
@@ -605,26 +626,65 @@ public final class EmbeddedPostgres implements AutoCloseable {
             return this;
         }
 
+        /**
+         * Whether to remove the data directory on server shutdown. If true, the contents of the data directory are deleted when the {@link EmbeddedPostgres}
+         * instance is closed. Default is true.
+         *
+         * @param removeDataOnShutdown True removes the contents of the data directory on shutdown.
+         * @return The builder itself.
+         */
         public Builder setRemoveDataOnShutdown(boolean removeDataOnShutdown) {
             this.removeDataOnShutdown = removeDataOnShutdown;
             return this;
         }
 
+        /**
+         * Explicitly set the location of the data directory. Default is using a managed directory.
+         *
+         * @param dataDirectory The directory to use. Must not be null. If it exists, the current user must be able to access the directory for reading and
+         *                      writing. If the directory does not exist then the current user must be able to create it for reading and writing.
+         * @return The builder itself.
+         */
         public Builder setDataDirectory(Path dataDirectory) {
             checkNotNull(dataDirectory, "dataDirectory is null");
             return setDataDirectory(dataDirectory.toFile());
         }
 
+        /**
+         * Explicitly set the location of the data directory. Default is using a managed directory.
+         *
+         * @param dataDirectory The directory to use. Must not be null. If it exists, the current user must be able to access the directory for reading and
+         *                      writing. If the directory does not exist then the current user must be able to create it for reading and writing.
+         * @return The builder itself.
+         */
         public Builder setDataDirectory(String dataDirectory) {
             checkNotNull(dataDirectory, "dataDirectory is null");
             return setDataDirectory(new File(dataDirectory));
         }
 
+        /**
+         * Explicitly set the location of the data directory. Default is using a managed directory.
+         *
+         * @param dataDirectory The directory to use. Must not be null. If it exists, the current user must be able to access the directory for reading and
+         *                      writing. If the directory does not exist then the current user must be able to create it for reading and writing.
+         * @return The builder itself.
+         */
         public Builder setDataDirectory(File dataDirectory) {
             this.dataDirectory = checkNotNull(dataDirectory, "dataDirectory is null");
             return this;
         }
 
+        /**
+         * Adds a server configuration parameter. All parameters are passed to the PostgreSQL server a startup using the <code>postgres</code> command.
+         * <p>
+         * Values and their function are specific to the PostgreSQL version selected.
+         * <p>
+         * See https://www.postgresql.org/docs/13/runtime-config.html for more information.
+         *
+         * @param key   Configuration parameter name. Must not be null.
+         * @param value Configuration parameter value. Must not be null.
+         * @return The builder itself.
+         */
         public Builder addServerConfiguration(String key, String value) {
             checkNotNull(key, "key is null");
             checkNotNull(value, "value is null");
@@ -632,6 +692,10 @@ public final class EmbeddedPostgres implements AutoCloseable {
             return this;
         }
 
+        /**
+         * @deprecated Use {@link #addInitDbConfiguration} instead.
+         */
+        @Deprecated
         public Builder addLocaleConfiguration(String key, String value) {
             checkNotNull(key, "key is null");
             checkNotNull(value, "value is null");
@@ -639,6 +703,30 @@ public final class EmbeddedPostgres implements AutoCloseable {
             return this;
         }
 
+        /**
+         * Adds a configuration parameters for the <code>initdb</code> command that is used to create the PostgreSQL server.
+         * <p>
+         * Each value is added as a command line parameter to the command.
+         * <p>
+         * See https://www.postgresql.org/docs/13/app-initdb.html for an overview of possible values.
+         *
+         * @param key   initdb parameter name. Must not be null.
+         * @param value initdb parameter value. Must not be null. When the empty string is used as the value, the resulting command line parameter will not have
+         *              a equal sign and a value assigned.
+         * @return The builder itself.
+         */
+        public Builder addInitDbConfiguration(String key, String value) {
+            checkNotNull(key, "key is null");
+            checkNotNull(value, "value is null");
+            this.localeConfiguration.put(key, value);
+            return this;
+        }
+
+        /**
+         * @param key
+         * @param value
+         * @return The builder itself.
+         */
         public Builder addConnectionProperty(String key, String value) {
             checkNotNull(key, "key is null");
             checkNotNull(value, "value is null");
@@ -646,37 +734,65 @@ public final class EmbeddedPostgres implements AutoCloseable {
             return this;
         }
 
+        /**
+         * @param installationDirectory
+         * @return The builder itself.
+         */
         public Builder setInstallationDirectory(File installationDirectory) {
             checkNotNull(installationDirectory, "workingDirectory is null");
             this.installationDirectory = installationDirectory;
             return this;
         }
 
+        /**
+         * @param port
+         * @return The builder itself.
+         */
         public Builder setPort(int port) {
             this.port = port;
             return this;
         }
 
+        /**
+         * @param errRedirector
+         * @return The builder itself.
+         */
         public Builder setErrorRedirector(ProcessBuilder.Redirect errRedirector) {
             this.errRedirector = checkNotNull(errRedirector, "errRedirector is null");
             return this;
         }
 
+        /**
+         * @param outRedirector
+         * @return The builder itself.
+         */
         public Builder setOutputRedirector(ProcessBuilder.Redirect outRedirector) {
             this.outRedirector = checkNotNull(outRedirector, "outRedirector is null");
             return this;
         }
 
+        /**
+         * @param directoryResolver
+         * @return The builder itself.
+         */
         public Builder setPostgresDirectoryResolver(PgDirectoryResolver directoryResolver) {
             this.directoryResolver = checkNotNull(directoryResolver, "directoryResolver is null");
             return this;
         }
 
+        /**
+         * @param directory
+         * @return The builder itself.
+         */
         public Builder setPostgresBinaryDirectory(File directory) {
             checkNotNull(directory, "directory is null");
             return setPostgresDirectoryResolver((x) -> directory);
         }
 
+        /**
+         * @return
+         * @throws IOException
+         */
         public EmbeddedPostgres build() throws IOException {
             // Builder Id
             final String instanceId = EmbeddedUtil.randomAlphaNumeric(16);

@@ -20,7 +20,7 @@ import static java.lang.String.format;
 import java.io.InputStream;
 
 /**
- * Resolves pre-bundled archives from the classpath. This matches the prebundled versions of postgres from https://github.com/zonkyio/embedded-postgres-binaries
+ * Resolves pre-bundled archives from the classpath. This matches the pre-bundled versions of PostgreSQL from https://github.com/zonkyio/embedded-postgres-binaries
  */
 enum ZonkyIOPostgresArchiveResolver implements PgArchiveResolver {
 

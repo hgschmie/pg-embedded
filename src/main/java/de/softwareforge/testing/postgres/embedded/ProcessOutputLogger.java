@@ -26,16 +26,14 @@ import org.slf4j.Logger;
  * {@code true} (since only stdout is read).
  *
  * <p>
- * The use of the input stream is threadsafe since it's used only in a single thread&mdash;the one launched by this code.
+ * The use of the input stream is thread safe since it's used only in a single thread&mdash;the one launched by this code.
  */
 final class ProcessOutputLogger implements Runnable {
 
-    private final boolean debug;
     private final Logger logger;
     private final BufferedReader reader;
 
-    private ProcessOutputLogger(boolean debug, final Logger logger, final Process process) {
-        this.debug = debug;
+    private ProcessOutputLogger(final Logger logger, final Process process) {
         this.logger = logger;
         this.reader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
     }
@@ -44,11 +42,7 @@ final class ProcessOutputLogger implements Runnable {
     public void run() {
         try {
             try {
-                if (debug) {
-                    reader.lines().forEach(logger::debug);
-                } else {
-                    reader.lines().forEach(logger::info);
-                }
+                reader.lines().forEach(logger::debug);
             } catch (final UncheckedIOException e) {
                 logger.error("while reading output:", e);
             }
@@ -61,8 +55,8 @@ final class ProcessOutputLogger implements Runnable {
         }
     }
 
-    static void logOutput(final boolean debug, final Logger logger, final String name, final Process process) {
-        final Thread t = new Thread(new ProcessOutputLogger(debug, logger, process));
+    static void logOutput(final Logger logger, final String name, final Process process) {
+        final Thread t = new Thread(new ProcessOutputLogger(logger, process));
         t.setName(name);
         t.setDaemon(true);
         t.start();
