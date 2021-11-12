@@ -18,13 +18,10 @@ import static com.google.common.base.Preconditions.checkState;
 import static de.softwareforge.testing.postgres.embedded.DatabaseInfo.PG_DEFAULT_USER;
 import static java.lang.String.format;
 
-import de.softwareforge.testing.postgres.embedded.EmbeddedPostgres.BuilderCustomizer;
-
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -49,18 +46,18 @@ public class DatabaseManager implements AutoCloseable {
     private final AtomicBoolean closed = new AtomicBoolean();
     private final AtomicBoolean started = new AtomicBoolean();
 
-    private final DatabasePreparer databasePreparer;
-    private final Set<EmbeddedPostgres.BuilderCustomizer> customizers;
+    private final EmbeddedPostgresPreparer<DataSource> dataSourcePreparer;
+    private final Set<EmbeddedPostgresPreparer<EmbeddedPostgres.Builder>> instancePreparers;
     private final boolean multiMode;
 
     private volatile InstanceProvider instanceProvider = null;
     private volatile EmbeddedPostgres pg = null;
 
-    private DatabaseManager(DatabasePreparer databasePreparer,
-            Set<EmbeddedPostgres.BuilderCustomizer> customizers,
+    private DatabaseManager(EmbeddedPostgresPreparer<DataSource> dataSourcePreparer,
+            Set<EmbeddedPostgresPreparer<EmbeddedPostgres.Builder>> instancePreparers,
             boolean multiMode) {
-        this.databasePreparer = checkNotNull(databasePreparer, "databasePreparer is null");
-        this.customizers = checkNotNull(customizers, "customizers is null");
+        this.dataSourcePreparer = checkNotNull(dataSourcePreparer, "dataSourcePreparer is null");
+        this.instancePreparers = checkNotNull(instancePreparers, "instancePreparers is null");
         this.multiMode = multiMode;
     }
 
@@ -75,14 +72,14 @@ public class DatabaseManager implements AutoCloseable {
     public DatabaseManager start() throws IOException, SQLException {
         if (!started.getAndSet(true)) {
             EmbeddedPostgres.Builder builder = EmbeddedPostgres.builder();
-            for (BuilderCustomizer customizer : customizers) {
-                customizer.customize(builder);
+            for (EmbeddedPostgresPreparer<EmbeddedPostgres.Builder> instancePreparer : instancePreparers) {
+                instancePreparer.prepare(builder);
             }
 
             this.pg = builder.build();
 
             DataSource dataSourceToPrepare = multiMode ? pg.createTemplateDataSource() : pg.createDefaultDataSource();
-            databasePreparer.prepare(dataSourceToPrepare);
+            dataSourcePreparer.prepare(dataSourceToPrepare);
 
             this.instanceProvider = multiMode ? new InstanceProviderPipeline() : () -> pg.createDefaultDatabaseInfo();
 
@@ -202,21 +199,41 @@ public class DatabaseManager implements AutoCloseable {
 
     public abstract static class Builder<T> {
 
-        protected DatabasePreparer databasePreparer = DatabasePreparer.NOOP_PREPARER;
-        protected ImmutableSet.Builder<EmbeddedPostgres.BuilderCustomizer> customizers = ImmutableSet.builder();
+        protected EmbeddedPostgresPreparer<DataSource> dataSourcePreparer = EmbeddedPostgresPreparer.noOp();
+        protected ImmutableSet.Builder<EmbeddedPostgresPreparer<EmbeddedPostgres.Builder>> instancePreparers = ImmutableSet.builder();
         protected final boolean multiMode;
 
         protected Builder(boolean multiMode) {
             this.multiMode = multiMode;
         }
 
+        /**
+         * @deprecated Use {@link #withDataSourcePreparer}.
+         */
+        @Deprecated
         public Builder<T> withPreparer(DatabasePreparer databasePreparer) {
-            this.databasePreparer = checkNotNull(databasePreparer, "databasePreparer is null");
+            checkNotNull(databasePreparer, "databasePreparer is null");
+            this.dataSourcePreparer = databasePreparer::prepare;
             return this;
         }
 
+        public Builder<T> withDataSourcePreparer(EmbeddedPostgresPreparer<DataSource> dataSourcePreparer) {
+            this.dataSourcePreparer = checkNotNull(dataSourcePreparer, "dataSourcePreparer is null");
+            return this;
+        }
+
+        public Builder<T> withInstancePreparer(EmbeddedPostgresPreparer<EmbeddedPostgres.Builder> instancePreparer) {
+            this.instancePreparers.add(checkNotNull(instancePreparer, "instancePreparer is null"));
+            return this;
+        }
+
+        /**
+         * @deprecated Use {@link #withInstancePreparer}.
+         */
+        @Deprecated
         public Builder<T> withCustomizer(EmbeddedPostgres.BuilderCustomizer customizer) {
-            this.customizers.add(checkNotNull(customizer, "customizer is null"));
+            checkNotNull(customizer, "customizer is null");
+            this.instancePreparers.add(customizer::customize);
             return this;
         }
 
@@ -231,7 +248,7 @@ public class DatabaseManager implements AutoCloseable {
 
         @Override
         public DatabaseManager build() {
-            return new DatabaseManager(databasePreparer, customizers.build(), multiMode);
+            return new DatabaseManager(dataSourcePreparer, instancePreparers.build(), multiMode);
         }
     }
 }

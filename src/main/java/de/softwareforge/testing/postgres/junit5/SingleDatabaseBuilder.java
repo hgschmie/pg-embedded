@@ -13,9 +13,12 @@
  */
 package de.softwareforge.testing.postgres.junit5;
 
-import de.softwareforge.testing.postgres.embedded.EmbeddedPostgres;
 import de.softwareforge.testing.postgres.embedded.DatabaseManager;
 import de.softwareforge.testing.postgres.embedded.DatabasePreparer;
+import de.softwareforge.testing.postgres.embedded.EmbeddedPostgres;
+import de.softwareforge.testing.postgres.embedded.EmbeddedPostgresPreparer;
+
+import javax.sql.DataSource;
 
 /**
  * Create a new cluster that supports only a single database.
@@ -37,20 +40,36 @@ public final class SingleDatabaseBuilder {
      * Create a vanilla database with standard initializations ({@link EmbeddedPostgres.Builder#withDefaults()}).
      */
     public static DatabaseManager.Builder<EmbeddedPgExtension> instanceWithDefaults() {
-        return EmbeddedPgExtension.singleDatabase().withCustomizer(EmbeddedPostgres.Builder::withDefaults);
+        return EmbeddedPgExtension.singleDatabase().withInstancePreparer(EmbeddedPostgres.Builder::withDefaults);
     }
 
     /**
-     * Create a vanilla database and execute a {@link DatabasePreparer} for initialization on it.
+     * @deprecated Use {@link #preparedInstance(EmbeddedPostgresPreparer)}.
      */
+    @Deprecated
     public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstance(DatabasePreparer preparer) {
         return EmbeddedPgExtension.singleDatabase().withPreparer(preparer);
     }
 
     /**
-     * Create a vanilla database with defaults and execute a {@link DatabasePreparer} for initialization on it.
+     * @deprecated Use {@link #preparedInstanceWithDefaults(EmbeddedPostgresPreparer)}.
      */
+    @Deprecated
     public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstanceWithDefaults(DatabasePreparer preparer) {
         return EmbeddedPgExtension.singleDatabase().withPreparer(preparer).withCustomizer(EmbeddedPostgres.Builder::withDefaults);
+    }
+
+    /**
+     * Create a vanilla database and execute a {@link EmbeddedPostgresPreparer} for data source initialization on it.
+     */
+    public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstance(EmbeddedPostgresPreparer<DataSource> dataSourcePreparer) {
+        return EmbeddedPgExtension.singleDatabase().withDataSourcePreparer(dataSourcePreparer);
+    }
+
+    /**
+     * Create a vanilla database with defaults and execute a {@link EmbeddedPostgresPreparer} for data source initialization on it.
+     */
+    public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstanceWithDefaults(EmbeddedPostgresPreparer<DataSource> dataSourcePreparer) {
+        return EmbeddedPgExtension.singleDatabase().withDataSourcePreparer(dataSourcePreparer).withInstancePreparer(EmbeddedPostgres.Builder::withDefaults);
     }
 }

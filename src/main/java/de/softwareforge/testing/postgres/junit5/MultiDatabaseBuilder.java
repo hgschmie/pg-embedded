@@ -13,9 +13,12 @@
  */
 package de.softwareforge.testing.postgres.junit5;
 
+import de.softwareforge.testing.postgres.embedded.DatabaseManager;
 import de.softwareforge.testing.postgres.embedded.DatabasePreparer;
 import de.softwareforge.testing.postgres.embedded.EmbeddedPostgres;
-import de.softwareforge.testing.postgres.embedded.DatabaseManager;
+import de.softwareforge.testing.postgres.embedded.EmbeddedPostgresPreparer;
+
+import javax.sql.DataSource;
 
 /**
  * Create a new cluster that supports multiple databases. Each database is cloned from a template.
@@ -37,20 +40,36 @@ public final class MultiDatabaseBuilder {
      * Create a vanilla database with standard initializations ({@link EmbeddedPostgres.Builder#withDefaults()}).
      */
     public static DatabaseManager.Builder<EmbeddedPgExtension> instanceWithDefaults() {
-        return EmbeddedPgExtension.multiDatabase().withCustomizer(EmbeddedPostgres.Builder::withDefaults);
+        return EmbeddedPgExtension.multiDatabase().withInstancePreparer(EmbeddedPostgres.Builder::withDefaults);
     }
 
     /**
-     * Create a vanilla database and execute a {@link DatabasePreparer} for initialization on it.
+     * @deprecated Use {@link #preparedInstance(EmbeddedPostgresPreparer)}.
      */
+    @Deprecated
     public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstance(DatabasePreparer preparer) {
         return EmbeddedPgExtension.multiDatabase().withPreparer(preparer);
     }
 
     /**
-     * Create a vanilla database with defaults and execute a {@link DatabasePreparer} for initialization on it.
+     * @deprecated Use {@link #preparedInstanceWithDefaults(EmbeddedPostgresPreparer)} (EmbeddedPostgresPreparer)}.
      */
+    @Deprecated
     public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstanceWithDefaults(DatabasePreparer preparer) {
         return EmbeddedPgExtension.multiDatabase().withPreparer(preparer).withCustomizer(EmbeddedPostgres.Builder::withDefaults);
+    }
+
+    /**
+     * Create a vanilla database and execute a {@link EmbeddedPostgresPreparer} for data source initialization on it.
+     */
+    public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstance(EmbeddedPostgresPreparer<DataSource> dataSourcePreparer) {
+        return EmbeddedPgExtension.multiDatabase().withDataSourcePreparer(dataSourcePreparer);
+    }
+
+    /**
+     * Create a vanilla database with defaults and execute a {@link EmbeddedPostgresPreparer} for data source initialization on it.
+     */
+    public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstanceWithDefaults(EmbeddedPostgresPreparer<DataSource> dataSourcePreparer) {
+        return EmbeddedPgExtension.multiDatabase().withDataSourcePreparer(dataSourcePreparer).withInstancePreparer(EmbeddedPostgres.Builder::withDefaults);
     }
 }

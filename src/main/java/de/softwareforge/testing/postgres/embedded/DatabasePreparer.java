@@ -20,7 +20,10 @@ import javax.sql.DataSource;
  * A DatabasePreparer applies an arbitrary set of changes (e.g. database migrations, user creation) to a database represented by the {@link DataSource}.
  * <p>
  * The preparation steps are expected to be deterministic.
+ *
+ * @deprecated Use {@link EmbeddedPostgresPreparer} with {@link DataSource} as type parameter.
  */
+@Deprecated
 public interface DatabasePreparer {
 
     DatabasePreparer NOOP_PREPARER = ds -> {};

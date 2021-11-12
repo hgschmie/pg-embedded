@@ -33,7 +33,7 @@ public class ConnectConfigTest {
 
     @RegisterExtension
     public EmbeddedPgExtension db = SingleDatabaseBuilder.preparedInstanceWithDefaults(preparer)
-            .withCustomizer(builder -> builder.addConnectionProperty("connectTimeout", "20"))
+            .withInstancePreparer(builder -> builder.addConnectionProperty("connectTimeout", "20"))
             .build();
 
     @Test
@@ -51,7 +51,7 @@ public class ConnectConfigTest {
         assertEquals("20", preparerDataSource.getProperty("connectTimeout"));
     }
 
-    private static class CapturingDatabasePreparer implements DatabasePreparer {
+    private static class CapturingDatabasePreparer implements EmbeddedPostgresPreparer<DataSource> {
 
         private DataSource dataSource;
 

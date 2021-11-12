@@ -15,7 +15,6 @@ package de.softwareforge.testing.postgres.embedded;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.sql.SQLException;
 import java.util.function.Consumer;
 import javax.sql.DataSource;
 
@@ -27,7 +26,7 @@ import org.flywaydb.core.api.configuration.FluentConfiguration;
 // cf. https://github.com/flyway/flyway/issues/1496
 // There is also a related @Ignored test in otj-sql.
 
-public class FlywayPreparer implements DatabasePreparer {
+public class FlywayPreparer implements EmbeddedPostgresPreparer<DataSource> {
 
     private final ImmutableList.Builder<Consumer<FluentConfiguration>> customizers = ImmutableList.builder();
 
@@ -48,7 +47,7 @@ public class FlywayPreparer implements DatabasePreparer {
     }
 
     @Override
-    public void prepare(DataSource ds) throws SQLException {
+    public void prepare(DataSource ds) {
         final FluentConfiguration config = Flyway.configure();
 
         customizers.build().forEach(c -> c.accept(config));

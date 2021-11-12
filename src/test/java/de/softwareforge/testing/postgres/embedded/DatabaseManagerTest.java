@@ -23,7 +23,7 @@ public class DatabaseManagerTest {
     @Test
     public void testSingleDatabase() throws Exception {
         try (DatabaseManager manager = DatabaseManager.singleDatabase()
-                .withCustomizer(EmbeddedPostgres.Builder::withDefaults)
+                .withInstancePreparer(EmbeddedPostgres.Builder::withDefaults)
                 .build()
                 .start()) {
 
@@ -38,7 +38,7 @@ public class DatabaseManagerTest {
     @Test
     public void testMultiDatabase() throws Exception {
         try (DatabaseManager manager = DatabaseManager.multiDatabases()
-                .withCustomizer(EmbeddedPostgres.Builder::withDefaults)
+                .withInstancePreparer(EmbeddedPostgres.Builder::withDefaults)
                 .build()
                 .start()) {
 

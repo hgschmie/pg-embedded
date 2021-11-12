@@ -195,7 +195,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
      * Creates a {@link DataSource} with a specific user and database name.
      * <p>
      * Creating the DataSource does <b>not</b> create the database or the user itself. This must be done by the calling code (e.g. with a {@link
-     * DatabasePreparer}).
+     * EmbeddedPostgresPreparer}).
      */
     public DataSource createDataSource(String user, String databaseName) throws SQLException {
         return createDataSource(user, databaseName, getPort(), this.connectionProperties);
@@ -559,7 +559,10 @@ public final class EmbeddedPostgres implements AutoCloseable {
 
     /**
      * Callback interface to customize a builder during creation.
+     *
+     * @deprecated Use {@link EmbeddedPostgresPreparer} with {@link Builder} as type parameter.
      */
+    @Deprecated
     @FunctionalInterface
     public interface BuilderCustomizer {
 
