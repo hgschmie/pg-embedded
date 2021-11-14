@@ -44,7 +44,7 @@ public final class SingleDatabaseBuilder {
     }
 
     /**
-     * @deprecated Use {@link #preparedInstance(EmbeddedPostgresPreparer)}.
+     * @deprecated Use {@link #preparedInstance(EmbeddedPostgresPreparer<DataSource>)}.
      */
     @Deprecated
     public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstance(DatabasePreparer preparer) {
@@ -52,7 +52,7 @@ public final class SingleDatabaseBuilder {
     }
 
     /**
-     * @deprecated Use {@link #preparedInstanceWithDefaults(EmbeddedPostgresPreparer)}.
+     * @deprecated Use {@link #preparedInstanceWithDefaults(EmbeddedPostgresPreparer<DataSource>)}.
      */
     @Deprecated
     public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstanceWithDefaults(DatabasePreparer preparer) {
@@ -60,14 +60,14 @@ public final class SingleDatabaseBuilder {
     }
 
     /**
-     * Create a vanilla database and execute a {@link EmbeddedPostgresPreparer} for data source initialization on it.
+     * Create a vanilla database and execute a {@link EmbeddedPostgresPreparer<DataSource>} for data source initialization on it.
      */
     public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstance(EmbeddedPostgresPreparer<DataSource> dataSourcePreparer) {
         return EmbeddedPgExtension.singleDatabase().withDataSourcePreparer(dataSourcePreparer);
     }
 
     /**
-     * Create a vanilla database with defaults and execute a {@link EmbeddedPostgresPreparer} for data source initialization on it.
+     * Create a vanilla database with defaults and execute a {@link EmbeddedPostgresPreparer<DataSource>} for data source initialization on it.
      */
     public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstanceWithDefaults(EmbeddedPostgresPreparer<DataSource> dataSourcePreparer) {
         return EmbeddedPgExtension.singleDatabase().withDataSourcePreparer(dataSourcePreparer).withInstancePreparer(EmbeddedPostgres.Builder::withDefaults);

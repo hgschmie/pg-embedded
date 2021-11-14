@@ -14,27 +14,15 @@
 package de.softwareforge.testing.postgres.embedded;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
-import static java.lang.String.format;
-import static java.nio.file.StandardOpenOption.CREATE;
-import static java.nio.file.StandardOpenOption.WRITE;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.ServerSocket;
-import java.nio.ByteBuffer;
-import java.nio.channels.AsynchronousFileChannel;
-import java.nio.channels.Channel;
-import java.nio.channels.CompletionHandler;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
-import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Comparator;
 import java.util.Locale;
-import java.util.concurrent.Phaser;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Stream;
 
@@ -42,21 +30,17 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.tukaani.xz.XZInputStream;
 
 final class EmbeddedUtil {
 
-    static final Logger LOG = LoggerFactory.getLogger(EmbeddedUtil.class);
-
     static final String OS_NAME;
     static final String OS_ARCH;
+
     static final boolean IS_OS_WINDOWS;
     static final boolean IS_OS_MAC;
     static final boolean IS_OS_LINUX;
+
+    static final boolean IS_ARCH_X86_64;
 
     private static final String ALPHANUM;
     private static final String LOWERCASE;
@@ -68,6 +52,8 @@ final class EmbeddedUtil {
         IS_OS_WINDOWS = getOsMatchesName("Windows");
         IS_OS_LINUX = getOsMatchesName("Linux");
         IS_OS_MAC = getOsMatchesName("Mac");
+
+        IS_ARCH_X86_64 = OS_ARCH.equals("x86_64") || OS_ARCH.equals("amd64");
 
         String numbers = sequence('0', 10);
         LOWERCASE = sequence('a', 26);
@@ -177,103 +163,12 @@ final class EmbeddedUtil {
         }
     }
 
-    /**
-     * Get current operating system string. The string is used in the appropriate postgres archive name.
-     *
-     * @return Current operating system string.
-     */
-    static String getOS() {
-        if (IS_OS_WINDOWS) {
-            return "windows";
-        } else if (IS_OS_MAC) {
-            return "darwin";
-        } else if (IS_OS_LINUX) {
-            return "linux";
-        } else {
-            throw new UnsupportedOperationException("Unknown OS: " + OS_NAME);
-        }
+    static String randomAlphaNumeric(int length) {
+        return randomString(ALPHANUM, length);
     }
 
-    /**
-     * Get the machine architecture string. The string is used in the appropriate postgres archive name.
-     *
-     * @return Current machine architecture string.
-     */
-    static String getArchitecture() {
-        return "amd64".equals(OS_ARCH) ? "x86_64" : OS_ARCH;
-    }
-
-    /**
-     * Unpack archive compressed by tar with xz compression. By default system tar is used (faster). If not found, then the java implementation takes place.
-     *
-     * @param stream    A stream with the postgres binaries.
-     * @param targetDir The directory to extract the content to.
-     */
-    static void extractTxz(InputStream stream, String targetDir) throws IOException {
-        try (XZInputStream xzIn = new XZInputStream(stream);
-                TarArchiveInputStream tarIn = new TarArchiveInputStream(xzIn)) {
-            final Phaser phaser = new Phaser(1);
-            TarArchiveEntry entry;
-
-            while ((entry = tarIn.getNextTarEntry()) != null) { //NOPMD
-                final String individualFile = entry.getName();
-                final File fsObject = new File(targetDir, individualFile);
-                final Path fsPath = fsObject.toPath();
-                if (Files.exists(fsPath, LinkOption.NOFOLLOW_LINKS) && !Files.isDirectory(fsPath, LinkOption.NOFOLLOW_LINKS)) {
-                    Files.delete(fsPath);
-                    LOG.debug("Deleting existing entry %s", fsPath);
-                }
-
-                if (entry.isSymbolicLink() || entry.isLink()) {
-                    Path target = FileSystems.getDefault().getPath(entry.getLinkName());
-                    Files.createSymbolicLink(fsPath, target);
-                } else if (entry.isFile()) {
-
-                    byte[] content = new byte[(int) entry.getSize()];
-                    int read = tarIn.read(content, 0, content.length);
-                    checkState(read != -1, "could not read %s", individualFile);
-                    mkdirs(fsObject.getParentFile());
-
-                    final AsynchronousFileChannel fileChannel = AsynchronousFileChannel.open(fsPath, CREATE, WRITE); //NOPMD
-                    final ByteBuffer buffer = ByteBuffer.wrap(content); //NOPMD
-
-                    phaser.register();
-                    fileChannel.write(buffer, 0, fileChannel, new CompletionHandler<Integer, Channel>() {
-                        @Override
-                        public void completed(Integer written, Channel channel) {
-                            closeChannel(channel);
-                        }
-
-                        @Override
-                        public void failed(Throwable error, Channel channel) {
-                            LOG.error("could not write file " + fsObject.getAbsolutePath(), error);
-                            closeChannel(channel);
-                        }
-
-                        private void closeChannel(Channel channel) {
-                            try {
-                                channel.close();
-                            } catch (IOException e) {
-                                LOG.error("While closing channel:", e);
-                            } finally {
-                                phaser.arriveAndDeregister();
-                            }
-                        }
-                    });
-                } else if (entry.isDirectory()) {
-                    mkdirs(fsObject);
-                } else {
-                    throw new UnsupportedOperationException(format("unsupported entry found: %s", individualFile)
-                    );
-                }
-
-                if (individualFile.startsWith("bin/") || individualFile.startsWith("./bin/")) {
-                    fsObject.setExecutable(true, false);
-                }
-            }
-
-            phaser.arriveAndAwaitAdvance();
-        }
+    static String randomLowercase(int length) {
+        return randomString(LOWERCASE, length);
     }
 
     private static String sequence(char start, int count) {
@@ -282,14 +177,6 @@ final class EmbeddedUtil {
             sb.append((char) (start + i));
         }
         return sb.toString();
-    }
-
-    static String randomAlphaNumeric(int length) {
-        return randomString(ALPHANUM, length);
-    }
-
-    static String randomLowercase(int length) {
-        return randomString(LOWERCASE, length);
     }
 
     private static String randomString(String alphabet, int length) {

@@ -208,7 +208,7 @@ public class DatabaseManager implements AutoCloseable {
         }
 
         /**
-         * @deprecated Use {@link #withDataSourcePreparer}.
+         * @deprecated Use {@link #withDataSourcePreparer(EmbeddedPostgresPreparer<DataSource>)}.
          */
         @Deprecated
         public Builder<T> withPreparer(DatabasePreparer databasePreparer) {
@@ -228,7 +228,7 @@ public class DatabaseManager implements AutoCloseable {
         }
 
         /**
-         * @deprecated Use {@link #withInstancePreparer}.
+         * @deprecated Use {@link #withInstancePreparer(EmbeddedPostgresPreparer<EmbeddedPostgres.Builder>)}.
          */
         @Deprecated
         public Builder<T> withCustomizer(EmbeddedPostgres.BuilderCustomizer customizer) {

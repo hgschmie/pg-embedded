@@ -11,26 +11,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package de.softwareforge.testing.postgres.embedded;
 
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 
 /**
- * A strategy for resolving PostgreSQL binaries.
- *
- * @see ZonkyIOPostgresArchiveResolver
+ * Returns an installation location for a native binary. The implementation is responsible for locating and optionally unpacking installing the binary.
  */
-public interface PgArchiveResolver {
+@FunctionalInterface
+public interface NativeBinaryManager {
 
     /**
-     * Returns an input stream with the PostgreSQL archive for the given systen and hardware architecture.
+     * Returns the location (installation directory) for the installed binary.
      *
-     * @param system          a system identification (Darwin, Linux...)
-     * @param machineHardware a machine hardware architecture (x86_64...)
-     * @return the binary
-     * @throws IOException if no archive could be found.
+     * @return Installation directory with the native binary installed.
+     * @throws IOException If the binary could not be located or installed.
      */
-    InputStream locatePgArchive(String system, String machineHardware) throws IOException;
+    File getLocation() throws IOException;
 }

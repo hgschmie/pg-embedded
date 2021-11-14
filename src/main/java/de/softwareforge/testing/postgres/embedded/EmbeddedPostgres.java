@@ -51,7 +51,6 @@ import javax.annotation.Nullable;
 import javax.sql.DataSource;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.MoreObjects;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -87,7 +86,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
     private final Logger logger;
 
     private final String instanceId;
-    private final File pgDir;
+    private final File postgresInstallDirectory;
     private final File dataDirectory;
 
     private final Duration serverStartupWait;
@@ -147,7 +146,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
 
         this.logger = LoggerFactory.getLogger(toString());
 
-        this.pgDir = checkNotNull(postgresInstallDirectory, "postgresInstallDirectory is null");
+        this.postgresInstallDirectory = checkNotNull(postgresInstallDirectory, "postgresInstallDirectory is null");
         this.dataDirectory = checkNotNull(dataDirectory, "dataDirectory is null");
 
         this.removeDataOnShutdown = removeDataOnShutdown;
@@ -164,7 +163,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
         this.serverStartupWait = checkNotNull(serverStartupWait, "serverStartupWait is null");
         this.lockFile = new File(this.dataDirectory, LOCK_FILE_NAME);
 
-        logger.debug(format("data dir is %s, install dir is %s", this.dataDirectory, this.pgDir));
+        logger.debug(format("data dir is %s, install dir is %s", this.dataDirectory, this.postgresInstallDirectory));
     }
 
     /**
@@ -518,7 +517,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
 
     private String pgBin(String binaryName) {
         final String extension = EmbeddedUtil.IS_OS_WINDOWS ? ".exe" : "";
-        return new File(this.pgDir, "bin/" + binaryName + extension).getPath();
+        return new File(this.postgresInstallDirectory, "bin/" + binaryName + extension).getPath();
     }
 
     private Process spawn(@Nullable String processName, List<String> commandAndArgs) throws IOException {
@@ -581,7 +580,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
      */
     public static class Builder {
 
-        private File installationDirectory = null;
+        private File installationBaseDirectory = null;
         private File dataDirectory = null;
 
         private final Map<String, String> serverConfiguration = new HashMap<>();
@@ -589,7 +588,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
         private boolean removeDataOnShutdown = true;
         private int port = 0;
         private final Map<String, String> connectionProperties = new HashMap<>();
-        private PgDirectoryResolver directoryResolver = UncompressBundleDirectoryResolver.getDefault();
+        private NativeBinaryManager nativeBinaryManager = null;
         private Duration serverStartupWait = DEFAULT_PG_STARTUP_WAIT;
 
         private ProcessBuilder.Redirect errRedirector = ProcessBuilder.Redirect.PIPE;
@@ -696,7 +695,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
         }
 
         /**
-         * @deprecated Use {@link #addInitDbConfiguration} instead.
+         * @deprecated Use {@link #addInitDbConfiguration(String, String)}.
          */
         @Deprecated
         public Builder addLocaleConfiguration(String key, String value) {
@@ -707,7 +706,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
         }
 
         /**
-         * Adds a configuration parameters for the <code>initdb</code> command that is used to create the PostgreSQL server.
+         * Adds a configuration parameters for the <code>initdb</code> command. The <code>initdb</code> command is used to create the PostgreSQL server.
          * <p>
          * Each value is added as a command line parameter to the command.
          * <p>
@@ -726,8 +725,11 @@ public final class EmbeddedPostgres implements AutoCloseable {
         }
 
         /**
-         * @param key
-         * @param value
+         * Adds a connection property. These properties are set on every connection handed out by the data source. See
+         * https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters for possible values.
+         *
+         * @param key   connection property name. Must not be null.
+         * @param value connection property value. Must not be null.
          * @return The builder itself.
          */
         public Builder addConnectionProperty(String key, String value) {
@@ -738,26 +740,38 @@ public final class EmbeddedPostgres implements AutoCloseable {
         }
 
         /**
-         * @param installationDirectory
+         * Sets the directory where the PostgreSQL distribution is unpacked. Setting the installation base directory resets the {@link NativeBinaryManager} used
+         * to locate the postgres installation back to the default (which is to download the zonky.io Postgres archive and unpack it in the installation
+         * directory. The default is using a managed directory.
+         *
+         * @param installationBaseDirectory The directory to unpack the postgres distribution. The current user must be able to create and write this directory.
+         *                                  Must not be null.
          * @return The builder itself.
          */
-        public Builder setInstallationDirectory(File installationDirectory) {
-            checkNotNull(installationDirectory, "workingDirectory is null");
-            this.installationDirectory = installationDirectory;
+        public Builder setInstallationBaseDirectory(File installationBaseDirectory) {
+            checkNotNull(installationBaseDirectory, "installationBaseDirectory is null");
+            this.installationBaseDirectory = installationBaseDirectory;
+            this.nativeBinaryManager = null;
             return this;
         }
 
         /**
-         * @param port
+         * Explicitly set the TCP port for the PostgresQL server. If the port is not available, starting the server will fail. Default is to find and use an
+         * available TCP port.
+         *
+         * @param port The port to use. Must be &gt; 1023 and &lt; 65536.
          * @return The builder itself.
          */
         public Builder setPort(int port) {
+            checkState(port > 1023 && port < 65535, "Port %s is not within 1024..65535", port);
             this.port = port;
             return this;
         }
 
         /**
-         * @param errRedirector
+         * Set a {@link ProcessBuilder.Redirect} instance to receive stderr output from the spawned processes.
+         *
+         * @param errRedirector a {@link ProcessBuilder.Redirect} instance. Must not be null.
          * @return The builder itself.
          */
         public Builder setErrorRedirector(ProcessBuilder.Redirect errRedirector) {
@@ -766,7 +780,9 @@ public final class EmbeddedPostgres implements AutoCloseable {
         }
 
         /**
-         * @param outRedirector
+         * Set a {@link ProcessBuilder.Redirect} instance to receive stdout output from the spawned processes.
+         *
+         * @param outRedirector a {@link ProcessBuilder.Redirect} instance. Must not be null.
          * @return The builder itself.
          */
         public Builder setOutputRedirector(ProcessBuilder.Redirect outRedirector) {
@@ -775,26 +791,37 @@ public final class EmbeddedPostgres implements AutoCloseable {
         }
 
         /**
-         * @param directoryResolver
+         * Sets the {@link NativeBinaryManager} that provides the location of the postgres installation. Explicitly setting a binary manager overrides the
+         * installation base directory location set with {@link #setInstallationBaseDirectory(File)} as this is only used by the default binary manager. Calling
+         * {@link #setInstallationBaseDirectory(File)} after this method undoes setting the binary manager.
+         *
+         * @param nativeBinaryManager A {@link NativeBinaryManager} implementation. Must not be null.
          * @return The builder itself.
          */
-        public Builder setPostgresDirectoryResolver(PgDirectoryResolver directoryResolver) {
-            this.directoryResolver = checkNotNull(directoryResolver, "directoryResolver is null");
+        public Builder setNativeBinaryManager(NativeBinaryManager nativeBinaryManager) {
+            this.nativeBinaryManager = checkNotNull(nativeBinaryManager, "nativeBinaryManager is null");
             return this;
         }
 
         /**
-         * @param directory
+         * Use a locally installed PostgreSQL server for tests. The tests will still spin up a new instance and locate the data in the data directory but it
+         * will use the locally installed binaries for starting and stopping. Calling this method sets a binary manager, so it overrides {@link
+         * #setNativeBinaryManager(NativeBinaryManager)}. Calling this method makes the builder ignore the {@link #setInstallationBaseDirectory(File)} setting.
+         *
+         * @param directory A local directory that contains a standard PostgreSQL installation. The directory must exist and read and executable.
          * @return The builder itself.
          */
-        public Builder setPostgresBinaryDirectory(File directory) {
+        public Builder useLocalPostgresInstallation(File directory) {
             checkNotNull(directory, "directory is null");
-            return setPostgresDirectoryResolver((x) -> directory);
+            checkState(directory.exists() && directory.isDirectory(), "'%s' either does not exist or is not a directory!", directory);
+            return setNativeBinaryManager(() -> directory);
         }
 
         /**
-         * @return
-         * @throws IOException
+         * Creates and boots a new {@link EmbeddedPostgres} instance.
+         *
+         * @return A {@link EmbeddedPostgres} instance representing a started PostgreSQL server.
+         * @throws IOException If the server could not be installed or started.
          */
         public EmbeddedPostgres build() throws IOException {
             // Builder Id
@@ -806,13 +833,19 @@ public final class EmbeddedPostgres implements AutoCloseable {
             final File parentDirectory = EmbeddedUtil.getWorkingDirectory();
             EmbeddedUtil.mkdirs(parentDirectory);
 
-            final File installationDirectory = MoreObjects.firstNonNull(this.installationDirectory, parentDirectory);
-            final File postgresInstallDirectory = directoryResolver.getDirectory(installationDirectory);
+            NativeBinaryManager nativeBinaryManager = this.nativeBinaryManager;
+            if (nativeBinaryManager == null) {
+                // Use the parent directory if no installation directory set.
+                File installationBaseDirectory = Objects.requireNonNullElse(this.installationBaseDirectory, parentDirectory);
+                nativeBinaryManager = new TarXzCompressedBinaryManager(installationBaseDirectory,
+                        EmbeddedPostgres.LOCK_FILE_NAME, new ZonkyIOPostgresLocator());
+            }
 
-            final File dataDirectory;
-            if (this.dataDirectory != null) {
-                dataDirectory = this.dataDirectory;
-            } else {
+            // this is where the binary manager actually places the unpackaged postgres installation.
+            final File postgresInstallDirectory = nativeBinaryManager.getLocation();
+
+            File dataDirectory = this.dataDirectory;
+            if (dataDirectory == null) {
                 dataDirectory = new File(parentDirectory, DATA_DIRECTORY_PREFIX + instanceId);
             }
 

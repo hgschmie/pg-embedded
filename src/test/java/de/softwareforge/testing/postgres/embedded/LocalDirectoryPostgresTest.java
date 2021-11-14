@@ -34,7 +34,7 @@ public class LocalDirectoryPostgresTest {
     public void testEmbeddedPg() throws Exception {
         Assumptions.assumeTrue(USR_LOCAL_BIN_POSTGRES.exists(), "Skipping test, PostgreSQL binary not found in /usr/local/bin");
 
-        try (EmbeddedPostgres pg = EmbeddedPostgres.builderWithDefaults().setPostgresBinaryDirectory(USR_LOCAL).build();
+        try (EmbeddedPostgres pg = EmbeddedPostgres.builderWithDefaults().useLocalPostgresInstallation(USR_LOCAL).build();
                 Connection c = pg.createDefaultDataSource().getConnection();
                 Statement s = c.createStatement()) {
             try (ResultSet rs = s.executeQuery("SELECT 1")) {
