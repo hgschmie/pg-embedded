@@ -53,7 +53,7 @@ import org.tukaani.xz.XZInputStream;
 /**
  * Loads a native binary installation and returns the location of it.
  */
-class TarXzCompressedBinaryManager implements NativeBinaryManager {
+public class TarXzCompressedBinaryManager implements NativeBinaryManager {
 
     private static final Logger LOG = LoggerFactory.getLogger(TarXzCompressedBinaryManager.class);
 

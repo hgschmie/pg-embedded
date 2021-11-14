@@ -71,7 +71,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
     private static final String PG_TEMPLATE_DB = "template1";
 
     @VisibleForTesting
-    public static final Duration DEFAULT_PG_STARTUP_WAIT = Duration.ofSeconds(10);
+    static final Duration DEFAULT_PG_STARTUP_WAIT = Duration.ofSeconds(10);
 
     // folders need to be at least 10 minutes old to be considered for deletion.
     private static final long MINIMUM_AGE_IN_MS = Duration.ofMinutes(10).toMillis();
