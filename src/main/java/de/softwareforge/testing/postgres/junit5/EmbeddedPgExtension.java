@@ -74,14 +74,14 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
 
     /**
      * Returns a {@link DatabaseInfo} describing the database connection.
+     *
+     * @return A {@link DatabaseInfo} instance. This is never null.
      */
     public DatabaseInfo createDatabaseInfo() throws SQLException {
         checkState(databaseManager != null, "no before method has been called!");
 
         DatabaseInfo databaseInfo = databaseManager.getDatabaseInfo();
-        if (databaseInfo.exception().isEmpty()) {
-            LOG.info("Connection to {}", databaseInfo.asJdbcUrl());
-        }
+        LOG.info("Connection to {}", databaseInfo.asJdbcUrl());
         return databaseInfo;
     }
 
@@ -143,7 +143,7 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
         @Override
         public EmbeddedPgExtension build() {
             DatabaseManager.Builder<DatabaseManager> databaseManagerBuilder = new DatabaseManagerBuilder(multiMode)
-                    .withDataSourcePreparer(dataSourcePreparer);
+                    .withDataSourcePreparers(dataSourcePreparers.build());
 
             instancePreparers.build().forEach(databaseManagerBuilder::withInstancePreparer);
             return new EmbeddedPgExtension(databaseManagerBuilder);

@@ -29,7 +29,7 @@ public class DatabaseInfoTest {
         assertEquals(DatabaseInfo.PG_DEFAULT_USER, databaseInfo.user());
         assertEquals(DatabaseInfo.PG_DEFAULT_DB, databaseInfo.dbName());
         assertEquals(12345, databaseInfo.port());
-        assertTrue(databaseInfo.properties().isEmpty());
+        assertTrue(databaseInfo.connectionProperties().isEmpty());
         assertTrue(databaseInfo.exception().isEmpty());
     }
 
@@ -46,14 +46,14 @@ public class DatabaseInfoTest {
                 .dbName(dbName)
                 .user(user)
                 .port(port)
-                .addProperty(propertyName, propertyValue)
+                .addConnectionProperty(propertyName, propertyValue)
                 .build();
 
         assertEquals(user, databaseInfo.user());
         assertEquals(dbName, databaseInfo.dbName());
         assertEquals(port, databaseInfo.port());
-        assertEquals(1, databaseInfo.properties().size());
-        assertEquals(propertyValue, databaseInfo.properties().get(propertyName));
+        assertEquals(1, databaseInfo.connectionProperties().size());
+        assertEquals(propertyValue, databaseInfo.connectionProperties().get(propertyName));
         assertTrue(databaseInfo.exception().isEmpty());
     }
 

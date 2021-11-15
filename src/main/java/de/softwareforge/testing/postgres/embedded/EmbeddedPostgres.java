@@ -167,10 +167,12 @@ public final class EmbeddedPostgres implements AutoCloseable {
     }
 
     /**
-     * Creates a {@link DatabaseInfo} object describing the default database (the <pre>postgres</pre>).
+     * Creates a {@link DatabaseInfo} object describing the default database (the <pre>postgres</pre> database).
+     *
+     * @return @ {@link DatabaseInfo} instance that describes the default database.
      */
     public DatabaseInfo createDefaultDatabaseInfo() {
-        return DatabaseInfo.builder().port(getPort()).properties(this.connectionProperties).build();
+        return DatabaseInfo.builder().port(getPort()).connectionProperties(this.connectionProperties).build();
     }
 
     /**
@@ -200,10 +202,10 @@ public final class EmbeddedPostgres implements AutoCloseable {
         return createDataSource(user, databaseName, getPort(), this.connectionProperties);
     }
 
-    static DataSource createDataSource(String user, String databaseName, int port, Map<String, String> properties) throws SQLException {
+    static DataSource createDataSource(String user, String databaseName, int port, Map<String, String> connectionProperties) throws SQLException {
         checkNotNull(user, "user is null");
         checkNotNull(databaseName, "databaseName is null");
-        checkNotNull(properties, "properties is null");
+        checkNotNull(connectionProperties, "connectionProperties is null");
 
         final PGSimpleDataSource ds = new PGSimpleDataSource();
 
@@ -212,7 +214,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
         ds.setDatabaseName(databaseName);
         ds.setUser(user);
 
-        for (final Entry<String, String> entry : properties.entrySet()) {
+        for (final Entry<String, String> entry : connectionProperties.entrySet()) {
             ds.setProperty(entry.getKey(), entry.getValue());
         }
 
@@ -220,7 +222,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
     }
 
     /**
-     * Returns the network port for the PostgreSQL server instance.
+     * Returns the network (TCP) port for the PostgreSQL server instance.
      */
     public int getPort() {
         return port;
@@ -681,7 +683,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
          * <p>
          * Values and their function are specific to the PostgreSQL version selected.
          * <p>
-         * See https://www.postgresql.org/docs/13/runtime-config.html for more information.
+         * See <a href="https://www.postgresql.org/docs/13/runtime-config.html">the PostgreSQL runtime configuration</a> for more information.
          *
          * @param key   Configuration parameter name. Must not be null.
          * @param value Configuration parameter value. Must not be null.
@@ -726,7 +728,8 @@ public final class EmbeddedPostgres implements AutoCloseable {
 
         /**
          * Adds a connection property. These properties are set on every connection handed out by the data source. See
-         * https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters for possible values.
+         * <a href="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters">the
+         * PostgreSQL JDBC driver documentation</a> for possible values.
          *
          * @param key   connection property name. Must not be null.
          * @param value connection property value. Must not be null.

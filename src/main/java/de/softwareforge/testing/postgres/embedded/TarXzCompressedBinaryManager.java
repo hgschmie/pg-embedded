@@ -68,9 +68,9 @@ public class TarXzCompressedBinaryManager implements NativeBinaryManager {
     private final Supplier<InputStream> inputStreamLocator;
 
     /**
-     * Creates a new binary manager for tar-xz compressed archives. It uses a {@link Supplier<InputStream>} to actually locate the stream that gets unpacked.
+     * Creates a new binary manager for tar-xz compressed archives.
      * <p>
-     * This supplier must satisfy the following criteria:
+     * The implementation of {@link Supplier<InputStream>} to locate the stream that gets unpacked must satisfy the following criteria:
      * <ul>
      *     <li>It must implement {@link #equals(Object)} and {@link #hashCode()}.</li>
      *     <li>It should implement {@link #toString()} to return meaningful information about the locator.</li>
@@ -78,8 +78,8 @@ public class TarXzCompressedBinaryManager implements NativeBinaryManager {
      *     The operation should be cheap as it may be called multiple times.</li>
      * </ul>
      *
-     * @param installationBaseDirectory Base directory in which the binary distribution is unpacked.
-     * @param lockFileName              Name of a lock file to check while unpacking.
+     * @param installationBaseDirectory Base directory in which the binary distribution is unpacked. Must not be null.
+     * @param lockFileName              Name of a file to use as file lock when unpacking the disttribution.
      * @param inputStreamLocator        An implementation of {@link Supplier<InputStream>} that satisfies the conditions above. Must not be null.
      */
     public TarXzCompressedBinaryManager(File installationBaseDirectory, String lockFileName, Supplier<InputStream> inputStreamLocator) {

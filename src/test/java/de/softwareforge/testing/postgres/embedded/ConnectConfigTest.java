@@ -40,7 +40,7 @@ public class ConnectConfigTest {
     public void test() throws SQLException {
         DatabaseInfo databaseInfo = db.createDatabaseInfo();
 
-        Map<String, String> properties = databaseInfo.properties();
+        Map<String, String> properties = databaseInfo.connectionProperties();
         assertEquals(1, properties.size());
         assertEquals("20", properties.get("connectTimeout"));
 
