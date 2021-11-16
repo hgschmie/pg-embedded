@@ -13,6 +13,7 @@
  */
 package de.softwareforge.testing.postgres.embedded;
 
+import static java.lang.String.format;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -27,14 +28,20 @@ import org.junit.jupiter.api.Test;
 
 public class LocalDirectoryPostgresTest {
 
-    private static final File USR_LOCAL = new File("/usr/local");
-    private static final File USR_LOCAL_BIN_POSTGRES = new File(USR_LOCAL, "/bin/postgres");
+    // pg-embedded.test.local-dir is set in pom.xml
+    private static final File LOCAL_INSTALL_LOCATION = new File(System.getProperty("pg-embedded.test.local-dir", "/usr/local"));
+    private static final File LOCAL_INSTALL_BIN_POSTGRES = new File(LOCAL_INSTALL_LOCATION, "/bin/postgres");
 
     @Test
     public void testEmbeddedPg() throws Exception {
-        Assumptions.assumeTrue(USR_LOCAL_BIN_POSTGRES.exists(), "Skipping test, PostgreSQL binary not found in /usr/local/bin");
+        Assumptions.assumeTrue(LOCAL_INSTALL_BIN_POSTGRES.exists(), format("Skipping test, PostgreSQL binary not found at %s", LOCAL_INSTALL_BIN_POSTGRES));
 
-        try (EmbeddedPostgres pg = EmbeddedPostgres.builderWithDefaults().useLocalPostgresInstallation(USR_LOCAL).build();
+        try (EmbeddedPostgres pg = EmbeddedPostgres.builderWithDefaults()
+                // pg-embedded.test.unix-socket-dir is set in pom.xml. Can not use "just defaults" because some Linux distributions try to be smart and
+                // use /var/run/postgresql as default which is only writable by the PostgresQL unix user. So this test would crash with "Permission denied".
+                .addServerConfiguration(System.getProperty("pg-embedded.test.unix-socket-dir", "unix_socket_directories"), System.getProperty("java.io.tmpdir"))
+                .useLocalPostgresInstallation(LOCAL_INSTALL_LOCATION)
+                .build();
                 Connection c = pg.createDefaultDataSource().getConnection();
                 Statement s = c.createStatement()) {
             try (ResultSet rs = s.executeQuery("SELECT 1")) {
