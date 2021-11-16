@@ -33,6 +33,9 @@ public abstract class DatabaseInfo {
 
     private static final String JDBC_FORMAT = "jdbc:postgresql://localhost:%d/%s?user=%s";
 
+    DatabaseInfo() {
+    }
+
     /**
      * The default user used for databases.
      */
@@ -44,7 +47,7 @@ public abstract class DatabaseInfo {
     static final String PG_DEFAULT_DB = "postgres";
 
     /**
-     * Returns the name of the database created.
+     * Returns the name of the database.
      *
      * @return Name of the database. Is never null.
      */

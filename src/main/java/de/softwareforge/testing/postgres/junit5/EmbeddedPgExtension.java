@@ -134,7 +134,7 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
         }
     }
 
-    static class EmbeddedPgExtensionBuilder extends DatabaseManager.Builder<EmbeddedPgExtension> {
+    public static final class EmbeddedPgExtensionBuilder extends DatabaseManager.Builder<EmbeddedPgExtension> {
 
         private EmbeddedPgExtensionBuilder(boolean multiMode) {
             super(multiMode);

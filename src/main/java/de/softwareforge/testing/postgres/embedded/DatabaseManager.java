@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Controls database instances on a PostgreSQL server instances.
  */
-public class DatabaseManager implements AutoCloseable {
+public final class DatabaseManager implements AutoCloseable {
 
     private static final String PG_DEFAULT_ENCODING = "utf8";
 
@@ -345,7 +345,7 @@ public class DatabaseManager implements AutoCloseable {
     /**
      * Create new {@link DatabaseManager} instances.
      */
-    public static class DatabaseManagerBuilder extends Builder<DatabaseManager> {
+    public static final class DatabaseManagerBuilder extends Builder<DatabaseManager> {
 
         /**
          * Creates a new builder for {@DatabaseManager} instances.
