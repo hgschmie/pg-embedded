@@ -78,6 +78,8 @@ public final class ZonkyIOPostgresLocator implements Supplier<InputStream> {
             architecture = "x86_64";  // Zonky uses x86_64
         } else if (EmbeddedUtil.IS_ARCH_AARCH64) {
             architecture = "arm_64";
+        } else if (EmbeddedUtil.IS_ARCH_AARCH32) {
+            architecture = "arm_32";
         }
         return architecture;
     }
