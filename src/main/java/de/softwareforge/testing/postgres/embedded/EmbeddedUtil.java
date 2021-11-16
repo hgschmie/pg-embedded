@@ -41,6 +41,7 @@ final class EmbeddedUtil {
     static final boolean IS_OS_LINUX;
 
     static final boolean IS_ARCH_X86_64;
+    static final boolean IS_ARCH_AARCH64;
 
     private static final String ALPHANUM;
     private static final String LOWERCASE;
@@ -54,6 +55,7 @@ final class EmbeddedUtil {
         IS_OS_MAC = getOsMatchesName("Mac");
 
         IS_ARCH_X86_64 = OS_ARCH.equals("x86_64") || OS_ARCH.equals("amd64");
+        IS_ARCH_AARCH64 = OS_ARCH.equals("aarch64");
 
         String numbers = sequence('0', 10);
         LOWERCASE = sequence('a', 26);
