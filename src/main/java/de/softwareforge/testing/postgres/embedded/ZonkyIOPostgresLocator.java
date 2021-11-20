@@ -21,6 +21,8 @@ import java.io.InputStream;
 import java.util.Objects;
 import java.util.function.Supplier;
 
+import javax.annotation.Nonnull;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +37,7 @@ public final class ZonkyIOPostgresLocator implements Supplier<InputStream> {
     private final String architecture;
     private final String os;
 
-    public ZonkyIOPostgresLocator(String os, String architecture) {
+    public ZonkyIOPostgresLocator(@Nonnull String os, @Nonnull String architecture) {
         this.os = checkNotNull(os, "os is null");
         this.architecture = checkNotNull(architecture, "architecture is null");
         LOG.debug(format("Detected a %s %s system", architecture, os));
@@ -77,7 +79,12 @@ public final class ZonkyIOPostgresLocator implements Supplier<InputStream> {
         if (EmbeddedUtil.IS_ARCH_X86_64) {
             architecture = "x86_64";  // Zonky uses x86_64
         } else if (EmbeddedUtil.IS_ARCH_AARCH64) {
-            architecture = "arm_64";
+            if (EmbeddedUtil.IS_OS_MAC) {
+                // Mac binaries are fat binaries stored as x86_64
+                architecture = "x86_64";
+            } else {
+                architecture = "arm_64";
+            }
         } else if (EmbeddedUtil.IS_ARCH_AARCH32) {
             architecture = "arm_32";
         }

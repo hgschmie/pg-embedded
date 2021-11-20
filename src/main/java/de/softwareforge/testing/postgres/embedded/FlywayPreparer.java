@@ -61,7 +61,7 @@ public final class FlywayPreparer implements EmbeddedPostgresPreparer<DataSource
      * @param customizer A {@link Consumer<FluentConfiguration>} instance. Must not be null.
      * @return This object.
      */
-    public FlywayPreparer addCustomizer(Consumer<FluentConfiguration> customizer) {
+    public FlywayPreparer addCustomizer(@Nonnull Consumer<FluentConfiguration> customizer) {
         checkNotNull(customizer, "customizer is null");
         customizers.add(customizer);
 
@@ -72,7 +72,7 @@ public final class FlywayPreparer implements EmbeddedPostgresPreparer<DataSource
      * @deprecated Use {@link #addCustomizer(Consumer)}.
      */
     @Deprecated
-    public FlywayPreparer customize(Consumer<FluentConfiguration> customizer) {
+    public FlywayPreparer customize(@Nonnull Consumer<FluentConfiguration> customizer) {
         return addCustomizer(customizer);
     }
 

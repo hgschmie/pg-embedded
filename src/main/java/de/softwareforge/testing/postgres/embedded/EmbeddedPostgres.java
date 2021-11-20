@@ -46,7 +46,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.sql.DataSource;
 
@@ -312,7 +312,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
         final ImmutableList.Builder<String> commandBuilder = ImmutableList.builder();
         commandBuilder.add(pgBin("pg_ctl"),
                 "-D", this.dataDirectory.getPath(),
-                "-o", createInitOptions().stream().collect(Collectors.joining(" ")),
+                "-o", String.join(" ", createInitOptions()),
                 "start"
         );
 
@@ -622,7 +622,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
          * @param serverStartupWait Startup wait time. Must not be null or negative.
          * @return The builder itself.
          */
-        public Builder setServerStartupWait(Duration serverStartupWait) {
+        public Builder setServerStartupWait(@Nonnull Duration serverStartupWait) {
             checkNotNull(serverStartupWait, "serverStartupWait is null");
             checkArgument(!serverStartupWait.isNegative(), "Negative durations are not permitted.");
 
@@ -649,7 +649,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
          *                      writing. If the directory does not exist then the current user must be able to create it for reading and writing.
          * @return The builder itself.
          */
-        public Builder setDataDirectory(Path dataDirectory) {
+        public Builder setDataDirectory(@Nonnull Path dataDirectory) {
             checkNotNull(dataDirectory, "dataDirectory is null");
             return setDataDirectory(dataDirectory.toFile());
         }
@@ -661,7 +661,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
          *                      writing. If the directory does not exist then the current user must be able to create it for reading and writing.
          * @return The builder itself.
          */
-        public Builder setDataDirectory(String dataDirectory) {
+        public Builder setDataDirectory(@Nonnull String dataDirectory) {
             checkNotNull(dataDirectory, "dataDirectory is null");
             return setDataDirectory(new File(dataDirectory));
         }
@@ -673,7 +673,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
          *                      writing. If the directory does not exist then the current user must be able to create it for reading and writing.
          * @return The builder itself.
          */
-        public Builder setDataDirectory(File dataDirectory) {
+        public Builder setDataDirectory(@Nonnull File dataDirectory) {
             this.dataDirectory = checkNotNull(dataDirectory, "dataDirectory is null");
             return this;
         }
@@ -689,7 +689,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
          * @param value Configuration parameter value. Must not be null.
          * @return The builder itself.
          */
-        public Builder addServerConfiguration(String key, String value) {
+        public Builder addServerConfiguration(@Nonnull String key, @Nonnull String value) {
             checkNotNull(key, "key is null");
             checkNotNull(value, "value is null");
             this.serverConfiguration.put(key, value);
@@ -700,7 +700,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
          * @deprecated Use {@link #addInitDbConfiguration(String, String)}.
          */
         @Deprecated
-        public Builder addLocaleConfiguration(String key, String value) {
+        public Builder addLocaleConfiguration(@Nonnull String key, @Nonnull String value) {
             checkNotNull(key, "key is null");
             checkNotNull(value, "value is null");
             this.localeConfiguration.put(key, value);
@@ -719,7 +719,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
          *              a equal sign and a value assigned.
          * @return The builder itself.
          */
-        public Builder addInitDbConfiguration(String key, String value) {
+        public Builder addInitDbConfiguration(@Nonnull String key, @Nonnull String value) {
             checkNotNull(key, "key is null");
             checkNotNull(value, "value is null");
             this.localeConfiguration.put(key, value);
@@ -735,7 +735,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
          * @param value connection property value. Must not be null.
          * @return The builder itself.
          */
-        public Builder addConnectionProperty(String key, String value) {
+        public Builder addConnectionProperty(@Nonnull String key, @Nonnull String value) {
             checkNotNull(key, "key is null");
             checkNotNull(value, "value is null");
             this.connectionProperties.put(key, value);
@@ -751,7 +751,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
          *                                  Must not be null.
          * @return The builder itself.
          */
-        public Builder setInstallationBaseDirectory(File installationBaseDirectory) {
+        public Builder setInstallationBaseDirectory(@Nonnull File installationBaseDirectory) {
             checkNotNull(installationBaseDirectory, "installationBaseDirectory is null");
             this.installationBaseDirectory = installationBaseDirectory;
             this.nativeBinaryManager = null;
@@ -777,7 +777,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
          * @param errRedirector a {@link ProcessBuilder.Redirect} instance. Must not be null.
          * @return The builder itself.
          */
-        public Builder setErrorRedirector(ProcessBuilder.Redirect errRedirector) {
+        public Builder setErrorRedirector(@Nonnull ProcessBuilder.Redirect errRedirector) {
             this.errRedirector = checkNotNull(errRedirector, "errRedirector is null");
             return this;
         }
@@ -788,7 +788,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
          * @param outRedirector a {@link ProcessBuilder.Redirect} instance. Must not be null.
          * @return The builder itself.
          */
-        public Builder setOutputRedirector(ProcessBuilder.Redirect outRedirector) {
+        public Builder setOutputRedirector(@Nonnull ProcessBuilder.Redirect outRedirector) {
             this.outRedirector = checkNotNull(outRedirector, "outRedirector is null");
             return this;
         }
@@ -801,7 +801,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
          * @param nativeBinaryManager A {@link NativeBinaryManager} implementation. Must not be null.
          * @return The builder itself.
          */
-        public Builder setNativeBinaryManager(NativeBinaryManager nativeBinaryManager) {
+        public Builder setNativeBinaryManager(@Nonnull NativeBinaryManager nativeBinaryManager) {
             this.nativeBinaryManager = checkNotNull(nativeBinaryManager, "nativeBinaryManager is null");
             return this;
         }
@@ -814,7 +814,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
          * @param directory A local directory that contains a standard PostgreSQL installation. The directory must exist and read and executable.
          * @return The builder itself.
          */
-        public Builder useLocalPostgresInstallation(File directory) {
+        public Builder useLocalPostgresInstallation(@Nonnull File directory) {
             checkNotNull(directory, "directory is null");
             checkState(directory.exists() && directory.isDirectory(), "'%s' either does not exist or is not a directory!", directory);
             return setNativeBinaryManager(() -> directory);

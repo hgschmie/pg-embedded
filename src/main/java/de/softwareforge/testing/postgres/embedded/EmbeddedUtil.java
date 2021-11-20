@@ -25,6 +25,7 @@ import java.util.Comparator;
 import java.util.Locale;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Stream;
+import javax.annotation.Nonnull;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
@@ -107,7 +108,7 @@ final class EmbeddedUtil {
     // taken from apache commons io
     //
 
-    static void mkdirs(File dir) {
+    static void mkdirs(@Nonnull File dir) {
         if (!dir.mkdirs() && !(dir.isDirectory() && dir.exists())) {
             throw new IllegalStateException("could not create " + dir);
         }
@@ -124,10 +125,10 @@ final class EmbeddedUtil {
 
     static String formatDuration(Duration duration) {
         long millis = duration.toMillis();
-        long hours = 0;
-        long minutes = 0;
-        long secs = 0;
-        long ms = 0;
+        long hours;
+        long minutes;
+        long secs;
+        long ms;
         ImmutableList.Builder<String> builder = ImmutableList.builder();
         if (millis == 0) {
             builder.add("0 ms");

@@ -215,7 +215,7 @@ public final class DatabaseManager implements AutoCloseable {
                 try {
                     final String newDbName = EmbeddedUtil.randomLowercase(12);
                     try {
-                        createDatabase(pg.createDefaultDataSource(), newDbName, PG_DEFAULT_USER);
+                        createDatabase(pg.createDefaultDataSource(), newDbName);
                         nextDatabase.put(DatabaseInfo.builder()
                                 .dbName(newDbName)
                                 .port(pg.getPort())
@@ -249,10 +249,10 @@ public final class DatabaseManager implements AutoCloseable {
     }
 
     @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE")
-    private static void createDatabase(final DataSource dataSource, final String databaseName, final String user) throws SQLException {
+    private static void createDatabase(final DataSource dataSource, final String databaseName) throws SQLException {
         try (Connection c = dataSource.getConnection();
                 Statement stmt = c.createStatement()) {
-            stmt.executeUpdate(format("CREATE DATABASE %s OWNER %s ENCODING = '%s'", databaseName, user, PG_DEFAULT_ENCODING));
+            stmt.executeUpdate(format("CREATE DATABASE %s OWNER %s ENCODING = '%s'", databaseName, PG_DEFAULT_USER, PG_DEFAULT_ENCODING));
         }
     }
 
@@ -277,7 +277,7 @@ public final class DatabaseManager implements AutoCloseable {
         }
 
         /**
-         * @deprecated Use {@link #withDataSourcePreparer(EmbeddedPostgresPreparer<DataSource>)}.
+         * @deprecated Use {@link #withDataSourcePreparer(EmbeddedPostgresPreparer)}.
          */
         @Deprecated
         @Nonnull
@@ -293,7 +293,7 @@ public final class DatabaseManager implements AutoCloseable {
          * @return This object instance.
          */
         @Nonnull
-        public Builder<T> withDataSourcePreparer(EmbeddedPostgresPreparer<DataSource> dataSourcePreparer) {
+        public Builder<T> withDataSourcePreparer(@Nonnull EmbeddedPostgresPreparer<DataSource> dataSourcePreparer) {
             this.dataSourcePreparers.add(checkNotNull(dataSourcePreparer, "dataSourcePreparer is null"));
             return this;
         }
@@ -305,7 +305,7 @@ public final class DatabaseManager implements AutoCloseable {
          * @return This object instance.
          */
         @Nonnull
-        public Builder<T> withDataSourcePreparers(Set<EmbeddedPostgresPreparer<DataSource>> dataSourcePreparers) {
+        public Builder<T> withDataSourcePreparers(@Nonnull Set<EmbeddedPostgresPreparer<DataSource>> dataSourcePreparers) {
             this.dataSourcePreparers.addAll(checkNotNull(dataSourcePreparers, "dataSourcePreparers is null"));
             return this;
         }
@@ -318,17 +318,17 @@ public final class DatabaseManager implements AutoCloseable {
          * @return This object instance.
          */
         @Nonnull
-        public Builder<T> withInstancePreparer(EmbeddedPostgresPreparer<EmbeddedPostgres.Builder> instancePreparer) {
+        public Builder<T> withInstancePreparer(@Nonnull EmbeddedPostgresPreparer<EmbeddedPostgres.Builder> instancePreparer) {
             this.instancePreparers.add(checkNotNull(instancePreparer, "instancePreparer is null"));
             return this;
         }
 
         /**
-         * @deprecated Use {@link #withInstancePreparer(EmbeddedPostgresPreparer<EmbeddedPostgres.Builder>)}.
+         * @deprecated Use {@link #withInstancePreparer(EmbeddedPostgresPreparer)}.
          */
         @Deprecated
         @Nonnull
-        public Builder<T> withCustomizer(EmbeddedPostgres.BuilderCustomizer customizer) {
+        public Builder<T> withCustomizer(@Nonnull EmbeddedPostgres.BuilderCustomizer customizer) {
             checkNotNull(customizer, "customizer is null");
             this.instancePreparers.add(customizer::customize);
             return this;
@@ -348,7 +348,7 @@ public final class DatabaseManager implements AutoCloseable {
     public static final class DatabaseManagerBuilder extends Builder<DatabaseManager> {
 
         /**
-         * Creates a new builder for {@DatabaseManager} instances.
+         * Creates a new builder for {@link DatabaseManager} instances.
          *
          * @param multiMode True if the database manager should return a new database instance for every {@link DatabaseManager#getDatabaseInfo()}} call, false
          *                  if it should return the same database instance.
@@ -359,6 +359,7 @@ public final class DatabaseManager implements AutoCloseable {
 
         /**
          * Creates a new {@link DatabaseManager} instance from the builder.
+         *
          * @return A database manager. Never null.
          */
         @Override

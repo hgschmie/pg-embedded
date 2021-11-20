@@ -24,6 +24,7 @@ import de.softwareforge.testing.postgres.embedded.EmbeddedPostgres;
 import java.lang.reflect.Type;
 import java.sql.SQLException;
 import java.util.UUID;
+import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -66,7 +67,7 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
     }
 
     /**
-     * Creates a new {@link EmbeddedPgExtensionBuilder} that allows further customization of the {@EmbeddedPgExtension}. The resulting extension manages the
+     * Creates a new {@link EmbeddedPgExtensionBuilder} that allows further customization of the {@link EmbeddedPgExtension}. The resulting extension manages the
      * database server in multi-mode (creating multiple databases).
      *
      * @return A {@link EmbeddedPgExtensionBuilder} instance. Never null.
@@ -76,7 +77,7 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
     }
 
     /**
-     * Creates a new {@link EmbeddedPgExtensionBuilder} that allows further customization of the {@EmbeddedPgExtension}. The resulting extension manages the
+     * Creates a new {@link EmbeddedPgExtensionBuilder} that allows further customization of the {@link EmbeddedPgExtension}. The resulting extension manages the
      * database server in single-mode (using a single database instance).
      *
      * @return A {@link EmbeddedPgExtensionBuilder} instance. Never null.
@@ -130,7 +131,7 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
     }
 
     @Override
-    public void beforeAll(ExtensionContext extensionContext) throws Exception {
+    public void beforeAll(@Nonnull ExtensionContext extensionContext) throws Exception {
         checkNotNull(extensionContext, "extensionContext is null");
 
         Store pgStore = extensionContext.getStore(PG_NAMESPACE);
@@ -143,7 +144,7 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
     }
 
     @Override
-    public void afterAll(ExtensionContext extensionContext) throws Exception {
+    public void afterAll(@Nonnull ExtensionContext extensionContext) throws Exception {
         checkNotNull(extensionContext, "extensionContext is null");
 
         Store pgStore = extensionContext.getStore(PG_NAMESPACE);
@@ -155,7 +156,7 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
     }
 
     @Override
-    public void beforeEach(ExtensionContext extensionContext) throws Exception {
+    public void beforeEach(@Nonnull ExtensionContext extensionContext) throws Exception {
         checkNotNull(extensionContext, "extensionContext is null");
 
         Store pgStore = extensionContext.getStore(PG_NAMESPACE);
@@ -167,7 +168,7 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
     }
 
     @Override
-    public void afterEach(ExtensionContext extensionContext) throws Exception {
+    public void afterEach(@Nonnull ExtensionContext extensionContext) throws Exception {
         checkNotNull(extensionContext, "extensionContext is null");
 
         Store pgStore = extensionContext.getStore(PG_NAMESPACE);
@@ -179,7 +180,7 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
     }
 
     @Override
-    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
+    public boolean supportsParameter(@Nonnull ParameterContext parameterContext, ExtensionContext extensionContext) {
         Type type = parameterContext.getParameter().getType();
         return type == EmbeddedPostgres.class
                 || type == DatabaseInfo.class
@@ -187,7 +188,7 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
     }
 
     @Override
-    public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
+    public Object resolveParameter(@Nonnull ParameterContext parameterContext, ExtensionContext extensionContext) {
         Type type = parameterContext.getParameter().getType();
         try {
             if (type == EmbeddedPostgres.class) {

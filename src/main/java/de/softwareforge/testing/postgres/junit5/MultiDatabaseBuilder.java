@@ -49,18 +49,18 @@ public final class MultiDatabaseBuilder {
     }
 
     /**
-     * @deprecated Use {@link #preparedInstance(EmbeddedPostgresPreparer<DataSource>)}.
+     * @deprecated Use {@link #preparedInstance(EmbeddedPostgresPreparer)}.
      */
     @Deprecated
-    public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstance(DatabasePreparer preparer) {
+    public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstance(@Nonnull DatabasePreparer preparer) {
         return EmbeddedPgExtension.multiDatabase().withPreparer(preparer);
     }
 
     /**
-     * @deprecated Use {@link #preparedInstanceWithDefaults(EmbeddedPostgresPreparer<DataSource>)}.
+     * @deprecated Use {@link #preparedInstanceWithDefaults(EmbeddedPostgresPreparer)}.
      */
     @Deprecated
-    public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstanceWithDefaults(DatabasePreparer preparer) {
+    public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstanceWithDefaults(@Nonnull DatabasePreparer preparer) {
         return EmbeddedPgExtension.multiDatabase().withPreparer(preparer).withInstancePreparer(EmbeddedPostgres.Builder::withDefaults);
     }
 

@@ -41,6 +41,7 @@ import java.util.concurrent.Phaser;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
+import javax.annotation.Nonnull;
 
 import com.google.common.io.BaseEncoding;
 import com.google.common.io.ByteStreams;
@@ -82,7 +83,9 @@ public final class TarXzCompressedBinaryManager implements NativeBinaryManager {
      * @param lockFileName              Name of a file to use as file lock when unpacking the disttribution.
      * @param inputStreamLocator        An implementation of {@link Supplier<InputStream>} that satisfies the conditions above. Must not be null.
      */
-    public TarXzCompressedBinaryManager(File installationBaseDirectory, String lockFileName, Supplier<InputStream> inputStreamLocator) {
+    public TarXzCompressedBinaryManager(@Nonnull File installationBaseDirectory,
+            @Nonnull String lockFileName,
+            @Nonnull Supplier<InputStream> inputStreamLocator) {
         this.installationBaseDirectory = checkNotNull(installationBaseDirectory, "installationBaseDirectory is null");
         this.lockFileName = checkNotNull(lockFileName, "lockFileName is null");
         this.inputStreamLocator = checkNotNull(inputStreamLocator, "inputStreamLocator is null");

@@ -18,6 +18,7 @@ import de.softwareforge.testing.postgres.embedded.DatabasePreparer;
 import de.softwareforge.testing.postgres.embedded.EmbeddedPostgres;
 import de.softwareforge.testing.postgres.embedded.EmbeddedPostgresPreparer;
 
+import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 
 /**
@@ -48,18 +49,18 @@ public final class SingleDatabaseBuilder {
     }
 
     /**
-     * @deprecated Use {@link #preparedInstance(EmbeddedPostgresPreparer<DataSource>)}.
+     * @deprecated Use {@link #preparedInstance(EmbeddedPostgresPreparer)}.
      */
     @Deprecated
-    public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstance(DatabasePreparer preparer) {
+    public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstance(@Nonnull DatabasePreparer preparer) {
         return EmbeddedPgExtension.singleDatabase().withPreparer(preparer);
     }
 
     /**
-     * @deprecated Use {@link #preparedInstanceWithDefaults(EmbeddedPostgresPreparer<DataSource>)}.
+     * @deprecated Use {@link #preparedInstanceWithDefaults(EmbeddedPostgresPreparer)}.
      */
     @Deprecated
-    public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstanceWithDefaults(DatabasePreparer preparer) {
+    public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstanceWithDefaults(@Nonnull DatabasePreparer preparer) {
         return EmbeddedPgExtension.singleDatabase().withPreparer(preparer).withCustomizer(EmbeddedPostgres.Builder::withDefaults);
     }
 
@@ -69,7 +70,7 @@ public final class SingleDatabaseBuilder {
      * @param dataSourcePreparer A {@link EmbeddedPostgresPreparer<DataSource>} instance. Must not be null.
      * @return A {@link DatabaseManager.Builder<EmbeddedPgExtension>} instance that can be customized further.
      */
-    public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstance(EmbeddedPostgresPreparer<DataSource> dataSourcePreparer) {
+    public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstance(@Nonnull EmbeddedPostgresPreparer<DataSource> dataSourcePreparer) {
         return EmbeddedPgExtension.singleDatabase().withDataSourcePreparer(dataSourcePreparer);
     }
 
@@ -80,7 +81,7 @@ public final class SingleDatabaseBuilder {
      * @param dataSourcePreparer A {@link EmbeddedPostgresPreparer<DataSource>} instance. Must not be null.
      * @return A {@link DatabaseManager.Builder<EmbeddedPgExtension>} instance that can be customized further.
      */
-    public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstanceWithDefaults(EmbeddedPostgresPreparer<DataSource> dataSourcePreparer) {
+    public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstanceWithDefaults(@Nonnull EmbeddedPostgresPreparer<DataSource> dataSourcePreparer) {
         return EmbeddedPgExtension.singleDatabase().withDataSourcePreparer(dataSourcePreparer).withInstancePreparer(EmbeddedPostgres.Builder::withDefaults);
     }
 }

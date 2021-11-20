@@ -21,6 +21,7 @@ import de.softwareforge.testing.postgres.junit5.SingleDatabaseBuilder;
 
 import java.sql.SQLException;
 import java.util.Map;
+import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 
 import org.junit.jupiter.api.Test;
@@ -56,7 +57,7 @@ public class ConnectConfigTest {
         private DataSource dataSource;
 
         @Override
-        public void prepare(DataSource dataSource) {
+        public void prepare(@Nonnull DataSource dataSource) {
             checkState(this.dataSource == null, "database preparer has been called multiple times");
             this.dataSource = dataSource;
         }
