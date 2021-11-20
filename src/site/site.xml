@@ -13,26 +13,42 @@
 ~   limitations under the License.
 -->
 <project>
-  <skin>
-    <groupId>org.apache.maven.skins</groupId>
-    <artifactId>maven-fluido-skin</artifactId>
-    <version>1.9</version>
-  </skin>
-  <custom>
-    <fluidoSkin>
-      <gitHub>
-        <projectId>hgschmie/pg-embedded</projectId>
-        <ribbonOrientation>right</ribbonOrientation>
-      </gitHub>
-      <skipGenerationDate>false</skipGenerationDate>
-      <sourceLineNumbersEnabled>true</sourceLineNumbersEnabled>
-    </fluidoSkin>
-  </custom>
-  <body>
-    <menu name="Overview">
-      <item name="Introduction" href="index.html"/>
-      <item name="License" href="https://www.apache.org/licenses/LICENSE-2.0" />
-    </menu>
-    <menu ref="reports" />
-  </body>
+    <poweredBy />
+    <skin>
+        <groupId>org.apache.maven.skins</groupId>
+        <artifactId>maven-fluido-skin</artifactId>
+        <version>1.9</version>
+    </skin>
+    <custom>
+        <fluidoSkin>
+            <gitHub>
+                <projectId>hgschmie/pg-embedded</projectId>
+                <ribbonOrientation>right</ribbonOrientation>
+            </gitHub>
+            <skipGenerationDate>false</skipGenerationDate>
+            <sourceLineNumbersEnabled>true</sourceLineNumbersEnabled>
+        </fluidoSkin>
+    </custom>
+    <body>
+        <menu name="Usage">
+            <item name="Overview" href="index.html"/>
+            <item name="Using the DatabaseManager" href="using_database_manager.html" >
+                <item name="Database customization with Flyway" href="using_flyway.html" />
+            </item>
+            <item name="Using EmbeddedPostgres" href="using_embedded_postgres.html">
+                <item name="Setting the PostgreSQL version" href="setting_postgres_version.html" />
+            </item>
+            <item name="Advanced Usage" href="advanced_usage.html" />
+        </menu>
+        <menu name="Testing Frameworks">
+            <item name="JUnit 5" href="junit5.html" />
+        </menu>
+        <menu name="Links">
+            <item name="Javadoc" href="apidocs/index.html" />
+            <item name="Building the code" href="building.html" />
+            <item name="Contributing" href="contributing.html" />
+            <item name="License" href="https://www.apache.org/licenses/LICENSE-2.0" />
+        </menu>
+        <menu ref="reports" />
+    </body>
 </project>
