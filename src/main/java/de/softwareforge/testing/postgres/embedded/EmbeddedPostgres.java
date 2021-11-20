@@ -167,29 +167,24 @@ public final class EmbeddedPostgres implements AutoCloseable {
     }
 
     /**
-     * Creates a {@link DatabaseInfo} object describing the default database (the <pre>postgres</pre> database).
-     *
-     * @return @ {@link DatabaseInfo} instance that describes the default database.
-     */
-    public DatabaseInfo createDefaultDatabaseInfo() {
-        return DatabaseInfo.builder().port(getPort()).connectionProperties(this.connectionProperties).build();
-    }
-
-    /**
-     * Creates a {@link DataSource} object that connects to the standard system database (normally <pre>template1</pre>).
+     * Creates a {@link DataSource} object that connects to the standard system database.
+     * <p>
+     * The standard system database is the <pre>template1</pre> database.
      * <p>
      * Any modification to this database will be propagated to any new database that is created with <pre>CREATE DATABASE...</pre> unless another database is
      * explicitly named as the template..
      */
     public DataSource createTemplateDataSource() throws SQLException {
-        return createDataSource(PG_DEFAULT_USER, PG_TEMPLATE_DB, getPort(), this.connectionProperties);
+        return createDataSource(PG_DEFAULT_USER, PG_TEMPLATE_DB, getPort(), getConnectionProperties());
     }
 
     /**
-     * Creates a {@link DataSource} object that connects to the default database (<pre>postgres</pre>).
+     * Creates a {@link DataSource} object that connects to the default database.
+     * <p>
+     * The default database is the <pre>postgres</pre> database.
      */
     public DataSource createDefaultDataSource() throws SQLException {
-        return createDataSource(PG_DEFAULT_USER, PG_DEFAULT_DB, getPort(), this.connectionProperties);
+        return createDataSource(PG_DEFAULT_USER, PG_DEFAULT_DB, getPort(), getConnectionProperties());
     }
 
     /**
@@ -199,7 +194,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
      * EmbeddedPostgresPreparer}).
      */
     public DataSource createDataSource(String user, String databaseName) throws SQLException {
-        return createDataSource(user, databaseName, getPort(), this.connectionProperties);
+        return createDataSource(user, databaseName, getPort(), getConnectionProperties());
     }
 
     static DataSource createDataSource(String user, String databaseName, int port, Map<String, String> connectionProperties) throws SQLException {
@@ -266,6 +261,9 @@ public final class EmbeddedPostgres implements AutoCloseable {
     }
 
     // internal methods
+    DatabaseInfo createDefaultDatabaseInfo() {
+        return DatabaseInfo.builder().port(getPort()).connectionProperties(getConnectionProperties()).build();
+    }
 
 
     private void boot() throws IOException {
