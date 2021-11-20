@@ -13,26 +13,29 @@
 ~   limitations under the License.
 -->
 <project>
-  <skin>
-    <groupId>org.apache.maven.skins</groupId>
-    <artifactId>maven-fluido-skin</artifactId>
-    <version>1.9</version>
-  </skin>
-  <custom>
-    <fluidoSkin>
-      <gitHub>
-        <projectId>hgschmie/pg-embedded</projectId>
-        <ribbonOrientation>right</ribbonOrientation>
-      </gitHub>
-      <skipGenerationDate>false</skipGenerationDate>
-      <sourceLineNumbersEnabled>true</sourceLineNumbersEnabled>
-    </fluidoSkin>
-  </custom>
-  <body>
-    <menu name="Overview">
-      <item name="Introduction" href="index.html"/>
-      <item name="License" href="https://www.apache.org/licenses/LICENSE-2.0" />
-    </menu>
-    <menu ref="reports" />
-  </body>
+    <poweredBy />
+    <skin>
+        <groupId>org.apache.maven.skins</groupId>
+        <artifactId>maven-fluido-skin</artifactId>
+        <version>1.9</version>
+    </skin>
+    <custom>
+        <fluidoSkin>
+            <gitHub>
+                <projectId>hgschmie/pg-embedded</projectId>
+                <ribbonOrientation>right</ribbonOrientation>
+            </gitHub>
+            <skipGenerationDate>false</skipGenerationDate>
+            <sourceLineNumbersEnabled>true</sourceLineNumbersEnabled>
+        </fluidoSkin>
+    </custom>
+    <body>
+        <menu name="Documentation">
+            <item name="Introduction" href="index.html"/>
+        </menu>
+        <menu name="Stuff">
+            <item name="License" href="https://www.apache.org/licenses/LICENSE-2.0" />
+        </menu>
+        <menu ref="reports" />
+    </body>
 </project>
