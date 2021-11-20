@@ -34,6 +34,8 @@ public final class ZonkyIOPostgresLocator implements Supplier<InputStream> {
 
     public static final Logger LOG = LoggerFactory.getLogger(ZonkyIOPostgresLocator.class);
 
+    private static final boolean PREFER_NATIVE = Boolean.getBoolean("pg-embedded.prefer-native");
+
     private final String architecture;
     private final String os;
 
@@ -79,7 +81,7 @@ public final class ZonkyIOPostgresLocator implements Supplier<InputStream> {
         if (EmbeddedUtil.IS_ARCH_X86_64) {
             architecture = "x86_64";  // Zonky uses x86_64
         } else if (EmbeddedUtil.IS_ARCH_AARCH64) {
-            if (EmbeddedUtil.IS_OS_MAC) {
+            if (!PREFER_NATIVE && EmbeddedUtil.IS_OS_MAC) {
                 // Mac binaries are fat binaries stored as x86_64
                 architecture = "x86_64";
             } else {
