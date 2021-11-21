@@ -66,6 +66,9 @@ import org.slf4j.LoggerFactory;
  */
 public final class EmbeddedPostgres implements AutoCloseable {
 
+    /** The version of postgres used if no more specific version has been given. */
+    public static final String POSTGRES_VERSION = System.getProperty("pg-embedded.postgres-version", "13");
+
     static final String[] LOCALHOST_SERVER_NAMES = new String[]{"localhost"};
 
     private static final String PG_TEMPLATE_DB = "template1";

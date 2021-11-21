@@ -53,7 +53,6 @@
         <dep.plugin.scm-publish.version>3.1.0</dep.plugin.scm-publish.version>
         <dep.plugin.project-info-reports.version>3.1.1</dep.plugin.project-info-reports.version>
 
-        <dep.postgres.version>13.4.0</dep.postgres.version>
         <dep.slf4j.version>1.7.32</dep.slf4j.version>
         <dep.guava.version>30.1.1-jre</dep.guava.version>
         <dep.flyway.version>7.11.0</dep.flyway.version>
@@ -64,6 +63,9 @@
         <dep.apache-commons-lang3.version>3.12.0</dep.apache-commons-lang3.version>
         <dep.apache-commons-compress.version>1.21</dep.apache-commons-compress.version>
         <dep.xz.version>1.9</dep.xz.version>
+
+        <dep.maven.version>3.8.3</dep.maven.version>
+        <dep.maven-resolver.version>1.7.2</dep.maven-resolver.version>
 
         <!-- MacOS Homebrew install location -->
         <pg-embedded.test.local-dir>/usr/local</pg-embedded.test.local-dir>
@@ -99,13 +101,6 @@
                 <groupId>org.junit</groupId>
                 <artifactId>junit-bom</artifactId>
                 <version>${dep.junit5.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>io.zonky.test.postgres</groupId>
-                <artifactId>embedded-postgres-binaries-bom</artifactId>
-                <version>${dep.postgres.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -151,6 +146,48 @@
         </dependency>
 
         <dependency>
+            <groupId>org.apache.maven.resolver</groupId>
+            <artifactId>maven-resolver-api</artifactId>
+            <version>${dep.maven-resolver.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.maven.resolver</groupId>
+            <artifactId>maven-resolver-impl</artifactId>
+            <version>${dep.maven-resolver.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.maven.resolver</groupId>
+            <artifactId>maven-resolver-connector-basic</artifactId>
+            <version>${dep.maven-resolver.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.maven.resolver</groupId>
+            <artifactId>maven-resolver-transport-file</artifactId>
+            <version>${dep.maven-resolver.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.maven.resolver</groupId>
+            <artifactId>maven-resolver-transport-http</artifactId>
+            <version>${dep.maven-resolver.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-resolver-provider</artifactId>
+            <version>${dep.maven.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-settings-builder</artifactId>
+            <version>${dep.maven.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-annotations</artifactId>
             <version>${dep.spotbugs.version}</version>
@@ -177,30 +214,6 @@
             <version>${dep.auto-value.version}</version>
             <optional>true</optional>
             <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>io.zonky.test.postgres</groupId>
-            <artifactId>embedded-postgres-binaries-darwin-amd64</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>io.zonky.test.postgres</groupId>
-            <artifactId>embedded-postgres-binaries-linux-amd64</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>io.zonky.test.postgres</groupId>
-            <artifactId>embedded-postgres-binaries-linux-arm64v8</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>io.zonky.test.postgres</groupId>
-            <artifactId>embedded-postgres-binaries-linux-arm32v7</artifactId>
-            <scope>runtime</scope>
         </dependency>
 
         <dependency>

@@ -40,6 +40,7 @@ final class EmbeddedUtil {
     static final boolean IS_OS_WINDOWS;
     static final boolean IS_OS_MAC;
     static final boolean IS_OS_LINUX;
+    static final boolean IS_ALPINE_LINUX;
 
     static final boolean IS_ARCH_X86_64;
     static final boolean IS_ARCH_AARCH64;
@@ -59,6 +60,9 @@ final class EmbeddedUtil {
         IS_ARCH_X86_64 = OS_ARCH.equals("x86_64") || OS_ARCH.equals("amd64");
         IS_ARCH_AARCH64 = OS_ARCH.equals("aarch64");
         IS_ARCH_AARCH32 = OS_ARCH.equals("aarch32") || OS_ARCH.equals("arm");
+
+        // this is a glorious hack
+        IS_ALPINE_LINUX = new File("/etc/alpine-release").exists();
 
         String numbers = sequence('0', 10);
         LOWERCASE = sequence('a', 26);

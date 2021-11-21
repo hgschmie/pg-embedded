@@ -14,23 +14,32 @@
 
 package de.softwareforge.testing.postgres.embedded;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 import static java.lang.String.format;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.util.Objects;
 import java.util.function.Supplier;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
-import javax.annotation.Nonnull;
-
+import com.google.common.base.Suppliers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Resolves pre-bundled PostgreSQL archives from the classpath. This matches the pre-bundled versions of PostgreSQL from
- * https://github.com/zonkyio/embedded-postgres-binaries.
+ * Resolves PostgreSQL archives from the Maven repository. Looks for the zonky.io artifacts located at
+ * <code>io.zonky.test.postgres:embedded-postgres-binaries-&lt;os&gt;-&lt;arch&gt;</code>.
+ * <p>
+ * See <a href="https://github.com/zonkyio/embedded-postgres-binaries">The Zonky IO github page</a> for more details.
  */
 public final class ZonkyIOPostgresLocator implements Supplier<InputStream> {
+
+    private static final String ZONKY_GROUP_ID = "io.zonky.test.postgres";
+    private static final String ZONKY_ARTIFACT_ID_TEMPLATE = "embedded-postgres-binaries-%s-%s";
 
     public static final Logger LOG = LoggerFactory.getLogger(ZonkyIOPostgresLocator.class);
 
@@ -39,19 +48,60 @@ public final class ZonkyIOPostgresLocator implements Supplier<InputStream> {
     private final String architecture;
     private final String os;
 
-    public ZonkyIOPostgresLocator(@Nonnull String os, @Nonnull String architecture) {
-        this.os = checkNotNull(os, "os is null");
-        this.architecture = checkNotNull(architecture, "architecture is null");
-        LOG.debug(format("Detected a %s %s system", architecture, os));
-    }
+    private final MavenArtifactLoader artifactLoader = new MavenArtifactLoader();
+
+    private final Supplier<File> fileSupplier = Suppliers.memoize(this::loadArtifact);
 
     ZonkyIOPostgresLocator() {
-        this(computeOS(), computeArchitecture());
+        this.os = computeOS();
+        this.architecture = computeTarXzArchitectureName();
+        LOG.debug(format("Detected a %s %s system", architecture, os));
     }
 
     @Override
     public InputStream get() {
-        return ZonkyIOPostgresLocator.class.getResourceAsStream(format("/postgres-%s-%s.txz", computeOS(), computeArchitecture()));
+        return getSupplier();
+    }
+
+    private InputStream getSupplier() {
+        File artifactFile = fileSupplier.get();
+        return createJarStream(artifactFile);
+    }
+
+    private File loadArtifact() {
+        try {
+            String artifactId = format(ZONKY_ARTIFACT_ID_TEMPLATE, this.os, computeJarArchitectureName());
+
+            // alpine hack
+            if (EmbeddedUtil.IS_ALPINE_LINUX) {
+                artifactId += "-alpine";
+            }
+
+            String version = artifactLoader.findLatestVersion(ZONKY_GROUP_ID, artifactId, EmbeddedPostgres.POSTGRES_VERSION);
+            File file = artifactLoader.getArtifactFile(ZONKY_GROUP_ID, artifactId, version);
+            checkState(file != null && file.exists(), "Could not locate artifact file for %s:%s", artifactId, version);
+            return file;
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    private InputStream createJarStream(File file) {
+        try {
+            JarFile jar = new JarFile(file);
+            String entryName = format("postgres-%s-%s", computeOS(), computeTarXzArchitectureName());
+
+            // alpine hack
+            if (EmbeddedUtil.IS_ALPINE_LINUX) {
+                entryName += "-alpine_linux";
+            }
+
+            JarEntry jarEntry = jar.getJarEntry(entryName + ".txz");
+            checkState(jarEntry != null, "Could not locate %s in the jar file (%s)", entryName, file.getAbsoluteFile());
+            return jar.getInputStream(jarEntry);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     @Override
@@ -76,7 +126,7 @@ public final class ZonkyIOPostgresLocator implements Supplier<InputStream> {
         return Objects.hash(architecture, os);
     }
 
-    private static String computeArchitecture() {
+    private static String computeTarXzArchitectureName() {
         String architecture = EmbeddedUtil.OS_ARCH;
         if (EmbeddedUtil.IS_ARCH_X86_64) {
             architecture = "x86_64";  // Zonky uses x86_64
@@ -89,6 +139,23 @@ public final class ZonkyIOPostgresLocator implements Supplier<InputStream> {
             }
         } else if (EmbeddedUtil.IS_ARCH_AARCH32) {
             architecture = "arm_32";
+        }
+        return architecture;
+    }
+
+    private static String computeJarArchitectureName() {
+        String architecture = EmbeddedUtil.OS_ARCH;
+        if (EmbeddedUtil.IS_ARCH_X86_64) {
+            architecture = "amd64";  // Zonky uses amd64 for the jar name
+        } else if (EmbeddedUtil.IS_ARCH_AARCH64) {
+            if (!PREFER_NATIVE && EmbeddedUtil.IS_OS_MAC) {
+                // Mac binaries are fat binaries stored as amd64
+                architecture = "amd64";
+            } else {
+                architecture = "arm64v8";
+            }
+        } else if (EmbeddedUtil.IS_ARCH_AARCH32) {
+            architecture = "arm32v7";
         }
         return architecture;
     }
