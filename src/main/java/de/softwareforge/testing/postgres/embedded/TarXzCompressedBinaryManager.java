@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.Channel;
@@ -112,6 +113,8 @@ public final class TarXzCompressedBinaryManager implements NativeBinaryManager {
                     installationDirectory = new File(installationBaseDirectory, INSTALL_DIRECTORY_PREFIX + installationDigest);
                     EmbeddedUtil.mkdirs(installationDirectory);
                 }
+            } catch (UncheckedIOException e) {
+                throw e.getCause();
             }
 
             final File unpackLockFile = new File(installationDirectory, lockFileName);
@@ -126,6 +129,8 @@ public final class TarXzCompressedBinaryManager implements NativeBinaryManager {
                         try (InputStream archiveStream = inputStreamLocator.get()) {
                             extractTxz(archiveStream, installationDirectory.getPath());
                             checkState(installationExistsFile.createNewFile(), "couldn't create %s file!", installationExistsFile);
+                        } catch (UncheckedIOException e) {
+                            throw e;
                         }
                     } else {
                         // the other guy is unpacking for us.
