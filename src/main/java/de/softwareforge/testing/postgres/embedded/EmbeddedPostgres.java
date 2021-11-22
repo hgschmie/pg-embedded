@@ -177,9 +177,9 @@ public final class EmbeddedPostgres implements AutoCloseable {
     /**
      * Creates a {@link DataSource} object that connects to the standard system database.
      * <p>
-     * The standard system database is the <pre>template1</pre> database.
+     * The standard system database is the <code>template1</code> database.
      * <p>
-     * Any modification to this database will be propagated to any new database that is created with <pre>CREATE DATABASE...</pre> unless another database is
+     * Any modification to this database will be propagated to any new database that is created with <code>CREATE DATABASE...</code> unless another database is
      * explicitly named as the template..
      */
     @NonNull
@@ -190,7 +190,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
     /**
      * Creates a {@link DataSource} object that connects to the default database.
      * <p>
-     * The default database is the <pre>postgres</pre> database.
+     * The default database is the <code>postgres</code> database.
      */
     @NonNull
     public DataSource createDefaultDataSource() throws SQLException {
