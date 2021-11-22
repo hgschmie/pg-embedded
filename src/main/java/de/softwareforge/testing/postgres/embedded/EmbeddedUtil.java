@@ -23,6 +23,7 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Comparator;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Stream;
 
@@ -76,7 +77,8 @@ final class EmbeddedUtil {
 
     static File getWorkingDirectory() {
         File tmpDir = new File(System.getProperty("java.io.tmpdir"));
-        return new File(tmpDir, "embedded-pg");
+        // personalize the unpack folder to allow systems with many users using the same tmp folder to work
+        return new File(tmpDir, "embedded-pg-" + Objects.requireNonNullElse(System.getProperty("user.name"), "unknown"));
     }
 
     //
