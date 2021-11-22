@@ -24,10 +24,10 @@ import de.softwareforge.testing.postgres.embedded.EmbeddedPostgres;
 import java.lang.reflect.Type;
 import java.sql.SQLException;
 import java.util.UUID;
-import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 
 import com.google.common.annotations.VisibleForTesting;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
@@ -72,6 +72,7 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
      *
      * @return A {@link EmbeddedPgExtensionBuilder} instance. Never null.
      */
+    @NonNull
     public static EmbeddedPgExtensionBuilder multiDatabase() {
         return new EmbeddedPgExtensionBuilder(true);
     }
@@ -82,6 +83,7 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
      *
      * @return A {@link EmbeddedPgExtensionBuilder} instance. Never null.
      */
+    @NonNull
     public static EmbeddedPgExtensionBuilder singleDatabase() {
         return new EmbeddedPgExtensionBuilder(false);
     }
@@ -105,6 +107,7 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
      * @return A {@link DataSource} instance. This is never null.
      * @throws SQLException If a problem connecting to the database occurs.
      */
+    @NonNull
     public DataSource createDataSource() throws SQLException {
         return createDatabaseInfo().asDataSource();
     }
@@ -122,6 +125,7 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
      * @return A {@link DatabaseInfo} instance. This is never null.
      * @throws SQLException If a problem connecting to the database occurs.
      */
+    @NonNull
     public DatabaseInfo createDatabaseInfo() throws SQLException {
         checkState(databaseManager != null, "no before method has been called!");
 
@@ -131,7 +135,7 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
     }
 
     @Override
-    public void beforeAll(@Nonnull ExtensionContext extensionContext) throws Exception {
+    public void beforeAll(@NonNull ExtensionContext extensionContext) throws Exception {
         checkNotNull(extensionContext, "extensionContext is null");
 
         Store pgStore = extensionContext.getStore(PG_NAMESPACE);
@@ -144,7 +148,7 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
     }
 
     @Override
-    public void afterAll(@Nonnull ExtensionContext extensionContext) throws Exception {
+    public void afterAll(@NonNull ExtensionContext extensionContext) throws Exception {
         checkNotNull(extensionContext, "extensionContext is null");
 
         Store pgStore = extensionContext.getStore(PG_NAMESPACE);
@@ -156,7 +160,7 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
     }
 
     @Override
-    public void beforeEach(@Nonnull ExtensionContext extensionContext) throws Exception {
+    public void beforeEach(@NonNull ExtensionContext extensionContext) throws Exception {
         checkNotNull(extensionContext, "extensionContext is null");
 
         Store pgStore = extensionContext.getStore(PG_NAMESPACE);
@@ -168,7 +172,7 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
     }
 
     @Override
-    public void afterEach(@Nonnull ExtensionContext extensionContext) throws Exception {
+    public void afterEach(@NonNull ExtensionContext extensionContext) throws Exception {
         checkNotNull(extensionContext, "extensionContext is null");
 
         Store pgStore = extensionContext.getStore(PG_NAMESPACE);
@@ -180,7 +184,7 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
     }
 
     @Override
-    public boolean supportsParameter(@Nonnull ParameterContext parameterContext, ExtensionContext extensionContext) {
+    public boolean supportsParameter(@NonNull ParameterContext parameterContext, ExtensionContext extensionContext) {
         Type type = parameterContext.getParameter().getType();
         return type == EmbeddedPostgres.class
                 || type == DatabaseInfo.class
@@ -188,7 +192,7 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
     }
 
     @Override
-    public Object resolveParameter(@Nonnull ParameterContext parameterContext, ExtensionContext extensionContext) {
+    public Object resolveParameter(@NonNull ParameterContext parameterContext, ExtensionContext extensionContext) {
         Type type = parameterContext.getParameter().getType();
         try {
             if (type == EmbeddedPostgres.class) {
@@ -220,6 +224,7 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
          * @return A {@link EmbeddedPgExtension} instance. Is never null.
          */
         @Override
+        @NonNull
         public EmbeddedPgExtension build() {
             DatabaseManager.Builder<DatabaseManager> databaseManagerBuilder = new DatabaseManagerBuilder(multiMode)
                     .withDataSourcePreparers(dataSourcePreparers.build());

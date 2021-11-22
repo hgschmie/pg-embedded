@@ -16,6 +16,8 @@ package de.softwareforge.testing.postgres.embedded;
 import java.sql.SQLException;
 import javax.sql.DataSource;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+
 /**
  * A DatabasePreparer applies an arbitrary set of changes (e.g. database migrations, user creation) to a database represented by the {@link DataSource}.
  * <p>
@@ -28,5 +30,5 @@ public interface DatabasePreparer {
 
     DatabasePreparer NOOP_PREPARER = ds -> {};
 
-    void prepare(DataSource ds) throws SQLException;
+    void prepare(@NonNull DataSource ds) throws SQLException;
 }

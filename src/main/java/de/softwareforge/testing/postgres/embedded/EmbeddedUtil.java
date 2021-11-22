@@ -25,11 +25,11 @@ import java.util.Comparator;
 import java.util.Locale;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Stream;
-import javax.annotation.Nonnull;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 final class EmbeddedUtil {
@@ -112,7 +112,7 @@ final class EmbeddedUtil {
     // taken from apache commons io
     //
 
-    static void mkdirs(@Nonnull File dir) {
+    static void mkdirs(@NonNull File dir) {
         if (!dir.mkdirs() && !(dir.isDirectory() && dir.exists())) {
             throw new IllegalStateException("could not create " + dir);
         }

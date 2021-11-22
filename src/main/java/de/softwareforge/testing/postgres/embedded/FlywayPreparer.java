@@ -16,10 +16,10 @@ package de.softwareforge.testing.postgres.embedded;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.function.Consumer;
-import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 
 import com.google.common.collect.ImmutableList;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.configuration.FluentConfiguration;
 
@@ -41,6 +41,7 @@ public final class FlywayPreparer implements EmbeddedPostgresPreparer<DataSource
      * @param locations One or more locations on the classpath.
      * @return A {@link FlywayPreparer} instance.
      */
+    @NonNull
     public static FlywayPreparer forClasspathLocation(String... locations) {
         FlywayPreparer preparer = new FlywayPreparer();
         preparer.addCustomizer(c -> c.locations(locations));
@@ -61,7 +62,8 @@ public final class FlywayPreparer implements EmbeddedPostgresPreparer<DataSource
      * @param customizer A {@link Consumer<FluentConfiguration>} instance. Must not be null.
      * @return This object.
      */
-    public FlywayPreparer addCustomizer(@Nonnull Consumer<FluentConfiguration> customizer) {
+    @NonNull
+    public FlywayPreparer addCustomizer(@NonNull Consumer<FluentConfiguration> customizer) {
         checkNotNull(customizer, "customizer is null");
         customizers.add(customizer);
 
@@ -72,12 +74,13 @@ public final class FlywayPreparer implements EmbeddedPostgresPreparer<DataSource
      * @deprecated Use {@link #addCustomizer(Consumer)}.
      */
     @Deprecated
-    public FlywayPreparer customize(@Nonnull Consumer<FluentConfiguration> customizer) {
+    @NonNull
+    public FlywayPreparer customize(@NonNull Consumer<FluentConfiguration> customizer) {
         return addCustomizer(customizer);
     }
 
     @Override
-    public void prepare(@Nonnull DataSource dataSource) {
+    public void prepare(@NonNull DataSource dataSource) {
         checkNotNull(dataSource, "dataSource is null");
 
         final FluentConfiguration config = Flyway.configure();

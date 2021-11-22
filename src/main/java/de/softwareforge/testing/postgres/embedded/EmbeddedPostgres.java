@@ -46,8 +46,6 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.sql.DataSource;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -56,6 +54,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.CharStreams;
 import com.google.common.io.Closeables;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.postgresql.ds.PGSimpleDataSource;
 import org.slf4j.Logger;
@@ -66,7 +66,9 @@ import org.slf4j.LoggerFactory;
  */
 public final class EmbeddedPostgres implements AutoCloseable {
 
-    /** The version of postgres used if no more specific version has been given. */
+    /**
+     * The version of postgres used if no more specific version has been given.
+     */
     public static final String POSTGRES_VERSION = System.getProperty("pg-embedded.postgres-version", "13");
 
     static final String[] LOCALHOST_SERVER_NAMES = new String[]{"localhost"};
@@ -114,6 +116,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
     /**
      * Returns an instance that has been started and configured. The {@link Builder#withDefaults()} configuration has been applied.
      */
+    @NonNull
     public static EmbeddedPostgres defaultInstance() throws IOException {
         return builderWithDefaults().build();
     }
@@ -121,6 +124,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
     /**
      * Returns a builder with default {@link Builder#withDefaults()} configuration already applied.
      */
+    @NonNull
     public static EmbeddedPostgres.Builder builderWithDefaults() {
         return new Builder().withDefaults();
     }
@@ -128,6 +132,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
     /**
      * Returns a new {@link Builder}.
      */
+    @NonNull
     public static EmbeddedPostgres.Builder builder() {
         return new Builder();
     }
@@ -177,6 +182,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
      * Any modification to this database will be propagated to any new database that is created with <pre>CREATE DATABASE...</pre> unless another database is
      * explicitly named as the template..
      */
+    @NonNull
     public DataSource createTemplateDataSource() throws SQLException {
         return createDataSource(PG_DEFAULT_USER, PG_TEMPLATE_DB, getPort(), getConnectionProperties());
     }
@@ -186,6 +192,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
      * <p>
      * The default database is the <pre>postgres</pre> database.
      */
+    @NonNull
     public DataSource createDefaultDataSource() throws SQLException {
         return createDataSource(PG_DEFAULT_USER, PG_DEFAULT_DB, getPort(), getConnectionProperties());
     }
@@ -196,7 +203,8 @@ public final class EmbeddedPostgres implements AutoCloseable {
      * Creating the DataSource does <b>not</b> create the database or the user itself. This must be done by the calling code (e.g. with a {@link
      * EmbeddedPostgresPreparer}).
      */
-    public DataSource createDataSource(String user, String databaseName) throws SQLException {
+    @NonNull
+    public DataSource createDataSource(@NonNull String user, @NonNull String databaseName) throws SQLException {
         return createDataSource(user, databaseName, getPort(), getConnectionProperties());
     }
 
@@ -229,6 +237,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
     /**
      * Returns the connection properties for the PostgreSQL server instance.
      */
+    @NonNull
     ImmutableMap<String, String> getConnectionProperties() {
         return connectionProperties;
     }
@@ -237,6 +246,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
      * Returns the instance id for the PostgreSQL server instance. This id is an alphanumeric string that can be used to differentiate between multiple embedded
      * PostgreSQL server instances.
      */
+    @NonNull
     public String instanceId() {
         return instanceId;
     }
@@ -466,7 +476,6 @@ public final class EmbeddedPostgres implements AutoCloseable {
     }
 
 
-    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     private void cleanOldDataDirectories(File parentDirectory) {
         final File[] children = parentDirectory.listFiles();
         if (children == null) {
@@ -575,7 +584,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
          * @throws SQLException For any SQL related problems.
          * @throws IOException  For any IO related problem.
          */
-        void customize(Builder builder) throws IOException, SQLException;
+        void customize(@NonNull Builder builder) throws IOException, SQLException;
     }
 
     /**
@@ -610,6 +619,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
          *
          * @return The builder itself.
          */
+        @NonNull
         public Builder withDefaults() {
             serverConfiguration.put("timezone", "UTC");
             serverConfiguration.put("synchronous_commit", "off");
@@ -623,7 +633,8 @@ public final class EmbeddedPostgres implements AutoCloseable {
          * @param serverStartupWait Startup wait time. Must not be null or negative.
          * @return The builder itself.
          */
-        public Builder setServerStartupWait(@Nonnull Duration serverStartupWait) {
+        @NonNull
+        public Builder setServerStartupWait(@NonNull Duration serverStartupWait) {
             checkNotNull(serverStartupWait, "serverStartupWait is null");
             checkArgument(!serverStartupWait.isNegative(), "Negative durations are not permitted.");
 
@@ -638,6 +649,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
          * @param removeDataOnShutdown True removes the contents of the data directory on shutdown.
          * @return The builder itself.
          */
+        @NonNull
         public Builder setRemoveDataOnShutdown(boolean removeDataOnShutdown) {
             this.removeDataOnShutdown = removeDataOnShutdown;
             return this;
@@ -650,7 +662,8 @@ public final class EmbeddedPostgres implements AutoCloseable {
          *                      writing. If the directory does not exist then the current user must be able to create it for reading and writing.
          * @return The builder itself.
          */
-        public Builder setDataDirectory(@Nonnull Path dataDirectory) {
+        @NonNull
+        public Builder setDataDirectory(@NonNull Path dataDirectory) {
             checkNotNull(dataDirectory, "dataDirectory is null");
             return setDataDirectory(dataDirectory.toFile());
         }
@@ -662,7 +675,8 @@ public final class EmbeddedPostgres implements AutoCloseable {
          *                      writing. If the directory does not exist then the current user must be able to create it for reading and writing.
          * @return The builder itself.
          */
-        public Builder setDataDirectory(@Nonnull String dataDirectory) {
+        @NonNull
+        public Builder setDataDirectory(@NonNull String dataDirectory) {
             checkNotNull(dataDirectory, "dataDirectory is null");
             return setDataDirectory(new File(dataDirectory));
         }
@@ -674,7 +688,8 @@ public final class EmbeddedPostgres implements AutoCloseable {
          *                      writing. If the directory does not exist then the current user must be able to create it for reading and writing.
          * @return The builder itself.
          */
-        public Builder setDataDirectory(@Nonnull File dataDirectory) {
+        @NonNull
+        public Builder setDataDirectory(@NonNull File dataDirectory) {
             this.dataDirectory = checkNotNull(dataDirectory, "dataDirectory is null");
             return this;
         }
@@ -690,7 +705,8 @@ public final class EmbeddedPostgres implements AutoCloseable {
          * @param value Configuration parameter value. Must not be null.
          * @return The builder itself.
          */
-        public Builder addServerConfiguration(@Nonnull String key, @Nonnull String value) {
+        @NonNull
+        public Builder addServerConfiguration(@NonNull String key, @NonNull String value) {
             checkNotNull(key, "key is null");
             checkNotNull(value, "value is null");
             this.serverConfiguration.put(key, value);
@@ -701,7 +717,8 @@ public final class EmbeddedPostgres implements AutoCloseable {
          * @deprecated Use {@link #addInitDbConfiguration(String, String)}.
          */
         @Deprecated
-        public Builder addLocaleConfiguration(@Nonnull String key, @Nonnull String value) {
+        @NonNull
+        public Builder addLocaleConfiguration(@NonNull String key, @NonNull String value) {
             checkNotNull(key, "key is null");
             checkNotNull(value, "value is null");
             this.localeConfiguration.put(key, value);
@@ -720,7 +737,8 @@ public final class EmbeddedPostgres implements AutoCloseable {
          *              a equal sign and a value assigned.
          * @return The builder itself.
          */
-        public Builder addInitDbConfiguration(@Nonnull String key, @Nonnull String value) {
+        @NonNull
+        public Builder addInitDbConfiguration(@NonNull String key, @NonNull String value) {
             checkNotNull(key, "key is null");
             checkNotNull(value, "value is null");
             this.localeConfiguration.put(key, value);
@@ -736,7 +754,8 @@ public final class EmbeddedPostgres implements AutoCloseable {
          * @param value connection property value. Must not be null.
          * @return The builder itself.
          */
-        public Builder addConnectionProperty(@Nonnull String key, @Nonnull String value) {
+        @NonNull
+        public Builder addConnectionProperty(@NonNull String key, @NonNull String value) {
             checkNotNull(key, "key is null");
             checkNotNull(value, "value is null");
             this.connectionProperties.put(key, value);
@@ -752,7 +771,8 @@ public final class EmbeddedPostgres implements AutoCloseable {
          *                                  Must not be null.
          * @return The builder itself.
          */
-        public Builder setInstallationBaseDirectory(@Nonnull File installationBaseDirectory) {
+        @NonNull
+        public Builder setInstallationBaseDirectory(@NonNull File installationBaseDirectory) {
             checkNotNull(installationBaseDirectory, "installationBaseDirectory is null");
             this.installationBaseDirectory = installationBaseDirectory;
             this.nativeBinaryManager = null;
@@ -766,6 +786,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
          * @param port The port to use. Must be &gt; 1023 and &lt; 65536.
          * @return The builder itself.
          */
+        @NonNull
         public Builder setPort(int port) {
             checkState(port > 1023 && port < 65535, "Port %s is not within 1024..65535", port);
             this.port = port;
@@ -778,7 +799,8 @@ public final class EmbeddedPostgres implements AutoCloseable {
          * @param errRedirector a {@link ProcessBuilder.Redirect} instance. Must not be null.
          * @return The builder itself.
          */
-        public Builder setErrorRedirector(@Nonnull ProcessBuilder.Redirect errRedirector) {
+        @NonNull
+        public Builder setErrorRedirector(@NonNull ProcessBuilder.Redirect errRedirector) {
             this.errRedirector = checkNotNull(errRedirector, "errRedirector is null");
             return this;
         }
@@ -789,7 +811,8 @@ public final class EmbeddedPostgres implements AutoCloseable {
          * @param outRedirector a {@link ProcessBuilder.Redirect} instance. Must not be null.
          * @return The builder itself.
          */
-        public Builder setOutputRedirector(@Nonnull ProcessBuilder.Redirect outRedirector) {
+        @NonNull
+        public Builder setOutputRedirector(@NonNull ProcessBuilder.Redirect outRedirector) {
             this.outRedirector = checkNotNull(outRedirector, "outRedirector is null");
             return this;
         }
@@ -802,7 +825,8 @@ public final class EmbeddedPostgres implements AutoCloseable {
          * @param nativeBinaryManager A {@link NativeBinaryManager} implementation. Must not be null.
          * @return The builder itself.
          */
-        public Builder setNativeBinaryManager(@Nonnull NativeBinaryManager nativeBinaryManager) {
+        @NonNull
+        public Builder setNativeBinaryManager(@NonNull NativeBinaryManager nativeBinaryManager) {
             this.nativeBinaryManager = checkNotNull(nativeBinaryManager, "nativeBinaryManager is null");
             return this;
         }
@@ -815,7 +839,8 @@ public final class EmbeddedPostgres implements AutoCloseable {
          * @param directory A local directory that contains a standard PostgreSQL installation. The directory must exist and read and executable.
          * @return The builder itself.
          */
-        public Builder useLocalPostgresInstallation(@Nonnull File directory) {
+        @NonNull
+        public Builder useLocalPostgresInstallation(@NonNull File directory) {
             checkNotNull(directory, "directory is null");
             checkState(directory.exists() && directory.isDirectory(), "'%s' either does not exist or is not a directory!", directory);
             return setNativeBinaryManager(() -> directory);
@@ -827,6 +852,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
          * @return A {@link EmbeddedPostgres} instance representing a started PostgreSQL server.
          * @throws IOException If the server could not be installed or started.
          */
+        @NonNull
         public EmbeddedPostgres build() throws IOException {
             // Builder Id
             final String instanceId = EmbeddedUtil.randomAlphaNumeric(16);

@@ -278,6 +278,7 @@
                         <links>
                             <link>https://junit.org/junit5/docs/${dep.junit5.version}/api/</link>
                             <link>https://javadoc.io/doc/com.google.guava/guava/${dep.guava.version}/</link>
+                            <link>https://javadoc.io/doc/com.github.spotbugs/spotbugs-annotations/${dep.spotbugs.version}</link>
                         </links>
                         <author>false</author>
                         <detectJavaApiLink>true</detectJavaApiLink>

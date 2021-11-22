@@ -19,11 +19,11 @@ import static java.lang.String.format;
 import java.sql.SQLException;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableMap;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Information about a database located on a PostgreSQL server connected to an {@link EmbeddedPostgres} instance.
@@ -51,7 +51,7 @@ public abstract class DatabaseInfo {
      *
      * @return Name of the database. Is never null.
      */
-    @Nonnull
+    @NonNull
     public abstract String dbName();
 
     /**
@@ -66,7 +66,7 @@ public abstract class DatabaseInfo {
      *
      * @return The user name. Is never null.
      */
-    @Nonnull
+    @NonNull
     public abstract String user();
 
     /**
@@ -76,25 +76,30 @@ public abstract class DatabaseInfo {
      *
      * @return Map of key-value pairs representing data source connection properties.
      */
+    @NonNull
     public abstract ImmutableMap<String, String> connectionProperties();
 
+    @NonNull
     abstract Optional<SQLException> exception();
 
+    @NonNull
     static Builder builder() {
         return new AutoValue_DatabaseInfo.Builder()
                 .dbName(PG_DEFAULT_DB)
                 .user(PG_DEFAULT_USER);
     }
 
+    @NonNull
     static DatabaseInfo forException(SQLException e) {
         return builder().exception(e).port(-1).build();
     }
 
     /**
      * Returns a JDBC url to connect to the described database.
+     *
      * @return A JDBC url that can be used to connect to the database. Never null.
      */
-    @Nonnull
+    @NonNull
     public String asJdbcUrl() {
         checkState(exception().isEmpty(), "DatabaseInfo contains SQLException: %s", exception());
 
@@ -110,6 +115,7 @@ public abstract class DatabaseInfo {
      * @return An initialized {@link DataSource} object. Never null.
      * @throws SQLException A problem occured trying to connect to the database.
      */
+    @NonNull
     public DataSource asDataSource() throws SQLException {
         if (exception().isPresent()) {
             throw exception().get();

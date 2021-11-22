@@ -18,8 +18,9 @@ import de.softwareforge.testing.postgres.embedded.DatabasePreparer;
 import de.softwareforge.testing.postgres.embedded.EmbeddedPostgres;
 import de.softwareforge.testing.postgres.embedded.EmbeddedPostgresPreparer;
 
-import javax.annotation.Nonnull;
 import javax.sql.DataSource;
+
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Create a new PostgreSQL server that supports multiple databases. Each database is cloned from a template.
@@ -35,6 +36,7 @@ public final class MultiDatabaseBuilder {
      *
      * @return A {@link DatabaseManager.Builder<EmbeddedPgExtension>} instance that can be customized further.
      */
+    @NonNull
     public static DatabaseManager.Builder<EmbeddedPgExtension> instance() {
         return EmbeddedPgExtension.multiDatabase();
     }
@@ -44,6 +46,7 @@ public final class MultiDatabaseBuilder {
      *
      * @return A {@link DatabaseManager.Builder<EmbeddedPgExtension>} instance that can be customized further.
      */
+    @NonNull
     public static DatabaseManager.Builder<EmbeddedPgExtension> instanceWithDefaults() {
         return EmbeddedPgExtension.multiDatabase().withInstancePreparer(EmbeddedPostgres.Builder::withDefaults);
     }
@@ -52,7 +55,8 @@ public final class MultiDatabaseBuilder {
      * @deprecated Use {@link #preparedInstance(EmbeddedPostgresPreparer)}.
      */
     @Deprecated
-    public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstance(@Nonnull DatabasePreparer preparer) {
+    @NonNull
+    public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstance(@NonNull DatabasePreparer preparer) {
         return EmbeddedPgExtension.multiDatabase().withPreparer(preparer);
     }
 
@@ -60,7 +64,8 @@ public final class MultiDatabaseBuilder {
      * @deprecated Use {@link #preparedInstanceWithDefaults(EmbeddedPostgresPreparer)}.
      */
     @Deprecated
-    public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstanceWithDefaults(@Nonnull DatabasePreparer preparer) {
+    @NonNull
+    public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstanceWithDefaults(@NonNull DatabasePreparer preparer) {
         return EmbeddedPgExtension.multiDatabase().withPreparer(preparer).withInstancePreparer(EmbeddedPostgres.Builder::withDefaults);
     }
 
@@ -70,7 +75,8 @@ public final class MultiDatabaseBuilder {
      * @param dataSourcePreparer A {@link EmbeddedPostgresPreparer<DataSource>} instance. Must not be null.
      * @return A {@link DatabaseManager.Builder<EmbeddedPgExtension>} instance that can be customized further.
      */
-    public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstance(@Nonnull EmbeddedPostgresPreparer<DataSource> dataSourcePreparer) {
+    @NonNull
+    public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstance(@NonNull EmbeddedPostgresPreparer<DataSource> dataSourcePreparer) {
         return EmbeddedPgExtension.multiDatabase().withDataSourcePreparer(dataSourcePreparer);
     }
 
@@ -81,7 +87,8 @@ public final class MultiDatabaseBuilder {
      * @param dataSourcePreparer A {@link EmbeddedPostgresPreparer<DataSource>} instance. Must not be null.
      * @return A {@link DatabaseManager.Builder<EmbeddedPgExtension>} instance that can be customized further.
      */
-    public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstanceWithDefaults(@Nonnull EmbeddedPostgresPreparer<DataSource> dataSourcePreparer) {
+    @NonNull
+    public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstanceWithDefaults(@NonNull EmbeddedPostgresPreparer<DataSource> dataSourcePreparer) {
         return EmbeddedPgExtension.multiDatabase().withDataSourcePreparer(dataSourcePreparer).withInstancePreparer(EmbeddedPostgres.Builder::withDefaults);
     }
 }

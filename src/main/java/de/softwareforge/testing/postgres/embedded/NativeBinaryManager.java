@@ -16,6 +16,8 @@ package de.softwareforge.testing.postgres.embedded;
 import java.io.File;
 import java.io.IOException;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+
 /**
  * Returns an installation location for a native binary. The implementation is responsible for locating and optionally unpacking installing the binary.
  */
@@ -28,5 +30,6 @@ public interface NativeBinaryManager {
      * @return Installation directory with the native binary installed.
      * @throws IOException If the binary could not be located or installed.
      */
+    @NonNull
     File getLocation() throws IOException;
 }
