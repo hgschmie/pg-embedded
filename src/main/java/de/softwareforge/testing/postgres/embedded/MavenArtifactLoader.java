@@ -62,6 +62,8 @@ class MavenArtifactLoader {
 
     private static final Logger LOG = LoggerFactory.getLogger(MavenArtifactLoader.class);
 
+    private static final RemoteRepository CENTRAL_REPO = new RemoteRepository.Builder("central", "default", "https://repo.maven.apache.org/maven2/").build();
+
     private static final String USER_HOME = System.getProperty("user.home");
     private static final File USER_MAVEN_HOME = new File(USER_HOME, ".m2");
     private static final String ENV_M2_HOME = System.getenv("M2_HOME");
@@ -104,6 +106,7 @@ class MavenArtifactLoader {
         try {
             ArtifactResult artifactResult = this.repositorySystem.resolveArtifact(mavenSession, artifactRequest);
             Artifact artifact = artifactResult.getArtifact();
+            LOG.info(format("Using PostgreSQL version %s", version));
             return artifact.getFile();
         } catch (RepositoryException e) {
             throw new IOException(e);
@@ -172,6 +175,7 @@ class MavenArtifactLoader {
         Map<String, Profile> profiles = settings.getProfilesAsMap();
         ImmutableList.Builder<RemoteRepository> builder = ImmutableList.builder();
 
+        boolean foundRepository = false;
         for (String profileName : settings.getActiveProfiles()) {
             Profile profile = profiles.get(profileName);
             if (profile != null) {
@@ -179,9 +183,14 @@ class MavenArtifactLoader {
                 if (repositories != null) {
                     for (Repository repo : repositories) {
                         builder.add(new RemoteRepository.Builder(repo.getId(), "default", repo.getUrl()).build());
+                        foundRepository = true;
                     }
                 }
             }
+        }
+
+        if (!foundRepository && !settings.isOffline()) {
+            builder.add(CENTRAL_REPO);
         }
 
         return builder.build();
