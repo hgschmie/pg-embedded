@@ -153,6 +153,12 @@
 
         <dependency>
             <groupId>org.apache.maven.resolver</groupId>
+            <artifactId>maven-resolver-spi</artifactId>
+            <version>${dep.maven-resolver.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.maven.resolver</groupId>
             <artifactId>maven-resolver-impl</artifactId>
             <version>${dep.maven-resolver.version}</version>
         </dependency>
@@ -178,6 +184,12 @@
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-resolver-provider</artifactId>
+            <version>${dep.maven.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-settings</artifactId>
             <version>${dep.maven.version}</version>
         </dependency>
 

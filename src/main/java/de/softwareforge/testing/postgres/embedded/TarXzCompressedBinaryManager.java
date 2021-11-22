@@ -123,9 +123,10 @@ public final class TarXzCompressedBinaryManager implements NativeBinaryManager {
                     if (unpackLock != null) {
                         checkState(!installationExistsFile.exists(), "unpack lock acquired but .exists file is present " + installationExistsFile);
                         LOG.info("extracting archive...");
-                        InputStream archiveStream = inputStreamLocator.get();
-                        extractTxz(archiveStream, installationDirectory.getPath());
-                        checkState(installationExistsFile.createNewFile(), "couldn't create %s file!", installationExistsFile);
+                        try (InputStream archiveStream = inputStreamLocator.get()) {
+                            extractTxz(archiveStream, installationDirectory.getPath());
+                            checkState(installationExistsFile.createNewFile(), "couldn't create %s file!", installationExistsFile);
+                        }
                     } else {
                         // the other guy is unpacking for us.
                         int maxAttempts = 60;

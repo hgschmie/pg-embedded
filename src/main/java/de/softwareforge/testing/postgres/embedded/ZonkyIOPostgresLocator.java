@@ -18,6 +18,7 @@ import static com.google.common.base.Preconditions.checkState;
 import static java.lang.String.format;
 
 import java.io.File;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
@@ -60,10 +61,6 @@ public final class ZonkyIOPostgresLocator implements Supplier<InputStream> {
 
     @Override
     public InputStream get() {
-        return getSupplier();
-    }
-
-    private InputStream getSupplier() {
         File artifactFile = fileSupplier.get();
         return createJarStream(artifactFile);
     }
@@ -98,7 +95,18 @@ public final class ZonkyIOPostgresLocator implements Supplier<InputStream> {
 
             JarEntry jarEntry = jar.getJarEntry(entryName + ".txz");
             checkState(jarEntry != null, "Could not locate %s in the jar file (%s)", entryName, file.getAbsoluteFile());
-            return jar.getInputStream(jarEntry);
+
+            // When the input stream gets closed, close the jar file as well.
+            return new FilterInputStream(jar.getInputStream(jarEntry)) {
+                @Override
+                public void close() throws IOException {
+                    try {
+                        super.close();
+                    } finally {
+                        jar.close();
+                    }
+                }
+            };
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
