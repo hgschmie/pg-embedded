@@ -14,6 +14,7 @@
 
 package de.softwareforge.testing.postgres.embedded;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.String.format;
 
@@ -48,15 +49,18 @@ public final class ZonkyIOPostgresLocator implements Supplier<InputStream> {
 
     private final String architecture;
     private final String os;
+    private final String serverVersion;
 
     private final MavenArtifactLoader artifactLoader = new MavenArtifactLoader();
 
     private final Supplier<File> fileSupplier = Suppliers.memoize(this::loadArtifact);
 
-    ZonkyIOPostgresLocator() {
+    ZonkyIOPostgresLocator(String serverVersion) {
+        this.serverVersion = checkNotNull(serverVersion, "serverVersion is null");
+
         this.os = computeOS();
         this.architecture = computeTarXzArchitectureName();
-        LOG.debug(format("Detected a %s %s system", architecture, os));
+        LOG.debug(format("Detected a %s %s system, using PostgreSQL version %s", architecture, os, serverVersion));
     }
 
     @Override
@@ -74,7 +78,7 @@ public final class ZonkyIOPostgresLocator implements Supplier<InputStream> {
                 artifactId += "-alpine";
             }
 
-            String version = artifactLoader.findLatestVersion(ZONKY_GROUP_ID, artifactId, EmbeddedPostgres.POSTGRES_VERSION);
+            String version = artifactLoader.findLatestVersion(ZONKY_GROUP_ID, artifactId, serverVersion);
             File file = artifactLoader.getArtifactFile(ZONKY_GROUP_ID, artifactId, version);
             checkState(file != null && file.exists(), "Could not locate artifact file for %s:%s", artifactId, version);
             return file;
@@ -114,7 +118,7 @@ public final class ZonkyIOPostgresLocator implements Supplier<InputStream> {
 
     @Override
     public String toString() {
-        return format("ZonkyIO Stream locator for PostgreSQL (arch: %s os: %s)", architecture, os);
+        return format("ZonkyIO Stream locator for PostgreSQL (arch: %s os: %s, version: %s)", architecture, os, serverVersion);
     }
 
     @Override
@@ -126,12 +130,12 @@ public final class ZonkyIOPostgresLocator implements Supplier<InputStream> {
             return false;
         }
         ZonkyIOPostgresLocator that = (ZonkyIOPostgresLocator) o;
-        return architecture.equals(that.architecture) && os.equals(that.os);
+        return architecture.equals(that.architecture) && os.equals(that.os) && serverVersion.equals(that.serverVersion);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(architecture, os);
+        return Objects.hash(architecture, os, serverVersion);
     }
 
     private static String computeTarXzArchitectureName() {
