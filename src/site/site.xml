@@ -31,7 +31,9 @@
     </custom>
     <body>
         <menu name="Documentation">
-            <item name="Introduction" href="index.html"/>
+            <item name="Overview" href="index.html"/>
+            <item name="Using EmbeddedPostgres" href="using_embedded_postgres.html" />
+            <item name="Using DatabaseManager" href="using_database_manager.html" />
         </menu>
         <menu name="Stuff">
             <item name="License" href="https://www.apache.org/licenses/LICENSE-2.0" />
