@@ -56,7 +56,6 @@ import com.google.common.io.CharStreams;
 import com.google.common.io.Closeables;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.postgresql.ds.PGSimpleDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -308,7 +307,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
     private void initDatabase() throws IOException {
         ImmutableList.Builder<String> commandBuilder = ImmutableList.builder();
         commandBuilder.add(pgBin("initdb"))
-                .addAll(createLocaleOptions())
+                .addAll(createInitDbOptions())
                 .add("-A", "trust",
                         "-U", PG_DEFAULT_USER,
                         "-D", this.dataDirectory.getPath(),
@@ -366,7 +365,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
     }
 
     @VisibleForTesting
-    List<String> createLocaleOptions() {
+    List<String> createInitDbOptions() {
         final ImmutableList.Builder<String> localeOptions = ImmutableList.builder();
 
         localeConfiguration.forEach((key, value) -> {
@@ -730,7 +729,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
          * <p>
          * Each value is added as a command line parameter to the command.
          * <p>
-         * See https://www.postgresql.org/docs/13/app-initdb.html for an overview of possible values.
+         * See the <a href="https://www.postgresql.org/docs/13/app-initdb.html">PostgreSQL initdb documentation</a> for an overview of possible values.
          *
          * @param key   initdb parameter name. Must not be null.
          * @param value initdb parameter value. Must not be null. When the empty string is used as the value, the resulting command line parameter will not have
@@ -780,7 +779,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
         }
 
         /**
-         * Explicitly set the TCP port for the PostgresQL server. If the port is not available, starting the server will fail. Default is to find and use an
+         * Explicitly set the TCP port for the PostgreSQL server. If the port is not available, starting the server will fail. Default is to find and use an
          * available TCP port.
          *
          * @param port The port to use. Must be &gt; 1023 and &lt; 65536.

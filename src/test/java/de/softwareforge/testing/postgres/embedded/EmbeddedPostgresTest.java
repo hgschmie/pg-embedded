@@ -112,7 +112,7 @@ public class EmbeddedPostgresTest {
             assertEquals(lcMessages, localeConfig.get("lc-messages"));
             assertEquals("", localeConfig.get("no-sync"));
 
-            List<String> options = pg.createLocaleOptions();
+            List<String> options = pg.createInitDbOptions();
             assertTrue(options.contains("--locale=" + locale));
             assertTrue(options.contains("--lc-messages=" + lcMessages));
             assertTrue(options.contains("--no-sync"));
