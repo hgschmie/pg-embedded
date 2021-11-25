@@ -356,9 +356,13 @@ public final class EmbeddedPostgres implements AutoCloseable {
                 "-p", Integer.toString(port),
                 "-F");
 
-        serverConfiguration.forEach((k, v) -> {
+        serverConfiguration.forEach((key, value) -> {
             initOptions.add("-c");
-            initOptions.add(k + "=" + v);
+            if (value.length() > 0) {
+                initOptions.add(key + "=" + value);
+            } else {
+                initOptions.add(key + "=true");
+            }
         });
 
         return initOptions.build();
