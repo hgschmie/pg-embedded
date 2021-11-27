@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.Channel;
@@ -33,18 +32,12 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
-import java.security.DigestInputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Phaser;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Supplier;
 
-import com.google.common.io.BaseEncoding;
-import com.google.common.io.ByteStreams;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
@@ -59,37 +52,35 @@ public final class TarXzCompressedBinaryManager implements NativeBinaryManager {
 
     private static final Logger LOG = LoggerFactory.getLogger(TarXzCompressedBinaryManager.class);
 
-    private static final String INSTALL_DIRECTORY_PREFIX = "PG-";
-
-    private static final Map<Supplier<InputStream>, File> KNOWN_INSTALLATIONS = new ConcurrentHashMap<>();
+    private static final Map<NativeBinaryLocator, File> KNOWN_INSTALLATIONS = new ConcurrentHashMap<>();
 
     private final Lock prepareBinariesLock = new ReentrantLock();
 
     private final File installationBaseDirectory;
     private final String lockFileName;
-    private final Supplier<InputStream> inputStreamLocator;
+    private final NativeBinaryLocator nativeBinaryLocator;
 
     /**
      * Creates a new binary manager for tar-xz compressed archives.
      * <p>
-     * The implementation of {@link Supplier<InputStream>} to locate the stream that gets unpacked must satisfy the following criteria:
+     * The implementation of {@link NativeBinaryLocator} to locate the stream that gets unpacked must satisfy the following criteria:
      * <ul>
      *     <li>It must implement {@link #equals(Object)} and {@link #hashCode()}.</li>
      *     <li>It should implement {@link #toString()} to return meaningful information about the locator.</li>
-     *     <li>It must allow multiple calls to {@link Supplier#get()} which all return the same, byte-identical contents.
+     *     <li>It must allow multiple calls to {@link NativeBinaryLocator#getInputStream()} which all return the same, byte-identical contents.
      *     The operation should be cheap as it may be called multiple times.</li>
      * </ul>
      *
      * @param installationBaseDirectory Base directory in which the binary distribution is unpacked. Must not be null.
      * @param lockFileName              Name of a file to use as file lock when unpacking the disttribution.
-     * @param inputStreamLocator        An implementation of {@link Supplier<InputStream>} that satisfies the conditions above. Must not be null.
+     * @param nativeBinaryLocator       An implementation of {@link NativeBinaryLocator} that satisfies the conditions above. Must not be null.
      */
     public TarXzCompressedBinaryManager(@NonNull File installationBaseDirectory,
             @NonNull String lockFileName,
-            @NonNull Supplier<InputStream> inputStreamLocator) {
+            @NonNull NativeBinaryLocator nativeBinaryLocator) {
         this.installationBaseDirectory = checkNotNull(installationBaseDirectory, "installationBaseDirectory is null");
         this.lockFileName = checkNotNull(lockFileName, "lockFileName is null");
-        this.inputStreamLocator = checkNotNull(inputStreamLocator, "inputStreamLocator is null");
+        this.nativeBinaryLocator = checkNotNull(nativeBinaryLocator, "nativeBinaryLocator is null");
 
         checkState(this.installationBaseDirectory.setWritable(true, false),
                 "Could not make install base directory %s writable!", this.installationBaseDirectory);
@@ -99,24 +90,17 @@ public final class TarXzCompressedBinaryManager implements NativeBinaryManager {
     @NonNull
     public File getLocation() throws IOException {
 
-        File installationDirectory = KNOWN_INSTALLATIONS.get(inputStreamLocator);
+        // the installation cache saves ~ 1% CPU according to the profiler
+        File installationDirectory = KNOWN_INSTALLATIONS.get(nativeBinaryLocator);
         if (installationDirectory != null && installationDirectory.exists()) {
             return installationDirectory;
         }
 
         prepareBinariesLock.lock();
         try {
-            try (InputStream installationArchive = inputStreamLocator.get()) {
-                checkState(installationArchive != null, "Locator '%s' did not find a suitable archive to unpack!", inputStreamLocator);
-                try (DigestInputStream archiveDigestStream = new DigestInputStream(installationArchive, MessageDigest.getInstance("MD5"))) {
-                    ByteStreams.exhaust(archiveDigestStream);
-                    String installationDigest = BaseEncoding.base16().encode(archiveDigestStream.getMessageDigest().digest());
-                    installationDirectory = new File(installationBaseDirectory, INSTALL_DIRECTORY_PREFIX + installationDigest);
-                    EmbeddedUtil.mkdirs(installationDirectory);
-                }
-            } catch (UncheckedIOException e) {
-                throw e.getCause();
-            }
+            String installationIdentifier = nativeBinaryLocator.getIdentifier();
+            installationDirectory = new File(installationBaseDirectory, installationIdentifier);
+            EmbeddedUtil.mkdirs(installationDirectory);
 
             final File unpackLockFile = new File(installationDirectory, lockFileName);
             final File installationExistsFile = new File(installationDirectory, ".exists");
@@ -127,11 +111,9 @@ public final class TarXzCompressedBinaryManager implements NativeBinaryManager {
                     if (unpackLock != null) {
                         checkState(!installationExistsFile.exists(), "unpack lock acquired but .exists file is present " + installationExistsFile);
                         LOG.info("extracting archive...");
-                        try (InputStream archiveStream = inputStreamLocator.get()) {
+                        try (InputStream archiveStream = nativeBinaryLocator.getInputStream()) {
                             extractTxz(archiveStream, installationDirectory.getPath());
                             checkState(installationExistsFile.createNewFile(), "couldn't create %s file!", installationExistsFile);
-                        } catch (UncheckedIOException e) {
-                            throw e;
                         }
                     } else {
                         // the other guy is unpacking for us.
@@ -148,12 +130,10 @@ public final class TarXzCompressedBinaryManager implements NativeBinaryManager {
                 }
             }
 
-            KNOWN_INSTALLATIONS.putIfAbsent(inputStreamLocator, installationDirectory);
+            KNOWN_INSTALLATIONS.putIfAbsent(nativeBinaryLocator, installationDirectory);
             LOG.debug(format("Unpacked archive at %s", installationDirectory));
             return installationDirectory;
 
-        } catch (final NoSuchAlgorithmException e) {
-            throw new IOException(e);
         } catch (final InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new IOException(e);

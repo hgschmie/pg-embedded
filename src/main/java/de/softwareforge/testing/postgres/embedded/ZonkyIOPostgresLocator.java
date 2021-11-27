@@ -23,12 +23,16 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import com.google.common.base.Suppliers;
+import com.google.common.hash.HashCode;
+import com.google.common.hash.Hashing;
+import com.google.common.io.BaseEncoding;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +42,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  * See <a href="https://github.com/zonkyio/embedded-postgres-binaries">The Zonky IO github page</a> for more details.
  */
-public final class ZonkyIOPostgresLocator implements Supplier<InputStream> {
+public final class ZonkyIOPostgresLocator implements NativeBinaryLocator {
 
     private static final String ZONKY_GROUP_ID = "io.zonky.test.postgres";
     private static final String ZONKY_ARTIFACT_ID_TEMPLATE = "embedded-postgres-binaries-%s-%s";
@@ -64,9 +68,25 @@ public final class ZonkyIOPostgresLocator implements Supplier<InputStream> {
     }
 
     @Override
-    public InputStream get() {
-        File artifactFile = fileSupplier.get();
-        return createJarStream(artifactFile);
+    public InputStream getInputStream() throws IOException {
+        try {
+            File artifactFile = fileSupplier.get();
+            return createJarStream(artifactFile);
+        } catch (UncheckedIOException e) {
+            throw e.getCause();
+        }
+    }
+
+    @Override
+    public String getIdentifier() throws IOException {
+        // the optimized identifier computation saves ~ 1% CPU according to the profiler
+        try {
+            File artifactFile = fileSupplier.get();
+            HashCode hashCode = Hashing.murmur3_128().hashString(artifactFile.getAbsolutePath(), StandardCharsets.UTF_8);
+            return INSTALL_DIRECTORY_PREFIX + BaseEncoding.base16().encode(hashCode.asBytes());
+        } catch (UncheckedIOException e) {
+            throw e.getCause();
+        }
     }
 
     private File loadArtifact() {

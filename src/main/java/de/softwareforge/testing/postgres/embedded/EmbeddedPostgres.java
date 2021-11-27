@@ -81,7 +81,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
     private static final long MINIMUM_AGE_IN_MS = Duration.ofMinutes(10).toMillis();
 
     // prefix for data folders in the parent that might be deleted
-    private static final String DATA_DIRECTORY_PREFIX = "epd-";
+    private static final String DATA_DIRECTORY_PREFIX = "data-";
 
     private static final String PG_STOP_MODE = "fast";
     private static final String PG_STOP_WAIT_SECONDS = "5";
