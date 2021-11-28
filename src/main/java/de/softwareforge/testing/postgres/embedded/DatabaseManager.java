@@ -328,6 +328,19 @@ public final class DatabaseManager implements AutoCloseable {
         }
 
         /**
+         * Add preparers for the {@link EmbeddedPostgres.Builder} object. Each preparer is called once when the {@link EmbeddedPostgres} instance that manages
+         * the server is created.
+         *
+         * @param instancePreparers A set of {@link EmbeddedPostgresPreparer<EmbeddedPostgres.Builder>} instances. Must not be null.
+         * @return This object instance.
+         */
+        @NonNull
+        public Builder<T> withInstancePreparers(@NonNull Set<EmbeddedPostgresPreparer<EmbeddedPostgres.Builder>> instancePreparers) {
+            this.instancePreparers.addAll(checkNotNull(instancePreparers, "instancePreparers is null"));
+            return this;
+        }
+
+        /**
          * @deprecated Use {@link #withInstancePreparer(EmbeddedPostgresPreparer)}.
          */
         @Deprecated

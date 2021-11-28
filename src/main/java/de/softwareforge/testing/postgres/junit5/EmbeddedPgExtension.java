@@ -67,8 +67,8 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
     }
 
     /**
-     * Creates a new {@link EmbeddedPgExtensionBuilder} that allows further customization of the {@link EmbeddedPgExtension}. The resulting extension manages the
-     * database server in multi-mode (creating multiple databases).
+     * Creates a new {@link EmbeddedPgExtensionBuilder} that allows further customization of the {@link EmbeddedPgExtension}. The resulting extension manages
+     * the database server in multi-mode (creating multiple databases).
      *
      * @return A {@link EmbeddedPgExtensionBuilder} instance. Never null.
      */
@@ -78,8 +78,8 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
     }
 
     /**
-     * Creates a new {@link EmbeddedPgExtensionBuilder} that allows further customization of the {@link EmbeddedPgExtension}. The resulting extension manages the
-     * database server in single-mode (using a single database instance).
+     * Creates a new {@link EmbeddedPgExtensionBuilder} that allows further customization of the {@link EmbeddedPgExtension}. The resulting extension manages
+     * the database server in single-mode (using a single database instance).
      *
      * @return A {@link EmbeddedPgExtensionBuilder} instance. Never null.
      */
@@ -227,9 +227,9 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
         @NonNull
         public EmbeddedPgExtension build() {
             DatabaseManager.Builder<DatabaseManager> databaseManagerBuilder = new DatabaseManagerBuilder(multiMode)
-                    .withDatabasePreparers(databasePreparers.build());
+                    .withDatabasePreparers(databasePreparers.build())
+                    .withInstancePreparers(instancePreparers.build());
 
-            instancePreparers.build().forEach(databaseManagerBuilder::withInstancePreparer);
             return new EmbeddedPgExtension(databaseManagerBuilder);
         }
     }
