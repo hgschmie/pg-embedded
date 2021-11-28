@@ -73,23 +73,23 @@ public final class SingleDatabaseBuilder {
     /**
      * Create a builder and register a {@link EmbeddedPostgresPreparer<DataSource>} to set up the database.
      *
-     * @param dataSourcePreparer A {@link EmbeddedPostgresPreparer<DataSource>} instance. Must not be null.
+     * @param databasePreparer A {@link EmbeddedPostgresPreparer<DataSource>} instance. Must not be null.
      * @return A {@link DatabaseManager.Builder<EmbeddedPgExtension>} instance that can be customized further.
      */
     @NonNull
-    public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstance(@NonNull EmbeddedPostgresPreparer<DataSource> dataSourcePreparer) {
-        return EmbeddedPgExtension.singleDatabase().withDataSourcePreparer(dataSourcePreparer);
+    public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstance(@NonNull EmbeddedPostgresPreparer<DataSource> databasePreparer) {
+        return EmbeddedPgExtension.singleDatabase().withDatabasePreparer(databasePreparer);
     }
 
     /**
      * Create a builder with standard initializations ({@link EmbeddedPostgres.Builder#withDefaults()}) applied and register a {@link
      * EmbeddedPostgresPreparer<DataSource>} to set up the database.
      *
-     * @param dataSourcePreparer A {@link EmbeddedPostgresPreparer<DataSource>} instance. Must not be null.
+     * @param databasePreparer A {@link EmbeddedPostgresPreparer<DataSource>} instance. Must not be null.
      * @return A {@link DatabaseManager.Builder<EmbeddedPgExtension>} instance that can be customized further.
      */
     @NonNull
-    public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstanceWithDefaults(@NonNull EmbeddedPostgresPreparer<DataSource> dataSourcePreparer) {
-        return EmbeddedPgExtension.singleDatabase().withDataSourcePreparer(dataSourcePreparer).withInstancePreparer(EmbeddedPostgres.Builder::withDefaults);
+    public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstanceWithDefaults(@NonNull EmbeddedPostgresPreparer<DataSource> databasePreparer) {
+        return EmbeddedPgExtension.singleDatabase().withDatabasePreparer(databasePreparer).withInstancePreparer(EmbeddedPostgres.Builder::withDefaults);
     }
 }

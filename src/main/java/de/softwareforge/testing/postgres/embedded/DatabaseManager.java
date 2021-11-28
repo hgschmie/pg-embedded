@@ -49,17 +49,17 @@ public final class DatabaseManager implements AutoCloseable {
     private final AtomicBoolean closed = new AtomicBoolean();
     private final AtomicBoolean started = new AtomicBoolean();
 
-    private final Set<EmbeddedPostgresPreparer<DataSource>> dataSourcePreparers;
+    private final Set<EmbeddedPostgresPreparer<DataSource>> databasePreparers;
     private final Set<EmbeddedPostgresPreparer<EmbeddedPostgres.Builder>> instancePreparers;
     private final boolean multiMode;
 
     private volatile InstanceProvider instanceProvider = null;
     private volatile EmbeddedPostgres pg = null;
 
-    private DatabaseManager(Set<EmbeddedPostgresPreparer<DataSource>> dataSourcePreparers,
+    private DatabaseManager(Set<EmbeddedPostgresPreparer<DataSource>> databasePreparers,
             Set<EmbeddedPostgresPreparer<EmbeddedPostgres.Builder>> instancePreparers,
             boolean multiMode) {
-        this.dataSourcePreparers = checkNotNull(dataSourcePreparers, "dataSourcePreparers is null");
+        this.databasePreparers = checkNotNull(databasePreparers, "databasePreparers is null");
         this.instancePreparers = checkNotNull(instancePreparers, "instancePreparers is null");
         this.multiMode = multiMode;
     }
@@ -107,21 +107,21 @@ public final class DatabaseManager implements AutoCloseable {
             final DataSource dataSource;
 
             if (multiMode) {
-                // apply datasource setup to the template database.
+                // apply database setup to the template database.
                 dataSource = pg.createTemplateDataSource();
 
                 // the provider pipeline will create new instances based on the template database.
                 this.instanceProvider = new InstanceProviderPipeline();
             } else {
-                // apply datasource setup to the default database.
+                // apply database setup to the default database.
                 dataSource = pg.createDefaultDataSource();
 
                 // always return a reference to the default database.
                 this.instanceProvider = () -> pg.createDefaultDatabaseInfo();
             }
 
-            for (EmbeddedPostgresPreparer<DataSource> dataSourcePreparer : dataSourcePreparers) {
-                dataSourcePreparer.prepare(dataSource);
+            for (EmbeddedPostgresPreparer<DataSource> databasePreparer : databasePreparers) {
+                databasePreparer.prepare(dataSource);
             }
 
             this.instanceProvider.start();
@@ -263,7 +263,7 @@ public final class DatabaseManager implements AutoCloseable {
      */
     public abstract static class Builder<T> {
 
-        protected ImmutableSet.Builder<EmbeddedPostgresPreparer<DataSource>> dataSourcePreparers = ImmutableSet.builder();
+        protected ImmutableSet.Builder<EmbeddedPostgresPreparer<DataSource>> databasePreparers = ImmutableSet.builder();
         protected ImmutableSet.Builder<EmbeddedPostgresPreparer<EmbeddedPostgres.Builder>> instancePreparers = ImmutableSet.builder();
         protected final boolean multiMode;
 
@@ -277,36 +277,40 @@ public final class DatabaseManager implements AutoCloseable {
         }
 
         /**
-         * @deprecated Use {@link #withDataSourcePreparer(EmbeddedPostgresPreparer)}.
+         * @deprecated Use {@link #withDatabasePreparer(EmbeddedPostgresPreparer)}.
          */
         @Deprecated
         @NonNull
         public Builder<T> withPreparer(@NonNull DatabasePreparer databasePreparer) {
             checkNotNull(databasePreparer, "databasePreparer is null");
-            return withDataSourcePreparer(databasePreparer::prepare);
+            return withDatabasePreparer(databasePreparer::prepare);
         }
 
         /**
-         * Add a preparer for the {@link DataSource} objects provided. Each preparer is called once before a data source is handed to the calling code.
+         * Add a preparer for the template database. Each preparer is called once when the database manager starts to prepare the template database. This can be
+         * used to create tables, sequences etc. or preload the databases with information. In multi database mode, the template database is used and each
+         * created database will have this information cloned.
          *
-         * @param dataSourcePreparer A {@link EmbeddedPostgresPreparer<DataSource>} instance. Must not be null.
+         * @param databasePreparer A {@link EmbeddedPostgresPreparer<DataSource>} instance. Must not be null.
          * @return This object instance.
          */
         @NonNull
-        public Builder<T> withDataSourcePreparer(@NonNull EmbeddedPostgresPreparer<DataSource> dataSourcePreparer) {
-            this.dataSourcePreparers.add(checkNotNull(dataSourcePreparer, "dataSourcePreparer is null"));
+        public Builder<T> withDatabasePreparer(@NonNull EmbeddedPostgresPreparer<DataSource> databasePreparer) {
+            this.databasePreparers.add(checkNotNull(databasePreparer, "databasePreparer is null"));
             return this;
         }
 
         /**
-         * Add preparers for the {@link DataSource} objects provided. Each preparer is called once before a data source is handed to the calling code.
+         * Add preparers for the template database. Each preparer is called once when the database manager starts to prepare the template database. This can be
+         * used to create tables, sequences etc. or preload the databases with information. In multi database mode, the template database is used and each
+         * created database will have this information cloned.
          *
-         * @param dataSourcePreparers A set of {@link EmbeddedPostgresPreparer<DataSource>} instances. Must not be null.
+         * @param databasePreparers A set of {@link EmbeddedPostgresPreparer<DataSource>} instances. Must not be null.
          * @return This object instance.
          */
         @NonNull
-        public Builder<T> withDataSourcePreparers(@NonNull Set<EmbeddedPostgresPreparer<DataSource>> dataSourcePreparers) {
-            this.dataSourcePreparers.addAll(checkNotNull(dataSourcePreparers, "dataSourcePreparers is null"));
+        public Builder<T> withDatabasePreparers(@NonNull Set<EmbeddedPostgresPreparer<DataSource>> databasePreparers) {
+            this.databasePreparers.addAll(checkNotNull(databasePreparers, "databasePreparers is null"));
             return this;
         }
 
@@ -366,7 +370,7 @@ public final class DatabaseManager implements AutoCloseable {
         @Override
         @NonNull
         public DatabaseManager build() {
-            return new DatabaseManager(dataSourcePreparers.build(), instancePreparers.build(), multiMode);
+            return new DatabaseManager(databasePreparers.build(), instancePreparers.build(), multiMode);
         }
     }
 }

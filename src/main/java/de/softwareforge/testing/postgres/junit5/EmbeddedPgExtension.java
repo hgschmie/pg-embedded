@@ -227,7 +227,7 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
         @NonNull
         public EmbeddedPgExtension build() {
             DatabaseManager.Builder<DatabaseManager> databaseManagerBuilder = new DatabaseManagerBuilder(multiMode)
-                    .withDataSourcePreparers(dataSourcePreparers.build());
+                    .withDatabasePreparers(databasePreparers.build());
 
             instancePreparers.build().forEach(databaseManagerBuilder::withInstancePreparer);
             return new EmbeddedPgExtension(databaseManagerBuilder);
