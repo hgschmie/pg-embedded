@@ -66,9 +66,9 @@ import org.slf4j.LoggerFactory;
 public final class EmbeddedPostgres implements AutoCloseable {
 
     /**
-     * The version of postgres used if no more specific version has been given.
+     * The version of postgres used if no specific version has been given.
      */
-    public static final String POSTGRES_VERSION = System.getProperty("pg-embedded.postgres-version", "13");
+    public static final String DEFAULT_POSTGRES_VERSION = "13";
 
     static final String[] LOCALHOST_SERVER_NAMES = new String[]{"localhost"};
 
@@ -602,7 +602,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
         private final Map<String, String> localeConfiguration = new HashMap<>();
         private boolean removeDataOnShutdown = true;
         private int port = 0;
-        private String serverVersion = POSTGRES_VERSION;
+        private String serverVersion = DEFAULT_POSTGRES_VERSION;
         private final Map<String, String> connectionProperties = new HashMap<>();
         private NativeBinaryManager nativeBinaryManager = null;
         private Duration serverStartupWait = DEFAULT_PG_STARTUP_WAIT;
@@ -798,11 +798,11 @@ public final class EmbeddedPostgres implements AutoCloseable {
         }
 
         /**
-         * Set the version of the PostgreSQL server. This value is passed to the default binary manager which will try to resolve
-         * this version from existing Maven artifacts. The value is ignored if {@link #setNativeBinaryManager(NativeBinaryManager)} is called.
-         *
-         * Not every PostgreSQL version is supported by pg-embedded. Some older versions lack the necessary options for the command
-         * line parameters and will fail at startup. Currently, every version 10 or newer should be working.
+         * Set the version of the PostgreSQL server. This value is passed to the default binary manager which will try to resolve this version from existing
+         * Maven artifacts. The value is ignored if {@link #setNativeBinaryManager(NativeBinaryManager)} is called.
+         * <p>
+         * Not every PostgreSQL version is supported by pg-embedded. Some older versions lack the necessary options for the command line parameters and will
+         * fail at startup. Currently, every version 10 or newer should be working.
          *
          * @param serverVersion A partial or full version. Valid values are e.g. "12" or "11.3".
          */
@@ -887,6 +887,8 @@ public final class EmbeddedPostgres implements AutoCloseable {
             if (nativeBinaryManager == null) {
                 // Use the parent directory if no installation directory set.
                 File installationBaseDirectory = Objects.requireNonNullElse(this.installationBaseDirectory, parentDirectory);
+
+                final String serverVersion = System.getProperty("pg-embedded.postgres-version", this.serverVersion);
                 nativeBinaryManager = new TarXzCompressedBinaryManager(installationBaseDirectory,
                         EmbeddedPostgres.LOCK_FILE_NAME, new ZonkyIOPostgresLocator(serverVersion));
             }
