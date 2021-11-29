@@ -59,13 +59,11 @@
         <dep.postgresql-jdbc.version>42.3.1</dep.postgresql-jdbc.version>
         <dep.junit5.version>5.8.1</dep.junit5.version>
         <dep.auto-value.version>1.8.2</dep.auto-value.version>
+        <dep.maven-loader.version>1.1</dep.maven-loader.version>
 
         <dep.apache-commons-lang3.version>3.12.0</dep.apache-commons-lang3.version>
         <dep.apache-commons-compress.version>1.21</dep.apache-commons-compress.version>
         <dep.xz.version>1.9</dep.xz.version>
-
-        <dep.maven.version>3.8.3</dep.maven.version>
-        <dep.maven-resolver.version>1.7.2</dep.maven-resolver.version>
 
         <!-- MacOS Homebrew install location -->
         <pg-embedded.test.local-dir>/usr/local</pg-embedded.test.local-dir>
@@ -109,6 +107,12 @@
 
     <dependencies>
         <dependency>
+            <groupId>de.softwareforge.testing</groupId>
+            <artifactId>maven-loader</artifactId>
+            <version>${dep.maven-loader.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>${dep.slf4j.version}</version>
@@ -143,60 +147,6 @@
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <version>${dep.postgresql-jdbc.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.maven.resolver</groupId>
-            <artifactId>maven-resolver-api</artifactId>
-            <version>${dep.maven-resolver.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.maven.resolver</groupId>
-            <artifactId>maven-resolver-spi</artifactId>
-            <version>${dep.maven-resolver.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.maven.resolver</groupId>
-            <artifactId>maven-resolver-impl</artifactId>
-            <version>${dep.maven-resolver.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.maven.resolver</groupId>
-            <artifactId>maven-resolver-connector-basic</artifactId>
-            <version>${dep.maven-resolver.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.maven.resolver</groupId>
-            <artifactId>maven-resolver-transport-file</artifactId>
-            <version>${dep.maven-resolver.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.maven.resolver</groupId>
-            <artifactId>maven-resolver-transport-http</artifactId>
-            <version>${dep.maven-resolver.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.maven</groupId>
-            <artifactId>maven-resolver-provider</artifactId>
-            <version>${dep.maven.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.maven</groupId>
-            <artifactId>maven-settings</artifactId>
-            <version>${dep.maven.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.maven</groupId>
-            <artifactId>maven-settings-builder</artifactId>
-            <version>${dep.maven.version}</version>
         </dependency>
 
         <dependency>

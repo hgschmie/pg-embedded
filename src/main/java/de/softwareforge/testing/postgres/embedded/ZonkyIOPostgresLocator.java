@@ -33,6 +33,7 @@ import com.google.common.base.Suppliers;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
 import com.google.common.io.BaseEncoding;
+import de.softwareforge.testing.maven.MavenArtifactLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,6 +102,7 @@ public final class ZonkyIOPostgresLocator implements NativeBinaryLocator {
             String version = artifactLoader.findLatestVersion(ZONKY_GROUP_ID, artifactId, serverVersion);
             File file = artifactLoader.getArtifactFile(ZONKY_GROUP_ID, artifactId, version);
             checkState(file != null && file.exists(), "Could not locate artifact file for %s:%s", artifactId, version);
+            LOG.info(format("Using PostgreSQL version %s", version));
             return file;
         } catch (IOException e) {
             throw new UncheckedIOException(e);
