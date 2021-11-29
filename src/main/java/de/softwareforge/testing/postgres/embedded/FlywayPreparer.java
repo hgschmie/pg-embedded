@@ -13,10 +13,11 @@
  */
 package de.softwareforge.testing.postgres.embedded;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.io.IOException;
 import java.util.Set;
 import java.util.function.Consumer;
-
 import javax.sql.DataSource;
 
 import com.google.common.collect.ImmutableList;
@@ -26,8 +27,6 @@ import org.flywaydb.core.api.FlywayException;
 import org.flywaydb.core.api.configuration.FluentConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * An {@link EmbeddedPostgresPreparer<DataSource>} that uses the <a href="https://flywaydb.org/">Flyway version control for your database</a> framework to

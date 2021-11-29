@@ -18,6 +18,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.String.format;
 
+import de.softwareforge.testing.maven.MavenArtifactLoader;
+
 import java.io.File;
 import java.io.FilterInputStream;
 import java.io.IOException;
@@ -33,7 +35,6 @@ import com.google.common.base.Suppliers;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
 import com.google.common.io.BaseEncoding;
-import de.softwareforge.testing.maven.MavenArtifactLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
