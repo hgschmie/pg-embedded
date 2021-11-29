@@ -67,20 +67,4 @@ Any DDL or data load operation will be visible in every database managed by the 
 
 Either method accepts [EmbeddedPostgresPreparer](apidocs/de.softwareforge.testing.postgres/de/softwareforge/testing/postgres/embedded/EmbeddedPostgresPreparer.html) instances.
 
-`pg-embedded` offers the [FlywayPreparer](apidocs/de.softwareforge.testing.postgres/de/softwareforge/testing/postgres/embedded/FlywayPreparer.html) that uses the [Flyway Database migration framework](https://flywaydb.org/) for DDL preparation and database migration.
-
-```java
-try (DatabaseManager manager = DatabaseManager.multiDatabases()
-    .withInstancePreparer(EmbeddedPostgres.Builder::withDefaults)
-
-    // apply all flyway migrations from the db/testing classpath location
-    // to every database handed out by this manager
-    .withDatabasePreparer(FlywayPreparer.forClasspathLocation("db/testing"))
-
-    .build()
-.start()) {
-    ...
-}
-```
-
-The
+See [Using Flyway](using_flyway.html) for database customizations with the Flyway migration framework.

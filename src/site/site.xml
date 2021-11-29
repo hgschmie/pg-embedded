@@ -30,10 +30,12 @@
         </fluidoSkin>
     </custom>
     <body>
-        <menu name="Documentation">
+        <menu name="Usage">
             <item name="Overview" href="index.html"/>
+            <item name="Using the DatabaseManager" href="using_database_manager.html" />
             <item name="Using EmbeddedPostgres" href="using_embedded_postgres.html" />
-            <item name="Using DatabaseManager" href="using_database_manager.html" />
+            <item name="Database customization with Flyway" href="using_flyway.html" />
+            <item name="Setting the PostgreSQL version" href="setting_postgres_version.html" />
         </menu>
         <menu name="Stuff">
             <item name="License" href="https://www.apache.org/licenses/LICENSE-2.0" />

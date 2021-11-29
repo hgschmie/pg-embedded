@@ -18,8 +18,6 @@ pg-embedded supports the JUnit5 test framework directly through the `EmbeddedPgE
 
 * [Using EmbeddedPostgres](using_embedded_postgres.html) to control PostgreSQL server instances.
 * [Using DatabaseManager](using_database_manager.html) to manage databases.
-* Advanced Topics
-* FAQ
 
 ## Testing with pg-embedded
 
@@ -28,43 +26,9 @@ pg-embedded supports the JUnit5 test framework directly through the `EmbeddedPgE
 
 ## Reference
 
-* Javadoc
-* Building the library
-* Contributing
-
-
-## Tested Platforms
-
-| OS | Architecture | Variant | Remarks |
-|----|--------------|--------------|---------|
-| Linux | x86_64 | RHEL / CentOS   |         |
-| Linux | x86_64 | Debian 11 (bullseye) | Needs `locales-all` installed for database locales to work |
-| Linux | x86_64 | Alpine Linux 3.14 | |
-| Linux | x86_64 | Amazon Linux 2  |         |
-| Linux | aarch64 | Amazon Linux 2 | Graviton CPU |
-| Linux | aarch32 | CentOS 7 | Raspberry Pi 3B+ |
-| MacOS | x86_64 | MacOS 11.6 | |
-
-### Untested Platforms
-
-| OS | Architecture | Variant | Remarks |
-|----|--------------|--------------|---------|
-| MacOS | aarch64 | (fat)  | the PostgreSQL binaries used do not yet support aarch64 natively, so the x86_64 binaries are used and executed through Rosetta. When "fat" binaries are available, they should be picked up and just work. |
-| MacOS | aarch64 | (native) | When native aarch64 binaries are available, set the `pg-embedded.prefer-native` system property to `true` will enable pg-embedded to use those directly. |
-| Windows | x86_64 | - | untested, patches welcome |
-| - | i386 | - | untested |
-
-
-
-
-
-### Using `EmbeddedPostgres`
-
-Creating a new instance of the `EmbeddedPostgres` class starts a new database server.
-
-
-
-The PostgreSQL server contains the standard `template1` and `postgres` databases. DataSource instances that will connect to those databases can be created by using `createDefaultDataSource` and `createTemplateDataSource` respectively.
+* [Javadoc](apidocs/)
+* [Building the code]
+* [Contributing]
 
 
 ## JUnit 5 usage
