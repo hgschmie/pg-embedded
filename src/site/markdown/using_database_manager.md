@@ -1,9 +1,9 @@
-# Using DatabaseManager to manage databases
+# Using DatabaseManager
 
 The [DatabaseManager](apidocs/de.softwareforge.testing.postgres/de/softwareforge/testing/postgres/embedded/DatabaseManager.html) class allows creation and control
 of one or more database instances on a PostgreSQL server.
 
-By default, each PostgreSQL server has two databases: 
+By default, each PostgreSQL server has two databases:
 
 * the `template1` template database from which all other databases are cloned
 * the `postgres` default database.
@@ -19,7 +19,7 @@ Each `DatabaseManager` instance manages an [EmbeddedPostgres](apidocs/de.softwar
 
 ```java
 try (DatabaseManager manager = DatabaseManager.singleDatabase()
-    // same as EmbeddedPostgres.defaultInstance()    
+    // same as EmbeddedPostgres.defaultInstance()
     .withInstancePreparer(EmbeddedPostgres.Builder::withDefaults)
     .build()
     .start()) {
@@ -27,16 +27,53 @@ try (DatabaseManager manager = DatabaseManager.singleDatabase()
     try (Connection c = databaseInfo.asDataSource().getConnection();
         Statement s = c.createStatement()) {
         try (ResultSet rs = s.executeQuery("SELECT 1")) {
-        assertTrue(rs.next());
-        assertEquals(1, rs.getInt(1));
-        assertFalse(rs.next());
+            assertTrue(rs.next());
+            assertEquals(1, rs.getInt(1));
+            assertFalse(rs.next());
         }
-    }    
+    }
 }
 ```
 
+A `DatabaseManager` is created by calling either `DatabaseManager.singleDatabase()` or `DatabaseManager.multiDatabase()`. Each call returns a Builder which allows further customization of the PostgreSQL server and the databases.
+
+The builder creates the `DatabaseManager` instance by calling `build()`. A `DatabaseManager` must be explicitly started by calling the `start()` method.
+
 ## Customizing the DatabaseManager
 
-`DatabaseManager` supports two sets of customizations:
+### Customizing the EmbeddedPostgres instance
 
-* PostgreSQL server customizations using `withInstancePreparer`. Any instance preparer gets the `EmbeddedPostgres.Builder` instance passed in that is subsequently used to configure the `EmbeddedPostgres` instance. This method takes an [EmbeddedPostgresPreparer](apidocs/de.softwareforge.testing.postgres/de/softwareforge/testing/postgres/embedded/EmbeddedPostgresPreparer.html) instance, which is similar to a consumer except that the `prepare()` method can also throw `IOException` or `SQLException`. 
+The `withInstancePreparer` and `withInstancePreparers` builder method allows PostgreSQL server configuration customizations. Any instance preparer gets the `EmbeddedPostgres.Builder` instance passed in, that is subsequently used to configure the `EmbeddedPostgres` instance. The `withInstancePreparer` method takes an [EmbeddedPostgresPreparer](apidocs/de.softwareforge.testing.postgres/de/softwareforge/testing/postgres/embedded/EmbeddedPostgresPreparer.html) instance. See the [EmbeddedPostgres documentation}(using_embedded_postgres.html) for details.
+
+The `EmbeddedPostgres.Builder#withDefaults()` method can be used as method reference by calling `withInstancePreparer(EmbeddedPostgres.Builder::withDefaults)`.
+
+```java
+try (DatabaseManager manager = DatabaseManager.singleDatabase()
+    // set the default connection timeout for all DataSources
+    .withInstancePreparer(builder -> builder.addConnectionProperty("connectTimeout", "20"))
+    .build()
+    .start()) {
+    ...
+}
+```
+
+### Customizing the Database instances
+
+The `withDatabasePreparer` and `withDatabasePreparers` builder methods allow the registration of Database customization code. Any database preparer is called once when the `DatabaseManager` is started and gets a `DataSource` instance passed which is connected to a template database. Any DDL or data load operation
+will be visible in every database managed by the `DatabaseManager`. The most common use case is preparing the database e.g. for a unit test.
+
+pg-embedded offers the `FlywayPreparer` that uses the [Flyway Database migration framework](https://flywaydb.org/) for DDL preparation and database migration.
+
+```java
+try (DatabaseManager manager = DatabaseManager.multiDatabase()
+    .withInstancePreparer(EmbeddedPostgres.Builder::withDefaults)
+
+    // apply all flyway migrations from the db/testing classpath location
+    // to every database handed out by this manager
+    .withDatabasePreparer(FlywayPreparer.forClasspathLocation("db/testing"))
+
+    .build()
+.start()) {
+    ...
+}
+```
