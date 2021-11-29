@@ -55,7 +55,7 @@
 
         <dep.slf4j.version>1.7.32</dep.slf4j.version>
         <dep.guava.version>30.1.1-jre</dep.guava.version>
-        <dep.flyway.version>7.11.0</dep.flyway.version>
+        <dep.flyway.version>8.1.0</dep.flyway.version>
         <dep.postgresql-jdbc.version>42.3.1</dep.postgresql-jdbc.version>
         <dep.junit5.version>5.8.1</dep.junit5.version>
         <dep.auto-value.version>1.8.2</dep.auto-value.version>
@@ -64,6 +64,7 @@
         <dep.apache-commons-lang3.version>3.12.0</dep.apache-commons-lang3.version>
         <dep.apache-commons-compress.version>1.21</dep.apache-commons-compress.version>
         <dep.xz.version>1.9</dep.xz.version>
+        <dep.checkerframework.version>3.17.0</dep.checkerframework.version>
 
         <!-- MacOS Homebrew install location -->
         <pg-embedded.test.local-dir>/usr/local</pg-embedded.test.local-dir>
@@ -102,6 +103,18 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${dep.slf4j.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.checkerframework</groupId>
+                <artifactId>checker-qual</artifactId>
+                <version>${dep.checkerframework.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -115,7 +128,6 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>${dep.slf4j.version}</version>
         </dependency>
 
         <dependency>
@@ -185,6 +197,7 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
     <build>
         <pluginManagement>
             <plugins>
@@ -205,6 +218,28 @@
                             <exclude>**/CNAME</exclude>
                         </excludes>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>enforce-convergence</id>
+                            <goals>
+                                <goal>enforce</goal>
+                            </goals>
+                            <configuration>
+                                <rules>
+                                    <!-- Ensure consistency -->
+                                    <dependencyConvergence/>
+                                    <requireJavaVersion>
+                                        <!-- post java 11 for correct javadoc build -->
+                                        <version>[12,)</version>
+                                    </requireJavaVersion>
+                                </rules>
+                            </configuration>
+                        </execution>
+                    </executions>
                 </plugin>
 
                 <plugin>
