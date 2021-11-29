@@ -13,25 +13,29 @@
  */
 package de.softwareforge.testing.postgres.embedded;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
+import java.io.IOException;
+import java.util.Set;
 import java.util.function.Consumer;
+
 import javax.sql.DataSource;
 
 import com.google.common.collect.ImmutableList;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import org.flywaydb.core.Flyway;
+import org.flywaydb.core.api.FlywayException;
 import org.flywaydb.core.api.configuration.FluentConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-// TODO: Detect missing migration files.
-// cf. https://github.com/flyway/flyway/issues/1496
-// There is also a related @Ignored test in otj-sql.
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * An {@link EmbeddedPostgresPreparer<DataSource>} that uses the <a href="https://flywaydb.org/">Flyway version control for your database</a> framework to
  * migrate a data source to a known state.
  */
 public final class FlywayPreparer implements EmbeddedPostgresPreparer<DataSource> {
+
+    private static final Logger LOG = LoggerFactory.getLogger(FlywayPreparer.class);
 
     private final ImmutableList.Builder<Consumer<FluentConfiguration>> customizers = ImmutableList.builder();
 
@@ -56,8 +60,8 @@ public final class FlywayPreparer implements EmbeddedPostgresPreparer<DataSource
     }
 
     /**
-     * Add a new customizer instance. Each customizer is called once with the {@link FluentConfiguration} instance before setting the datasource and calling
-     * {@link FluentConfiguration#load()} and {@link Flyway#migrate()}.
+     * Add a customizer instance. Each customizer is called once with the {@link FluentConfiguration} instance before setting the datasource and calling {@link
+     * FluentConfiguration#load()} and {@link Flyway#migrate()}.
      *
      * @param customizer A {@link Consumer<FluentConfiguration>} instance. Must not be null.
      * @return This object.
@@ -66,6 +70,21 @@ public final class FlywayPreparer implements EmbeddedPostgresPreparer<DataSource
     public FlywayPreparer addCustomizer(@NonNull Consumer<FluentConfiguration> customizer) {
         checkNotNull(customizer, "customizer is null");
         customizers.add(customizer);
+
+        return this;
+    }
+
+    /**
+     * Add customizer instances. Each customizer is called once with the {@link FluentConfiguration} instance before setting the datasource and calling {@link
+     * FluentConfiguration#load()} and {@link Flyway#migrate()}.
+     *
+     * @param customizers A set of {@link Consumer<FluentConfiguration>} instances. Must not be null.
+     * @return This object.
+     */
+    @NonNull
+    public FlywayPreparer addCustomizers(@NonNull Set<Consumer<FluentConfiguration>> customizers) {
+        checkNotNull(customizers, "customizers is null");
+        customizers.addAll(customizers);
 
         return this;
     }
@@ -80,14 +99,20 @@ public final class FlywayPreparer implements EmbeddedPostgresPreparer<DataSource
     }
 
     @Override
-    public void prepare(@NonNull DataSource dataSource) {
+    public void prepare(@NonNull DataSource dataSource) throws IOException {
         checkNotNull(dataSource, "dataSource is null");
 
-        final FluentConfiguration config = Flyway.configure();
+        try {
+            final FluentConfiguration config = Flyway.configure();
 
-        customizers.build().forEach(c -> c.accept(config));
+            customizers.build().forEach(c -> c.accept(config));
 
-        config.dataSource(dataSource);
-        config.load().migrate();
+            config.dataSource(dataSource);
+            Flyway flyway = config.load();
+            flyway.migrate();
+
+        } catch (FlywayException e) {
+            throw new IOException(e);
+        }
     }
 }

@@ -27,7 +27,7 @@ import java.sql.Statement;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class FlywayPreparerTest {
+public class JUnit5FlywayTest {
 
     @RegisterExtension
     public static EmbeddedPgExtension singleDatabase = SingleDatabaseBuilder.preparedInstanceWithDefaults(FlywayPreparer.forClasspathLocation("db/testing"))
