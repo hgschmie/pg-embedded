@@ -1,35 +1,61 @@
 # Embedded Postgres for Java
 
-Start a real Postgres engine for unit tests or local development.
+Start a PostgreSQL server for unit tests or local development.
 
-## Basic Usage
+* PostgreSQL version 9.6+
+* Binaries loaded from Maven Central or locally installed
+* Multiple Database servers
+* Multiple databases on a single database server
+* [Flyway](https://flywaydb.org/) support for Database preparation
 
-A postgres instance is started and stopped with the `EmbeddedPostgres` class:
+
+[Full documentation site](https://https://pg-embedded.softwareforge.de/)
+
+
+## Manage a PostgreSQL server
 
 ```java
-try (EmbeddedPostgres pg = EmbeddedPostgres.defaultInstance()) {
-    Connection c = pg.getDatabase().getConnection();
-    Statement s = c.createStatement()) {
+try (EmbeddedPostgres pg = EmbeddedPostgres.defaultInstance();
+        Connection c = pg.createDefaultDataSource().getConnection();
+        Statement s = c.createStatement()) {
     try (ResultSet rs = s.executeQuery("SELECT 1")) {
-        if (rs.next()) {
-            return rs.getInt(1));
-        }
+        assertTrue(rs.next());
+        assertEquals(1, rs.getInt(1));
+        assertFalse(rs.next());
     }
 }
 ```
 
-## JUnit 5 usage
+## Manage Databases
 
-Only JUnit 5 is supported!
+```java
+try (DatabaseManager manager = DatabaseManager.multiDatabases()
+        .withInstancePreparer(EmbeddedPostgres.Builder::withDefaults)
+        .build()
+        .start();
+        Connection c = manager.getDatabaseInfo().asDataSource().getConnection();
+        Statement s = c.createStatement()) {
+    try (ResultSet rs = s.executeQuery("SELECT 1")) {
+        assertTrue(rs.next());
+        assertEquals(1, rs.getInt(1));
+        assertFalse(rs.next());
+    }
+}
+```
+
+
+
+## Unit Tests with JUnit 5
+
 
 ```java
 @RegisterExtension
-EmbeddedPgExtension pg = SingleDatabaseBuilder.instance().build();
+public static EmbeddedPgExtension pg = MultiDatabaseBuilder.instanceWithDefaults().build();
 
 @Test
 public void simpleTest() throws SQLException {
-    try (Connection c = pg.getDatabase().getConnection();
-        Statement s = c.createStatement()) {
+    try (Connection c = pg.createDataSource().getConnection();
+            Statement s = c.createStatement()) {
         try (ResultSet rs = s.executeQuery("SELECT 1")) {
             assertTrue(rs.next();
             assertEquals(1, return rs.getInt(1));
@@ -38,22 +64,3 @@ public void simpleTest() throws SQLException {
 }
 ```
 
-### Features
-
-* class member (static) extension field reuses the same postgres instance for all test cases, instance member will use a new postgres instance for every test case.
-* `SingleDatabaseBuilder` will use the same database for all calls to `EmbeddedPgExtension#createDatabaseInfo()` and `EmbeddedPgExtension#createDataSource()`. `MultiDatabaseBuilder` will create a new database on every call.
-* `instance()` returns a builder that can be customized with preparer and customizers.
-* `instanceWithDefaults()` returns a builder with defaults applied that can be customized.
-* `preparedInstance()` takes a database preparer and returns a builder.
-* `preparedInstanceWithDefaults()` takes a database preparer, applies defaults and returns a builder.
-
-
-## Migrators (Flyway)
-
-```java
-@RegisterExtension
-public static EmbeddedPgExtension singleDatabase =
-    SingleDatabaseBuilder.preparedInstanceWithDefaults(
-        FlywayPreparer.forClasspathLocation("db/testing"))
-    .build();
-```
