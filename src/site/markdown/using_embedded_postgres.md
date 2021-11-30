@@ -56,7 +56,7 @@ By default, pg-embedded will use an internal mechanism to resolve Postgres binar
 * `setPort` changes the port allocation mechanism. By default, `pg-embedded` will choose a random, unallocated TCP port and start the server on that port. Calling the `setPort` method will use the specific TCP port. Please note that, if the port is not available, starting the server will fail.
 * `setServerStartupWait` sets the timeout to wait for the PostgreSQL server to start. The default is 10 seconds.
 * `setRemoveDataOnShutdown` controls whether pg-embedded cleans up its data directory. Sometimes it is desirable to reuse or inspect the state of the postgres data directories after the `EmbeddedPostgres` code has finished. Calling this method with `false` will preserve the data directory.
-* `setDataDirectory` controls the base path where data directories are created. Within this folder, each database instance will create its own data directory prefixed with `epd-`. These folders are deleted when `EmbeddedPostgres` is shut down unless the `setRemoveDataOnShutdown` option has been set to false.
-* `setInstallationBaseDirectory` controls where the binary Postgres distributions are unpacked. Installations are prefixed with `PG-`. Postgres installation are only unpacked once.
+* `setDataDirectory` controls the base path where data directories are created. Within this folder, each database instance will create its own data directory prefixed with `data-`. These folders are deleted when `EmbeddedPostgres` is shut down unless the `setRemoveDataOnShutdown` option has been set to false.
+* `setInstallationBaseDirectory` controls where the binary Postgres distributions are unpacked. Installations are prefixed with `bin-`. Postgres installation are only unpacked once.
 
 Advanced uses including using a locally installed Postgres are documented on the [Advanced Usage](advanced_usage.html) page.

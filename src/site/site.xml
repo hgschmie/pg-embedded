@@ -36,6 +36,10 @@
             <item name="Using EmbeddedPostgres" href="using_embedded_postgres.html" />
             <item name="Database customization with Flyway" href="using_flyway.html" />
             <item name="Setting the PostgreSQL version" href="setting_postgres_version.html" />
+            <item name="Advanced Usage" href="advanced_usage.html" />
+        </menu>
+        <menu name="Testing Frameworks">
+            <item name="JUnit 5" href="junit5.html" />
         </menu>
         <menu name="Stuff">
             <item name="License" href="https://www.apache.org/licenses/LICENSE-2.0" />

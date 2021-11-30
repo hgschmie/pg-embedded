@@ -8,9 +8,12 @@ By default, `pg-embedded` uses a PostgreSQL 13 database. This version can be cha
 
 Setting the system property overrides all other settings.
 
-`pg-embedded` looks for packaged PostgreSQL releases on the Maven repository system in the [io.zonky.test.postgres](https://search.maven.org/search?q=g:io.zonky.test.postgres) group. Any artifact stored here can be used with `pg-embedded` as long as the version and binary architecture is supported.
+`pg-embedded` downloads repackaged [EnterpriseDB PostgreSQL](https://www.enterprisedb.com/download-postgresql-binaries) releases from the Maven repository system using the [io.zonky.test.postgres](https://search.maven.org/search?q=g:io.zonky.test.postgres) groupId. Any artifact available here can be used with `pg-embedded` as long as the version and binary architecture is supported.
 
-Any PostgreSQL version 9.6+ is supported. The [FlywayPreparer](apidocs/de.softwareforge.testing.postgres/de/softwareforge/testing/postgres/embedded/FlywayPreparer.html) does not support PostgreSQL 9.x.
+* [More information about Zonky.IO PostgreSQL binaries](https://github.com/zonkyio/embedded-postgres-binaries).
+* [List of all available PostgreSQL versions](https://mvnrepository.com/artifact/io.zonky.test.postgres/embedded-postgres-binaries-bom). Only 9.6 and later versions are supported by `pg-embedded`, older versions might still work but are unsupported (please do not file bug reports about older versions).
+
+The [FlywayPreparer](apidocs/de.softwareforge.testing.postgres/de/softwareforge/testing/postgres/embedded/FlywayPreparer.html) only supports PostgreSQL 10+.
 
 ## Tested
 
