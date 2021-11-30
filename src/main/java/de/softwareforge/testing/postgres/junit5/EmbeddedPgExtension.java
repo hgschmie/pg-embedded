@@ -73,7 +73,7 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
      * @return A {@link EmbeddedPgExtensionBuilder} instance. Never null.
      */
     @NonNull
-    public static EmbeddedPgExtensionBuilder multiDatabase() {
+    static EmbeddedPgExtensionBuilder multiDatabase() {
         return new EmbeddedPgExtensionBuilder(true);
     }
 
@@ -84,7 +84,7 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
      * @return A {@link EmbeddedPgExtensionBuilder} instance. Never null.
      */
     @NonNull
-    public static EmbeddedPgExtensionBuilder singleDatabase() {
+    static EmbeddedPgExtensionBuilder singleDatabase() {
         return new EmbeddedPgExtensionBuilder(false);
     }
 
