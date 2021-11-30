@@ -885,13 +885,13 @@ public final class EmbeddedPostgres implements AutoCloseable {
 
             NativeBinaryManager nativeBinaryManager = this.nativeBinaryManager;
             if (nativeBinaryManager == null) {
-                // Use the parent directory if no installation directory set.
-                File installationBaseDirectory = Objects.requireNonNullElse(this.installationBaseDirectory, parentDirectory);
-
                 final String serverVersion = System.getProperty("pg-embedded.postgres-version", this.serverVersion);
-                nativeBinaryManager = new TarXzCompressedBinaryManager(installationBaseDirectory,
-                        EmbeddedPostgres.LOCK_FILE_NAME, new ZonkyIOPostgresLocator(serverVersion));
+                nativeBinaryManager = new TarXzCompressedBinaryManager(new ZonkyIOPostgresLocator(serverVersion));
             }
+
+            // Use the parent directory if no installation directory set.
+            File installationBaseDirectory = Objects.requireNonNullElse(this.installationBaseDirectory, parentDirectory);
+            nativeBinaryManager.setInstallationBaseDirectory(installationBaseDirectory);
 
             // this is where the binary manager actually places the unpackaged postgres installation.
             final File postgresInstallDirectory = nativeBinaryManager.getLocation();

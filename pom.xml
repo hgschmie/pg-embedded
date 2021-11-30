@@ -196,6 +196,13 @@
             <version>${dep.slf4j.version}</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>io.zonky.test.postgres</groupId>
+            <artifactId>embedded-postgres-binaries-darwin-amd64</artifactId>
+            <version>13.4.0</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

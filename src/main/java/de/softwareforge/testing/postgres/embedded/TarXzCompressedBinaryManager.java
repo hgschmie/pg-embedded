@@ -56,8 +56,9 @@ public final class TarXzCompressedBinaryManager implements NativeBinaryManager {
 
     private final Lock prepareBinariesLock = new ReentrantLock();
 
-    private final File installationBaseDirectory;
-    private final String lockFileName;
+    private File installationBaseDirectory = EmbeddedUtil.getWorkingDirectory();
+    private String lockFileName = EmbeddedPostgres.LOCK_FILE_NAME;
+
     private final NativeBinaryLocator nativeBinaryLocator;
 
     /**
@@ -71,19 +72,30 @@ public final class TarXzCompressedBinaryManager implements NativeBinaryManager {
      *     The operation should be cheap as it may be called multiple times.</li>
      * </ul>
      *
-     * @param installationBaseDirectory Base directory in which the binary distribution is unpacked. Must not be null.
-     * @param lockFileName              Name of a file to use as file lock when unpacking the disttribution.
-     * @param nativeBinaryLocator       An implementation of {@link NativeBinaryLocator} that satisfies the conditions above. Must not be null.
+     * @param nativeBinaryLocator An implementation of {@link NativeBinaryLocator} that satisfies the conditions above. Must not be null.
      */
-    public TarXzCompressedBinaryManager(@NonNull File installationBaseDirectory,
-            @NonNull String lockFileName,
-            @NonNull NativeBinaryLocator nativeBinaryLocator) {
-        this.installationBaseDirectory = checkNotNull(installationBaseDirectory, "installationBaseDirectory is null");
-        this.lockFileName = checkNotNull(lockFileName, "lockFileName is null");
+    public TarXzCompressedBinaryManager(@NonNull NativeBinaryLocator nativeBinaryLocator) {
         this.nativeBinaryLocator = checkNotNull(nativeBinaryLocator, "nativeBinaryLocator is null");
 
         checkState(this.installationBaseDirectory.setWritable(true, false),
                 "Could not make install base directory %s writable!", this.installationBaseDirectory);
+    }
+
+    @Override
+    public void setInstallationBaseDirectory(File installationBaseDirectory) {
+        this.installationBaseDirectory = checkNotNull(installationBaseDirectory, "installationBaseDirectory is null");
+
+        checkState(this.installationBaseDirectory.setWritable(true, false),
+                "Could not make install base directory %s writable!", this.installationBaseDirectory);
+    }
+
+    /**
+     * Sets the lock file name. This method must be called before the first call to {@link TarXzCompressedBinaryManager#getLocation()}.
+     *
+     * @param lockFileName Name of a file to use as file lock when unpacking the distribution.
+     */
+    public void setLockFileName(String lockFileName) {
+        this.lockFileName = checkNotNull(lockFileName, "lockFileName is null");
     }
 
     @Override

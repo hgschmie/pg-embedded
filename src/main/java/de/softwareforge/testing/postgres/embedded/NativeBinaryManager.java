@@ -32,4 +32,14 @@ public interface NativeBinaryManager {
      */
     @NonNull
     File getLocation() throws IOException;
+
+    /**
+     * Sets the installation directory. This method must be called before the first call to {@link NativeBinaryManager#getLocation()}.
+     * <p>
+     * Implementing this method is optional if no local installation directory is required.
+     *
+     * @param installationBaseDirectory Base directory in which the binary distribution is unpacked. Must not be null.
+     */
+    default void setInstallationBaseDirectory(File installationBaseDirectory) {
+    }
 }
