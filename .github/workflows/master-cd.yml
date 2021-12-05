@@ -6,11 +6,13 @@ on:
     - master
 
 jobs:
-  ci:
+  cd:
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
+    - name: Install locales on runner
+      run: sudo apt-get install -y locales-all
     - uses: actions/setup-java@v2
       id: build_java
       with:
