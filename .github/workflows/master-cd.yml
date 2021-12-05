@@ -19,7 +19,7 @@ jobs:
         java-version: 17
         distribution: temurin
         cache: maven
-        server-id: sonatype-nexus-staging
+        server-id: sonatype-nexus-snapshots
         server-username: NEXUS_REPO_USER
         server-password: NEXUS_REPO_PASSWORD
     - name: Build
