@@ -1,0 +1,28 @@
+name: CD from master pushes
+
+on:
+  push:
+    branches:
+    - master
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-java@v2
+      id: build_java
+      with:
+        java-version: 17
+        distribution: temurin
+        cache: maven
+        server-id: sonatype-nexus-staging
+        server-username: NEXUS_REPO_USER
+        server-password: NEXUS_REPO_PASSWORD
+    - name: Build
+      run: |
+          ./mvnw -B clean deploy
+      env:
+        NEXUS_REPO_USER: ${{ secrets.NEXUS_REPO_USER }}
+        NEXUS_REPO_PASSWORD: ${{ secrets.NEXUS_REPO_PASSWORD }}
