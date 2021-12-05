@@ -42,8 +42,10 @@
         <project.moduleName>de.softwareforge.testing.postgres</project.moduleName>
         <basepom.test.timeout>1800</basepom.test.timeout>
 
+        <basepom.release.profiles>basepom.oss-release,site-release</basepom.release.profiles>
         <scm-publish.url>scm:git:git@github.com:hgschmie/pg-embedded.github.io.git</scm-publish.url>
         <maven.site.deploy.skip>true</maven.site.deploy.skip>
+        <site-path>development</site-path>
 
         <!-- site requires full javadoc generation -->
         <basepom.javadoc.skip>false</basepom.javadoc.skip>
@@ -258,7 +260,7 @@
                         <scmBranch>main</scmBranch>
                         <checkoutDirectory>${java.io.tmpdir}/gh-pages-publish/${project.names}</checkoutDirectory>
                         <content>${project.build.directory}/site</content>
-                        <subDirectory>${project.version}</subDirectory>
+                        <subDirectory>${site-path}</subDirectory>
                         <localCheckout>true</localCheckout>
                     </configuration>
                 </plugin>
@@ -320,4 +322,12 @@
             </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>site-release</id>
+            <properties>
+                <site-path>release-${project.version}</site-path>
+            </properties>
+        </profile>
+    </profiles>
 </project>
