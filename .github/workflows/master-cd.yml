@@ -11,8 +11,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+
     - name: Install locales on runner
       run: sudo apt-get install -y locales-all
+
     - uses: actions/setup-java@v2
       id: build_java
       with:
@@ -22,9 +24,32 @@ jobs:
         server-id: sonatype-nexus-snapshots
         server-username: NEXUS_REPO_USER
         server-password: NEXUS_REPO_PASSWORD
+
     - name: Build
       run: |
           ./mvnw -B clean deploy
       env:
         NEXUS_REPO_USER: ${{ secrets.NEXUS_REPO_USER }}
         NEXUS_REPO_PASSWORD: ${{ secrets.NEXUS_REPO_PASSWORD }}
+
+  site:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install locales on runner
+      run: sudo apt-get install -y locales-all
+
+    - uses: actions/setup-java@v2
+      id: build_java
+      with:
+        java-version: 17
+        distribution: temurin
+        cache: maven
+
+    - name: Deploy site
+      run: |
+          ./mvnw -B site-deploy
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
