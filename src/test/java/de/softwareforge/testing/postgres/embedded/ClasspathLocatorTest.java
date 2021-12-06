@@ -30,8 +30,8 @@ public class ClasspathLocatorTest {
     @Test
     public void testClasspathLocator() throws Exception {
         // this test only runs on Mac
-        Assumptions.assumeTrue(EmbeddedUtil.IS_OS_MAC);
-        Assumptions.assumeTrue(EmbeddedUtil.IS_ARCH_X86_64 || EmbeddedUtil.IS_ARCH_AARCH64);
+        Assumptions.assumeTrue(EmbeddedUtil.IS_OS_MAC, "Not on MacOS");
+        Assumptions.assumeTrue(EmbeddedUtil.IS_ARCH_X86_64 || EmbeddedUtil.IS_ARCH_AARCH64, "Not on MacOS x86 or aarch64");
 
         try (EmbeddedPostgres pg = EmbeddedPostgres.builderWithDefaults()
                 .setNativeBinaryManager(new TarXzCompressedBinaryManager(new ClasspathLocator()))
