@@ -41,6 +41,11 @@ jobs:
     - name: Install locales on runner
       run: sudo apt-get install -y locales-all
 
+    - name: Set git information
+      run: |
+        git config --global user.name github-actions
+        git config --global user.email github-actions@github.com
+
     - uses: actions/setup-java@v2
       id: build_java
       with:
