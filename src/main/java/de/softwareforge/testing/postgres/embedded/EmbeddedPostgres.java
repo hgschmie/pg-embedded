@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.ProcessBuilder.Redirect;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -545,7 +546,9 @@ public final class EmbeddedPostgres implements AutoCloseable {
         processName = processName != null ? processName : process.info().command().map(EmbeddedUtil::getFileBaseName).orElse("<unknown>");
         String name = format("%s (%d)", processName, process.pid());
 
-        ProcessOutputLogger.logOutput(logger, name, process);
+        if (outputRedirector == Redirect.PIPE) {
+            ProcessOutputLogger.logStream(logger, name, process.getInputStream());
+        }
         return process;
     }
 
@@ -558,9 +561,13 @@ public final class EmbeddedPostgres implements AutoCloseable {
         Process process = spawn(prefix, commandAndArgs);
         try {
             if (process.waitFor() != 0) {
-                try (InputStreamReader reader = new InputStreamReader(process.getErrorStream(), StandardCharsets.UTF_8)) {
-                    throw new IllegalStateException(format("Process %s failed%n%s",
-                            commandAndArgs, CharStreams.toString(reader)));
+                if (errorRedirector == Redirect.PIPE) {
+                    try (InputStreamReader reader = new InputStreamReader(process.getErrorStream(), StandardCharsets.UTF_8)) {
+                        throw new IOException(format("Process %s failed%n%s",
+                                commandAndArgs, CharStreams.toString(reader)));
+                    }
+                } else {
+                    throw new IOException(format("Process %s failed", commandAndArgs));
                 }
             }
         } catch (InterruptedException e) {
@@ -607,8 +614,8 @@ public final class EmbeddedPostgres implements AutoCloseable {
         private NativeBinaryManager nativeBinaryManager = null;
         private Duration serverStartupWait = DEFAULT_PG_STARTUP_WAIT;
 
-        private ProcessBuilder.Redirect errRedirector = ProcessBuilder.Redirect.PIPE;
-        private ProcessBuilder.Redirect outRedirector = ProcessBuilder.Redirect.PIPE;
+        private ProcessBuilder.Redirect errorRedirector = ProcessBuilder.Redirect.PIPE;
+        private ProcessBuilder.Redirect outputRedirector = ProcessBuilder.Redirect.PIPE;
 
         Builder() {
         }
@@ -816,24 +823,24 @@ public final class EmbeddedPostgres implements AutoCloseable {
         /**
          * Set a {@link ProcessBuilder.Redirect} instance to receive stderr output from the spawned processes.
          *
-         * @param errRedirector a {@link ProcessBuilder.Redirect} instance. Must not be null.
+         * @param errorRedirector a {@link ProcessBuilder.Redirect} instance. Must not be null.
          * @return The builder itself.
          */
         @NonNull
-        public Builder setErrorRedirector(@NonNull ProcessBuilder.Redirect errRedirector) {
-            this.errRedirector = checkNotNull(errRedirector, "errRedirector is null");
+        public Builder setErrorRedirector(@NonNull ProcessBuilder.Redirect errorRedirector) {
+            this.errorRedirector = checkNotNull(errorRedirector, "errorRedirector is null");
             return this;
         }
 
         /**
          * Set a {@link ProcessBuilder.Redirect} instance to receive stdout output from the spawned processes.
          *
-         * @param outRedirector a {@link ProcessBuilder.Redirect} instance. Must not be null.
+         * @param outputRedirector a {@link ProcessBuilder.Redirect} instance. Must not be null.
          * @return The builder itself.
          */
         @NonNull
-        public Builder setOutputRedirector(@NonNull ProcessBuilder.Redirect outRedirector) {
-            this.outRedirector = checkNotNull(outRedirector, "outRedirector is null");
+        public Builder setOutputRedirector(@NonNull ProcessBuilder.Redirect outputRedirector) {
+            this.outputRedirector = checkNotNull(outputRedirector, "outputRedirector is null");
             return this;
         }
 
@@ -903,7 +910,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
 
             EmbeddedPostgres embeddedPostgres = new EmbeddedPostgres(instanceId, postgresInstallDirectory, dataDirectory,
                     removeDataOnShutdown, serverConfiguration, localeConfiguration, connectionProperties,
-                    port, errRedirector, outRedirector,
+                    port, errorRedirector, outputRedirector,
                     serverStartupWait);
 
             embeddedPostgres.cleanOldDataDirectories(parentDirectory);

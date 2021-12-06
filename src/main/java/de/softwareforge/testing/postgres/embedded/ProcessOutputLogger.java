@@ -15,6 +15,7 @@ package de.softwareforge.testing.postgres.embedded;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
@@ -22,9 +23,7 @@ import java.nio.charset.StandardCharsets;
 import org.slf4j.Logger;
 
 /**
- * Read standard output of process and write lines to given {@link Logger} as INFO; depends on {@link ProcessBuilder#redirectErrorStream(boolean)} being set to
- * {@code true} (since only stdout is read).
- *
+ * Read from an {@link InputStream} and send the information to the logger supplied.
  * <p>
  * The use of the input stream is thread safe since it's used only in a single thread&mdash;the one launched by this code.
  */
@@ -33,9 +32,9 @@ final class ProcessOutputLogger implements Runnable {
     private final Logger logger;
     private final BufferedReader reader;
 
-    private ProcessOutputLogger(final Logger logger, final Process process) {
+    private ProcessOutputLogger(final Logger logger, final InputStream stream) {
         this.logger = logger;
-        this.reader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
+        this.reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
     }
 
     @Override
@@ -55,8 +54,8 @@ final class ProcessOutputLogger implements Runnable {
         }
     }
 
-    static void logOutput(final Logger logger, final String name, final Process process) {
-        final Thread t = new Thread(new ProcessOutputLogger(logger, process));
+    static void logStream(final Logger logger, final String name, final InputStream stream) {
+        final Thread t = new Thread(new ProcessOutputLogger(logger, stream));
         t.setName(name);
         t.setDaemon(true);
         t.start();
