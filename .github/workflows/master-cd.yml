@@ -47,9 +47,13 @@ jobs:
         java-version: 17
         distribution: temurin
         cache: maven
+        server-id: github
+        server-username: SITE_DEPLOY_USER
+        server-password: SITE_DEPLOY_TOKEN
 
     - name: Deploy site
       run: |
           ./mvnw -B site-deploy
       env:
-        GITHUB_TOKEN: ${{ github.token }}
+        SITE_DEPLOY_USER: ${{ secrets.SITE_DEPLOY_USER }}
+        SITE_DEPLOY_TOKEN: ${{ secrets.SITE_DEPLOY_TOKEN  }}

@@ -43,7 +43,7 @@
         <basepom.test.timeout>1800</basepom.test.timeout>
 
         <basepom.release.profiles>basepom.oss-release,site-release</basepom.release.profiles>
-        <scm-publish.url>scm:git:git@github.com:hgschmie/pg-embedded.github.io.git</scm-publish.url>
+        <scm-publish.url>scm:git:https://github.com/hgschmie/pg-embedded.github.io.git</scm-publish.url>
         <maven.site.deploy.skip>true</maven.site.deploy.skip>
         <site-path>development</site-path>
 
@@ -256,6 +256,7 @@
                     <artifactId>maven-scm-publish-plugin</artifactId>
                     <version>${dep.plugin.scm-publish.version}</version>
                     <configuration>
+                        <serverId>github</serverId>
                         <pubScmUrl>${scm-publish.url}</pubScmUrl>
                         <scmBranch>main</scmBranch>
                         <checkoutDirectory>${java.io.tmpdir}/gh-pages-publish/${project.names}</checkoutDirectory>
