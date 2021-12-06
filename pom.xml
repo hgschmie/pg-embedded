@@ -323,6 +323,28 @@
             </plugin>
         </plugins>
     </build>
+
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration combine.children="append">
+                    <links>
+                        <link>https://junit.org/junit5/docs/${dep.junit5.version}/api/</link>
+                        <link>https://javadoc.io/doc/com.google.guava/guava/${dep.guava.version}/</link>
+                        <link>https://javadoc.io/doc/com.github.spotbugs/spotbugs-annotations/${dep.spotbugs.version}</link>
+                    </links>
+                    <author>false</author>
+                    <detectJavaApiLink>true</detectJavaApiLink>
+                    <linksource>true</linksource>
+                    <nodeprecated>false</nodeprecated>
+                    <nohelp>true</nohelp>
+                </configuration>
+            </plugin>
+        </plugins>
+    </reporting>
+
     <profiles>
         <profile>
             <id>site-release</id>
