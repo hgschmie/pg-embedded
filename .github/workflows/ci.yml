@@ -31,4 +31,4 @@ jobs:
 
     - name: Build
       run: |
-          ./mvn -B -Dpg-embedded.postgres-version=${{ matrix.postgres-version }} clean install
+          ./mvnw -B -Dpg-embedded.postgres-version=${{ matrix.postgres-version }} clean install
