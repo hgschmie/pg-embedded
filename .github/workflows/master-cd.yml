@@ -57,8 +57,9 @@ jobs:
         server-password: SITE_DEPLOY_TOKEN
 
     - name: Deploy site
+      # run install b/c https://issues.apache.org/jira/browse/MJAVADOC-701
       run: |
-          ./mvnw -B site-deploy
+          ./mvnw -B clean install site-deploy
       env:
         SITE_DEPLOY_USER: ${{ secrets.SITE_DEPLOY_USER }}
         SITE_DEPLOY_TOKEN: ${{ secrets.SITE_DEPLOY_TOKEN  }}

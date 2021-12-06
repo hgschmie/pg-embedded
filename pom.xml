@@ -269,7 +269,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <configuration>
+                    <configuration combine.children="append">
                         <links>
                             <link>https://junit.org/junit5/docs/${dep.junit5.version}/api/</link>
                             <link>https://javadoc.io/doc/com.google.guava/guava/${dep.guava.version}/</link>
