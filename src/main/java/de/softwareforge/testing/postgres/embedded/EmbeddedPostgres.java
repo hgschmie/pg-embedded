@@ -254,7 +254,43 @@ public final class EmbeddedPostgres implements AutoCloseable {
      */
     @NonNull
     public String instanceId() {
+        checkState(started.get(), "instance has not been started!");
+
         return instanceId;
+    }
+
+    /**
+     * Return the version of the PostgreSQL installation that is used by this instance.
+     *
+     * @return A string representing the Postgres version as described in the <a href="https://www.postgresql.org/support/versioning/">Postgres versioning
+     * policy</a>.
+     *
+     * @since 4.1
+     */
+    public String getPostgresVersion() throws IOException {
+
+        StringBuilder sb = new StringBuilder();
+        StreamCapture logCapture = pgServerLogger.captureStreamAsConsumer(sb::append);
+
+        List<String> commandAndArgs = ImmutableList.of(pgBin("pg_ctl"), "--version");
+        final Stopwatch watch = system(commandAndArgs, logCapture);
+
+        String version = "unknown";
+
+        try {
+            logCapture.getCompletion().get();
+            final String s = sb.toString();
+            checkState(s.startsWith("pg_ctl "), "Response %s does not match 'pg_ctl'", sb);
+            version = s.substring(s.lastIndexOf(' ')).trim();
+
+        } catch (ExecutionException e) {
+            throw new IOException(format("Process '%s' failed%n%s", Joiner.on(" ").join(commandAndArgs)), e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        logger.debug(format("postgres version check completed in %s", formatDuration(watch.elapsed())));
+        return version;
     }
 
     @Override
