@@ -27,6 +27,7 @@ import java.sql.Statement;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+@RequirePostgresVersion(atLeast = "10")
 public class JUnit5FlywayTest {
 
     @RegisterExtension

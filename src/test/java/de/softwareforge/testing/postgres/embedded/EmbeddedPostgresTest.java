@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
 
+import de.softwareforge.testing.postgres.junit5.RequirePostgresVersion;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.postgresql.ds.PGSimpleDataSource;
@@ -85,6 +86,7 @@ public class EmbeddedPostgresTest {
     }
 
     @Test
+    @RequirePostgresVersion(atLeast = "10")
     public void testInitDbOptions() throws IOException {
 
         String locale = "";

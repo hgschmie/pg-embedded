@@ -24,9 +24,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import de.softwareforge.testing.postgres.junit5.RequirePostgresVersion;
 import org.flywaydb.core.api.FlywayException;
 import org.junit.jupiter.api.Test;
 
+@RequirePostgresVersion(atLeast = "10")
 public class FlywayPreparerTest {
 
     @Test

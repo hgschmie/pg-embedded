@@ -56,3 +56,38 @@ The [EmbeddedPgExtension](apidocs/de.softwareforge.testing.postgres/de/softwaref
 * [EmbeddedPostgres](apidocs/de.softwareforge.testing.postgres/de/softwareforge/testing/postgres/embedded/EmbeddedPostgres.html) instance used by the extension
 * [DatabaseInfo](apidocs/de.softwareforge.testing.postgres/de/softwareforge/testing/postgres/embedded/DatabaseInfo.html), the value is equivalent to calling `EmbeddedPgExtension.createDatabaseInfo()`
 * `DataSource`, the value is equivalent to calling `EmbeddedPgExtension.createDataSource()`.
+
+## Conditional test execution based on PostgreSQL version
+
+Some tests may be database version specific and should be executed only for certain PostgreSQL versions. The [RequirePostgresVersion](apidocs/de.softwareforge.testing.postgres/de/softwareforge/testing/postgres/junit5/RequirePostgresVersion.html) annotation can be used for this:
+
+```java
+@RequirePostgresVersion(atLeast = "10")
+public class TestsRequirePostgres10 {
+...
+}
+```
+
+Or on method level:
+
+```java
+public class TestPostgresQuirks() {
+
+    @RequirePostgresVersion(atLeast = "10.1" lessThan="10.2")
+    testPostgres10_1Bug() {
+    ...
+    }
+
+    @RequirePostgresVersion(atLeast = "14")
+    testSpecialPostgres14() {
+    ...
+    }
+
+    @RequirePostgresVersion(lessThan = "10")
+    testSpecialPostgres9LegacyCode() {
+    ...
+    }
+}
+```
+
+The annotation supports inclusive version matching for the lower boundary (minimum version required) and exclusive matching for the upper boundary (version must be less than).
