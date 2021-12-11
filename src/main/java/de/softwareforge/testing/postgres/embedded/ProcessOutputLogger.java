@@ -14,12 +14,20 @@
 package de.softwareforge.testing.postgres.embedded;
 
 import java.io.BufferedReader;
-import java.io.IOException;
+import java.io.Closeable;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
+import com.google.common.io.Closeables;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
 
 /**
@@ -27,37 +35,78 @@ import org.slf4j.Logger;
  * <p>
  * The use of the input stream is thread safe since it's used only in a single thread&mdash;the one launched by this code.
  */
-final class ProcessOutputLogger implements Runnable {
+class ProcessOutputLogger implements Closeable {
 
-    private final Logger logger;
-    private final BufferedReader reader;
+    private final Logger errorLogger;
+    private final ListeningExecutorService executorService;
 
-    private ProcessOutputLogger(final Logger logger, final InputStream stream) {
-        this.logger = logger;
-        this.reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
+    ProcessOutputLogger(final Logger errorLogger) {
+        this.errorLogger = errorLogger;
+        this.executorService = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool(new ThreadFactoryBuilder()
+                .setDaemon(true)
+                .setNameFormat("logger-thread-%d")
+                .build()));
     }
 
     @Override
-    public void run() {
-        try {
-            try {
-                reader.lines().forEach(logger::debug);
-            } catch (final UncheckedIOException e) {
-                logger.error("while reading output:", e);
-            }
-        } finally {
-            try {
-                reader.close();
-            } catch (final IOException e) {
-                logger.trace("while closing reader:", e);
-            }
+    public void close() {
+        this.executorService.shutdownNow();
+    }
+
+    StreamCapture captureStreamAsLog() {
+        return new StreamCapture(errorLogger::info);
+    }
+
+    StreamCapture captureStreamAsConsumer(Consumer<String> consumer) {
+        return new StreamCapture(consumer);
+    }
+
+
+    class StreamCapture implements BiConsumer<String, InputStream> {
+
+        private final Consumer<String> consumer;
+        private volatile Future<?> completionFuture = null;
+
+        private StreamCapture(Consumer<String> consumer) {
+            this.consumer = consumer;
+        }
+
+        @Override
+        public void accept(String name, InputStream inputStream) {
+            this.completionFuture = executorService.submit(new LogRunnable(name, inputStream, consumer));
+        }
+
+        public Future<?> getCompletion() {
+            return completionFuture;
         }
     }
 
-    static void logStream(final Logger logger, final String name, final InputStream stream) {
-        final Thread t = new Thread(new ProcessOutputLogger(logger, stream));
-        t.setName(name);
-        t.setDaemon(true);
-        t.start();
+    private class LogRunnable implements Runnable {
+
+        private final BufferedReader reader;
+        private final String name;
+        private final Consumer<String> consumer;
+
+        private LogRunnable(String name, InputStream inputStream, Consumer<String> consumer) {
+            this.name = name;
+            this.reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+            this.consumer = consumer;
+        }
+
+        @Override
+        public void run() {
+            String oldName = Thread.currentThread().getName();
+            Thread.currentThread().setName(name);
+            try {
+                try {
+                    reader.lines().forEach(consumer::accept);
+                } catch (final UncheckedIOException e) {
+                    errorLogger.error("while reading output:", e);
+                }
+            } finally {
+                Closeables.closeQuietly(reader);
+                Thread.currentThread().setName(oldName + " (" + name + ")");
+            }
+        }
     }
 }

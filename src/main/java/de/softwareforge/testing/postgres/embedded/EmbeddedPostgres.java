@@ -22,6 +22,8 @@ import static de.softwareforge.testing.postgres.embedded.DatabaseInfo.PG_DEFAULT
 import static de.softwareforge.testing.postgres.embedded.EmbeddedUtil.formatDuration;
 import static java.lang.String.format;
 
+import de.softwareforge.testing.postgres.embedded.ProcessOutputLogger.StreamCapture;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -45,11 +47,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.sql.DataSource;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Joiner;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -111,6 +115,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
 
     private final ProcessBuilder.Redirect errorRedirector;
     private final ProcessBuilder.Redirect outputRedirector;
+    private final ProcessOutputLogger pgServerLogger;
 
 
     /**
@@ -153,6 +158,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
         this.instanceId = checkNotNull(instanceId, "instanceId is null");
 
         this.logger = LoggerFactory.getLogger(toString());
+        this.pgServerLogger = new ProcessOutputLogger(logger);
 
         this.postgresInstallDirectory = checkNotNull(postgresInstallDirectory, "postgresInstallDirectory is null");
         this.dataDirectory = checkNotNull(dataDirectory, "dataDirectory is null");
@@ -313,7 +319,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
                         "-U", PG_DEFAULT_USER,
                         "-D", this.dataDirectory.getPath(),
                         "-E", "UTF-8");
-        final Stopwatch watch = system(commandBuilder.build());
+        final Stopwatch watch = system(commandBuilder.build(), pgServerLogger.captureStreamAsLog());
         logger.debug(format("initdb completed in %s", formatDuration(watch.elapsed())));
     }
 
@@ -328,14 +334,14 @@ public final class EmbeddedPostgres implements AutoCloseable {
         );
 
         final Stopwatch watch = Stopwatch.createStarted();
-        final Process postmaster = spawn("pg", commandBuilder.build());
+        final Process postmaster = spawn("pg", commandBuilder.build(), pgServerLogger.captureStreamAsLog());
 
         logger.info(format("started as pid %d on port %d", postmaster.pid(), port));
         logger.debug(format("Waiting up to %s for server startup to finish", formatDuration(serverStartupWait)));
 
         Runtime.getRuntime().addShutdownHook(newCloserThread());
 
-        checkState(waitForServerStartup(), "Could not start pg, interrupted?");
+        checkState(waitForServerStartup(), "Could not start PostgreSQL server, interrupted?");
         logger.debug(format("startup complete in %s", formatDuration(watch.elapsed())));
     }
 
@@ -347,8 +353,9 @@ public final class EmbeddedPostgres implements AutoCloseable {
                 "-m", PG_STOP_MODE,
                 "-t", PG_STOP_WAIT_SECONDS, "-w");
 
-        final Stopwatch watch = system(commandBuilder.build());
+        final Stopwatch watch = system(commandBuilder.build(), pgServerLogger.captureStreamAsLog());
         logger.debug(format("shutdown complete in %s", formatDuration(watch.elapsed())));
+        pgServerLogger.close();
     }
 
     private List<String> createInitOptions() {
@@ -536,38 +543,38 @@ public final class EmbeddedPostgres implements AutoCloseable {
         return new File(this.postgresInstallDirectory, "bin/" + binaryName + extension).getPath();
     }
 
-    private Process spawn(@Nullable String processName, List<String> commandAndArgs) throws IOException {
+    private Process spawn(@Nullable String processName, List<String> commandAndArgs,
+            StreamCapture logCapture)
+            throws IOException {
         final ProcessBuilder builder = new ProcessBuilder(commandAndArgs);
         builder.redirectErrorStream(true);
         builder.redirectError(errorRedirector);
         builder.redirectOutput(outputRedirector);
         final Process process = builder.start();
 
-        processName = processName != null ? processName : process.info().command().map(EmbeddedUtil::getFileBaseName).orElse("<unknown>");
-        String name = format("%s (%d)", processName, process.pid());
-
         if (outputRedirector == Redirect.PIPE) {
-            ProcessOutputLogger.logStream(logger, name, process.getInputStream());
+            processName = processName != null ? processName : process.info().command().map(EmbeddedUtil::getFileBaseName).orElse("<unknown>");
+            String name = format("%s (%d)", processName, process.pid());
+            logCapture.accept(name, process.getInputStream());
         }
         return process;
     }
 
-
-    private Stopwatch system(List<String> commandAndArgs) throws IOException {
+    private Stopwatch system(List<String> commandAndArgs, StreamCapture logCapture) throws IOException {
         checkArgument(commandAndArgs.size() > 0, "No commandAndArgs given!");
         String prefix = EmbeddedUtil.getFileBaseName(commandAndArgs.get(0));
 
         Stopwatch watch = Stopwatch.createStarted();
-        Process process = spawn(prefix, commandAndArgs);
         try {
+            Process process = spawn(prefix, commandAndArgs, logCapture);
             if (process.waitFor() != 0) {
                 if (errorRedirector == Redirect.PIPE) {
-                    try (InputStreamReader reader = new InputStreamReader(process.getErrorStream(), StandardCharsets.UTF_8)) {
-                        throw new IOException(format("Process %s failed%n%s",
-                                commandAndArgs, CharStreams.toString(reader)));
+                    try (InputStreamReader errorReader = new InputStreamReader(process.getErrorStream(), StandardCharsets.UTF_8)) {
+                        throw new IOException(format("Process '%s' failed%n%s", Joiner.on(" ").join(commandAndArgs), CharStreams.toString(errorReader)));
                     }
                 } else {
-                    throw new IOException(format("Process %s failed", commandAndArgs));
+                    throw new IOException(format("Process '%s' failed",
+                            Joiner.on(" ").join(commandAndArgs)));
                 }
             }
         } catch (InterruptedException e) {
@@ -576,7 +583,6 @@ public final class EmbeddedPostgres implements AutoCloseable {
 
         return watch;
     }
-
 
     /**
      * Callback interface to customize a builder during creation.
