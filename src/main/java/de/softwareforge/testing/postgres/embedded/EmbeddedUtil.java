@@ -122,10 +122,12 @@ final class EmbeddedUtil {
 
     @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE")
     static void rmdirs(File dir) throws IOException {
-        try (Stream<Path> walk = Files.walk(dir.toPath())) {
-            walk.sorted(Comparator.reverseOrder())
-                    .map(Path::toFile)
-                    .forEach(File::delete);
+        if (dir.exists() && dir.isDirectory()) {
+            try (Stream<Path> walk = Files.walk(dir.toPath())) {
+                walk.sorted(Comparator.reverseOrder())
+                        .map(Path::toFile)
+                        .forEach(File::delete);
+            }
         }
     }
 

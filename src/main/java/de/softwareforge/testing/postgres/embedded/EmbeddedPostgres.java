@@ -135,6 +135,19 @@ public final class EmbeddedPostgres implements AutoCloseable {
     }
 
     /**
+     * This returns an {@link EmbeddedPostgres} instance that can be solely used for version checking. It has not been booted
+     * and will not work for any other things but executing {@link #getPostgresVersion()}. This is a performance optimization
+     * for code that needs to do version checking and does not want to pay the penalty of spinning up and shutting down an instance.
+     *
+     * @since 4.1
+     * @return An unstarted {@link EmbeddedPostgres} instance.
+     * @throws IOException Could not create the instance.
+     */
+    public static EmbeddedPostgres forVersionCheck() throws IOException {
+        return new Builder(false).build();
+    }
+
+    /**
      * Returns a new {@link Builder}.
      */
     @NonNull
@@ -190,6 +203,8 @@ public final class EmbeddedPostgres implements AutoCloseable {
      */
     @NonNull
     public DataSource createTemplateDataSource() throws SQLException {
+        checkState(started.get(), "instance has not been started!");
+
         return createDataSource(PG_DEFAULT_USER, PG_TEMPLATE_DB, getPort(), getConnectionProperties());
     }
 
@@ -200,6 +215,8 @@ public final class EmbeddedPostgres implements AutoCloseable {
      */
     @NonNull
     public DataSource createDefaultDataSource() throws SQLException {
+        checkState(started.get(), "instance has not been started!");
+
         return createDataSource(PG_DEFAULT_USER, PG_DEFAULT_DB, getPort(), getConnectionProperties());
     }
 
@@ -211,6 +228,8 @@ public final class EmbeddedPostgres implements AutoCloseable {
      */
     @NonNull
     public DataSource createDataSource(@NonNull String user, @NonNull String databaseName) throws SQLException {
+        checkState(started.get(), "instance has not been started!");
+
         return createDataSource(user, databaseName, getPort(), getConnectionProperties());
     }
 
@@ -237,6 +256,8 @@ public final class EmbeddedPostgres implements AutoCloseable {
      * Returns the network (TCP) port for the PostgreSQL server instance.
      */
     public int getPort() {
+        checkState(started.get(), "instance has not been started!");
+
         return port;
     }
 
@@ -245,6 +266,8 @@ public final class EmbeddedPostgres implements AutoCloseable {
      */
     @NonNull
     ImmutableMap<String, String> getConnectionProperties() {
+        checkState(started.get(), "instance has not been started!");
+
         return connectionProperties;
     }
 
@@ -382,15 +405,17 @@ public final class EmbeddedPostgres implements AutoCloseable {
     }
 
     private void stopDatabase(File dataDirectory) throws IOException {
-        final ImmutableList.Builder<String> commandBuilder = ImmutableList.builder();
-        commandBuilder.add(pgBin("pg_ctl"),
-                "-D", dataDirectory.getPath(),
-                "stop",
-                "-m", PG_STOP_MODE,
-                "-t", PG_STOP_WAIT_SECONDS, "-w");
+        if (started.get()) {
+            final ImmutableList.Builder<String> commandBuilder = ImmutableList.builder();
+            commandBuilder.add(pgBin("pg_ctl"),
+                    "-D", dataDirectory.getPath(),
+                    "stop",
+                    "-m", PG_STOP_MODE,
+                    "-t", PG_STOP_WAIT_SECONDS, "-w");
 
-        final Stopwatch watch = system(commandBuilder.build(), pgServerLogger.captureStreamAsLog());
-        logger.debug(format("shutdown complete in %s", formatDuration(watch.elapsed())));
+            final Stopwatch watch = system(commandBuilder.build(), pgServerLogger.captureStreamAsLog());
+            logger.debug(format("shutdown complete in %s", formatDuration(watch.elapsed())));
+        }
         pgServerLogger.close();
     }
 
@@ -659,7 +684,14 @@ public final class EmbeddedPostgres implements AutoCloseable {
         private ProcessBuilder.Redirect errorRedirector = ProcessBuilder.Redirect.PIPE;
         private ProcessBuilder.Redirect outputRedirector = ProcessBuilder.Redirect.PIPE;
 
+        private boolean bootInstance;
+
+        private Builder(boolean bootInstance) {
+            this.bootInstance = bootInstance;
+        }
+
         Builder() {
+            this(true);
         }
 
         /**
@@ -957,7 +989,11 @@ public final class EmbeddedPostgres implements AutoCloseable {
 
             embeddedPostgres.cleanOldDataDirectories(parentDirectory);
 
-            embeddedPostgres.boot();
+            // for version checking (calling getPostgresVersion(), the instance does not need to run
+            // this is a special case to make the version check run faster for unit test selection.
+            if (bootInstance) {
+                embeddedPostgres.boot();
+            }
 
             return embeddedPostgres;
         }
