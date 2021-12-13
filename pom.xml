@@ -42,7 +42,7 @@
         <project.moduleName>de.softwareforge.testing.postgres</project.moduleName>
         <basepom.test.timeout>1800</basepom.test.timeout>
 
-        <basepom.release.profiles>basepom.oss-release,site-release</basepom.release.profiles>
+        <basepom.release.profiles>basepom.oss-release,pg-embedded-release</basepom.release.profiles>
         <scm-publish.url>scm:git:https://github.com/hgschmie/pg-embedded.github.io.git</scm-publish.url>
         <maven.site.deploy.skip>true</maven.site.deploy.skip>
         <site-path>development</site-path>
@@ -248,10 +248,6 @@
                                 <rules>
                                     <!-- Ensure consistency -->
                                     <dependencyConvergence />
-                                    <requireJavaVersion>
-                                        <!-- post java 11 for correct javadoc build -->
-                                        <version>[12,)</version>
-                                    </requireJavaVersion>
                                 </rules>
                             </configuration>
                         </execution>
@@ -354,10 +350,33 @@
 
     <profiles>
         <profile>
-            <id>site-release</id>
+            <id>pg-embedded-release</id>
             <properties>
                 <site-path>release-${project.version}</site-path>
             </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-enforcer-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>enforce-java17</id>
+                                <goals>
+                                    <goal>enforce</goal>
+                                </goals>
+                                <configuration>
+                                    <rules>
+                                        <requireJavaVersion>
+                                            <version>[17,)</version>
+                                        </requireJavaVersion>
+                                    </rules>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 </project>
