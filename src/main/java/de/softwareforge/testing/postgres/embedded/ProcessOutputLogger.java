@@ -37,11 +37,11 @@ import org.slf4j.Logger;
  */
 class ProcessOutputLogger implements Closeable {
 
-    private final Logger errorLogger;
+    private final Logger logger;
     private final ListeningExecutorService executorService;
 
     ProcessOutputLogger(final Logger errorLogger) {
-        this.errorLogger = errorLogger;
+        this.logger = errorLogger;
         this.executorService = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool(new ThreadFactoryBuilder()
                 .setDaemon(true)
                 .setNameFormat("logger-thread-%d")
@@ -54,7 +54,7 @@ class ProcessOutputLogger implements Closeable {
     }
 
     StreamCapture captureStreamAsLog() {
-        return new StreamCapture(errorLogger::info);
+        return new StreamCapture(logger::debug);
     }
 
     StreamCapture captureStreamAsConsumer(Consumer<String> consumer) {
@@ -101,7 +101,7 @@ class ProcessOutputLogger implements Closeable {
                 try {
                     reader.lines().forEach(consumer::accept);
                 } catch (final UncheckedIOException e) {
-                    errorLogger.error("while reading output:", e);
+                    logger.error("while reading output:", e);
                 }
             } finally {
                 Closeables.closeQuietly(reader);
