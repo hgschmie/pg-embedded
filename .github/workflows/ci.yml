@@ -14,7 +14,8 @@ jobs:
 
     strategy:
       matrix:
-        java-version: [ 11, 17 ]
+        build-java-version: [ 11, 17 ]
+        test-java-version: [ 11, 17 ]
         postgres-version: [ 9.6, 10, 11, 12, 13, 14 ]
 
     steps:
@@ -24,12 +25,25 @@ jobs:
       run: sudo apt-get install -y locales-all
 
     - uses: actions/setup-java@v2
-      id: build_java
+      id: Setup build JDK
       with:
-        java-version: ${{ matrix.java-version }}
+        java-version: ${{ matrix.build-java-version }}
         distribution: temurin
         cache: maven
 
     - name: Build
       run: |
-          ./mvnw -B -Dpg-embedded.postgres-version=${{ matrix.postgres-version }} clean install
+          ./mvnw --version
+          ./mvnw -B -fae -DskipTests clean install
+
+    - uses: actions/setup-java@v2
+      id: Setup test JDK
+      with:
+        java-version: ${{ matrix.test-java-version }}
+        distribution: temurin
+        cache: maven
+
+    - name: Test
+      run: |
+          ./mvnw --version
+          ./mvnw -B -fae -DargLine= -Dpg-embedded.postgres-version=${{ matrix.postgres-version }} surefire:test
