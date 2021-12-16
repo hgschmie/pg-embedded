@@ -9,7 +9,7 @@ Start a PostgreSQL server for unit tests or local development.
 * [Flyway](https://flywaydb.org/) support for Database preparation
 
 
-[Full documentation site](https://https://pg-embedded.softwareforge.de/)
+[Full documentation site](https://pg-embedded.softwareforge.de/) [![CD from master pushes](https://github.com/hgschmie/pg-embedded/actions/workflows/master-cd.yml/badge.svg)](https://github.com/hgschmie/pg-embedded/actions/workflows/master-cd.yml)
 
 
 ## Manage a PostgreSQL server
