@@ -75,6 +75,7 @@ public abstract class DatabaseInfo {
      * PostgreSQL JDBC driver documentation</a> for a comprehensive list.
      *
      * @return Map of key-value pairs representing data source connection properties.
+     * @since 3.0
      */
     @NonNull
     public abstract ImmutableMap<String, String> connectionProperties();

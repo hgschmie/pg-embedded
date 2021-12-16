@@ -21,7 +21,7 @@ import java.lang.annotation.Target;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
- * {@code @RequirePostgresVersion} signals the annotated test class or method that it only should execute if the PostgreSQL server is within a specific range.
+ * {@code RequirePostgresVersion} signals the annotated test class or method that it only should execute if the PostgreSQL server is within a specific range.
  * If the version is outside the range, the annotated test class or method is skipped.
  * <p>
  * PostgreSQL versions are interpreted as described in the <a href="https://www.postgresql.org/support/versioning/">Versioning Policy</a> and  structured as

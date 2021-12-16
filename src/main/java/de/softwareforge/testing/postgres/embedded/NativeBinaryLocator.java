@@ -29,7 +29,10 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 /**
  * Locates a native binary on the Filesystem. If necessary, it should download the binary first from the network.
  * <p>
- * Implementations of this class <b>must</b> implement {@link Object#hashCode()} and {@link Object#equals(Object)} and *should* implement {@link Object#toString()}.
+ * Implementations of this class <b>must</b> implement {@link Object#hashCode()} and {@link Object#equals(Object)} and <i>should</i> implement {@link
+ * Object#toString()}.
+ *
+ * @since 3.0
  */
 public interface NativeBinaryLocator {
 

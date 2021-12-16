@@ -135,13 +135,13 @@ public final class EmbeddedPostgres implements AutoCloseable {
     }
 
     /**
-     * This returns an {@link EmbeddedPostgres} instance that can be solely used for version checking. It has not been booted
-     * and will not work for any other things but executing {@link #getPostgresVersion()}. This is a performance optimization
-     * for code that needs to do version checking and does not want to pay the penalty of spinning up and shutting down an instance.
+     * This returns an {@link EmbeddedPostgres} instance that can be solely used for version checking. It has not been booted and will not work for any other
+     * things but executing {@link EmbeddedPostgres#getPostgresVersion()}. This is a performance optimization for code that needs to do version checking and
+     * does not want to pay the penalty of spinning up and shutting down an instance.
      *
-     * @since 4.1
      * @return An unstarted {@link EmbeddedPostgres} instance.
      * @throws IOException Could not create the instance.
+     * @since 4.1
      */
     public static EmbeddedPostgres forVersionCheck() throws IOException {
         return new Builder(false).build();
@@ -287,7 +287,6 @@ public final class EmbeddedPostgres implements AutoCloseable {
      *
      * @return A string representing the Postgres version as described in the <a href="https://www.postgresql.org/support/versioning/">Postgres versioning
      * policy</a>.
-     *
      * @since 4.1
      */
     public String getPostgresVersion() throws IOException {
@@ -799,7 +798,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
         }
 
         /**
-         * @deprecated Use {@link #addInitDbConfiguration(String, String)}.
+         * @deprecated Use {@link Builder#addInitDbConfiguration(String, String)}.
          */
         @Deprecated
         @NonNull
@@ -821,6 +820,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
          * @param value initdb parameter value. Must not be null. When the empty string is used as the value, the resulting command line parameter will not have
          *              a equal sign and a value assigned.
          * @return The builder itself.
+         * @since 3.0
          */
         @NonNull
         public Builder addInitDbConfiguration(@NonNull String key, @NonNull String value) {
@@ -855,6 +855,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
          * @param installationBaseDirectory The directory to unpack the postgres distribution. The current user must be able to create and write this directory.
          *                                  Must not be null.
          * @return The builder itself.
+         * @since 3.0
          */
         @NonNull
         public Builder setInstallationBaseDirectory(@NonNull File installationBaseDirectory) {
@@ -880,12 +881,14 @@ public final class EmbeddedPostgres implements AutoCloseable {
 
         /**
          * Set the version of the PostgreSQL server. This value is passed to the default binary manager which will try to resolve this version from existing
-         * Maven artifacts. The value is ignored if {@link #setNativeBinaryManager(NativeBinaryManager)} is called.
+         * Maven artifacts. The value is ignored if {@link Builder#setNativeBinaryManager(NativeBinaryManager)} is called.
          * <p>
          * Not every PostgreSQL version is supported by pg-embedded. Some older versions lack the necessary options for the command line parameters and will
          * fail at startup. Currently, every version 10 or newer should be working.
          *
          * @param serverVersion A partial or full version. Valid values are e.g. "12" or "11.3".
+         * @return The builder itself.
+         * @since 3.0
          */
         @NonNull
         public Builder setServerVersion(@NonNull String serverVersion) {
@@ -920,11 +923,12 @@ public final class EmbeddedPostgres implements AutoCloseable {
 
         /**
          * Sets the {@link NativeBinaryManager} that provides the location of the postgres installation. Explicitly setting a binary manager overrides the
-         * installation base directory location set with {@link #setInstallationBaseDirectory(File)} as this is only used by the default binary manager. Calling
-         * {@link #setInstallationBaseDirectory(File)} after this method undoes setting the binary manager.
+         * installation base directory location set with {@link Builder#setInstallationBaseDirectory(File)} as this is only used by the default binary manager.
+         * Calling {@link Builder#setInstallationBaseDirectory(File)} after this method undoes setting the binary manager.
          *
          * @param nativeBinaryManager A {@link NativeBinaryManager} implementation. Must not be null.
          * @return The builder itself.
+         * @since 3.0
          */
         @NonNull
         public Builder setNativeBinaryManager(@NonNull NativeBinaryManager nativeBinaryManager) {
@@ -935,10 +939,12 @@ public final class EmbeddedPostgres implements AutoCloseable {
         /**
          * Use a locally installed PostgreSQL server for tests. The tests will still spin up a new instance and locate the data in the data directory but it
          * will use the locally installed binaries for starting and stopping. Calling this method sets a binary manager, so it overrides {@link
-         * #setNativeBinaryManager(NativeBinaryManager)}. Calling this method makes the builder ignore the {@link #setInstallationBaseDirectory(File)} setting.
+         * Builder#setNativeBinaryManager(NativeBinaryManager)}. Calling this method makes the builder ignore the {@link
+         * Builder#setInstallationBaseDirectory(File)} setting.
          *
          * @param directory A local directory that contains a standard PostgreSQL installation. The directory must exist and read and executable.
          * @return The builder itself.
+         * @since 3.0
          */
         @NonNull
         public Builder useLocalPostgresInstallation(@NonNull File directory) {

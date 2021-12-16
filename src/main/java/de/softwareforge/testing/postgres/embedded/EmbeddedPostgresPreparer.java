@@ -24,6 +24,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
  * Allows e.g. for preparation of data sources, postgres instances and other places where additional degrees of customization are needed.
  *
  * @param <T> The object type to be prepared.
+ * @since 3.0
  */
 @FunctionalInterface
 public interface EmbeddedPostgresPreparer<T> {

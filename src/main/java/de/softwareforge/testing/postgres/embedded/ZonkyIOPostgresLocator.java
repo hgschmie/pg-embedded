@@ -43,6 +43,8 @@ import org.slf4j.LoggerFactory;
  * <code>io.zonky.test.postgres:embedded-postgres-binaries-&lt;os&gt;-&lt;arch&gt;</code>.
  * <p>
  * See <a href="https://github.com/zonkyio/embedded-postgres-binaries">The Zonky IO github page</a> for more details.
+ *
+ * @since 3.0
  */
 public final class ZonkyIOPostgresLocator implements NativeBinaryLocator {
 

@@ -20,6 +20,8 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Returns an installation location for a native binary. The implementation is responsible for locating and optionally unpacking installing the binary.
+ *
+ * @since 3.0
  */
 @FunctionalInterface
 public interface NativeBinaryManager {

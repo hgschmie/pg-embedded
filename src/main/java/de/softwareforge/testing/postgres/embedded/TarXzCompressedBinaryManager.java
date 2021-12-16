@@ -47,6 +47,8 @@ import org.tukaani.xz.XZInputStream;
 
 /**
  * Loads a native binary installation and returns the location of it.
+ *
+ * @since 3.0
  */
 public final class TarXzCompressedBinaryManager implements NativeBinaryManager {
 
@@ -66,8 +68,8 @@ public final class TarXzCompressedBinaryManager implements NativeBinaryManager {
      * <p>
      * The implementation of {@link NativeBinaryLocator} to locate the stream that gets unpacked must satisfy the following criteria:
      * <ul>
-     *     <li>It must implement {@link #equals(Object)} and {@link #hashCode()}.</li>
-     *     <li>It should implement {@link #toString()} to return meaningful information about the locator.</li>
+     *     <li>It must override {@link Object#equals(Object)} and {@link Object#hashCode()}.</li>
+     *     <li>It should implement {@link Object#toString()} to return meaningful information about the locator.</li>
      *     <li>It must allow multiple calls to {@link NativeBinaryLocator#getInputStream()} which all return the same, byte-identical contents.
      *     The operation should be cheap as it may be called multiple times.</li>
      * </ul>

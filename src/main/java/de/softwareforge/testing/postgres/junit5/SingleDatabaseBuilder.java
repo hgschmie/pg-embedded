@@ -53,7 +53,7 @@ public final class SingleDatabaseBuilder {
     }
 
     /**
-     * @deprecated Use {@link #preparedInstance(EmbeddedPostgresPreparer)}.
+     * @deprecated Use {@link SingleDatabaseBuilder#preparedInstance(EmbeddedPostgresPreparer)}.
      */
     @Deprecated
     @NonNull
@@ -62,7 +62,7 @@ public final class SingleDatabaseBuilder {
     }
 
     /**
-     * @deprecated Use {@link #preparedInstanceWithDefaults(EmbeddedPostgresPreparer)}.
+     * @deprecated Use {@link SingleDatabaseBuilder#preparedInstanceWithDefaults(EmbeddedPostgresPreparer)}.
      */
     @Deprecated
     @NonNull
@@ -75,6 +75,7 @@ public final class SingleDatabaseBuilder {
      *
      * @param databasePreparer A {@link EmbeddedPostgresPreparer<DataSource>} instance. Must not be null.
      * @return A {@link DatabaseManager.Builder<EmbeddedPgExtension>} instance that can be customized further.
+     * @since 3.0
      */
     @NonNull
     public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstance(@NonNull EmbeddedPostgresPreparer<DataSource> databasePreparer) {
@@ -87,6 +88,7 @@ public final class SingleDatabaseBuilder {
      *
      * @param databasePreparer A {@link EmbeddedPostgresPreparer<DataSource>} instance. Must not be null.
      * @return A {@link DatabaseManager.Builder<EmbeddedPgExtension>} instance that can be customized further.
+     * @since 3.0
      */
     @NonNull
     public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstanceWithDefaults(@NonNull EmbeddedPostgresPreparer<DataSource> databasePreparer) {

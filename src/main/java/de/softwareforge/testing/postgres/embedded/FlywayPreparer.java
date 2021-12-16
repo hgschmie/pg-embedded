@@ -52,8 +52,8 @@ public final class FlywayPreparer implements EmbeddedPostgresPreparer<DataSource
     }
 
     /**
-     * Create a new, uninitialized preparer instance. Use {@link #addCustomizer(Consumer)} to modify the configuration for the {@link FluentConfiguration}
-     * object.
+     * Create a new, uninitialized preparer instance. Use {@link FlywayPreparer#addCustomizer(Consumer)} to modify the configuration for the {@link
+     * FluentConfiguration} object.
      */
     public FlywayPreparer() {
     }
@@ -64,6 +64,7 @@ public final class FlywayPreparer implements EmbeddedPostgresPreparer<DataSource
      *
      * @param customizer A {@link Consumer<FluentConfiguration>} instance. Must not be null.
      * @return This object.
+     * @since 3.0
      */
     @NonNull
     public FlywayPreparer addCustomizer(@NonNull Consumer<FluentConfiguration> customizer) {
@@ -79,6 +80,7 @@ public final class FlywayPreparer implements EmbeddedPostgresPreparer<DataSource
      *
      * @param customizers A set of {@link Consumer<FluentConfiguration>} instances. Must not be null.
      * @return This object.
+     * @since 3.0
      */
     @NonNull
     public FlywayPreparer addCustomizers(@NonNull Set<Consumer<FluentConfiguration>> customizers) {
@@ -89,7 +91,7 @@ public final class FlywayPreparer implements EmbeddedPostgresPreparer<DataSource
     }
 
     /**
-     * @deprecated Use {@link #addCustomizer(Consumer)}.
+     * @deprecated Use {@link FlywayPreparer#addCustomizer(Consumer)}.
      */
     @Deprecated
     @NonNull

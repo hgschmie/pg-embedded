@@ -65,7 +65,7 @@ public final class DatabaseManager implements AutoCloseable {
     }
 
     /**
-     * Creates a new {@link Builder<DatabaseManager>} instance that will create a new database on each call to {@link #getDatabaseInfo()}.
+     * Creates a new {@link Builder<DatabaseManager>} instance that will create a new database on each call to {@link DatabaseManager#getDatabaseInfo()}.
      *
      * @return A builder instance.
      */
@@ -75,7 +75,8 @@ public final class DatabaseManager implements AutoCloseable {
     }
 
     /**
-     * Creates a new {@link Builder<DatabaseManager>} instance that will return a connection to the same database on each call to {@link #getDatabaseInfo()}.
+     * Creates a new {@link Builder<DatabaseManager>} instance that will return a connection to the same database on each call to {@link
+     * DatabaseManager#getDatabaseInfo()}.
      *
      * @return A builder instance.
      */
@@ -277,7 +278,7 @@ public final class DatabaseManager implements AutoCloseable {
         }
 
         /**
-         * @deprecated Use {@link #withDatabasePreparer(EmbeddedPostgresPreparer)}.
+         * @deprecated Use {@link DatabaseManager.Builder#withDatabasePreparer(EmbeddedPostgresPreparer)}.
          */
         @Deprecated
         @NonNull
@@ -293,6 +294,7 @@ public final class DatabaseManager implements AutoCloseable {
          *
          * @param databasePreparer A {@link EmbeddedPostgresPreparer<DataSource>} instance. Must not be null.
          * @return This object instance.
+         * @since 3.0
          */
         @NonNull
         public Builder<T> withDatabasePreparer(@NonNull EmbeddedPostgresPreparer<DataSource> databasePreparer) {
@@ -307,6 +309,7 @@ public final class DatabaseManager implements AutoCloseable {
          *
          * @param databasePreparers A set of {@link EmbeddedPostgresPreparer<DataSource>} instances. Must not be null.
          * @return This object instance.
+         * @since 3.0
          */
         @NonNull
         public Builder<T> withDatabasePreparers(@NonNull Set<EmbeddedPostgresPreparer<DataSource>> databasePreparers) {
@@ -320,6 +323,7 @@ public final class DatabaseManager implements AutoCloseable {
          *
          * @param instancePreparer A {@link EmbeddedPostgresPreparer<EmbeddedPostgres.Builder>} instance. Must not be null.
          * @return This object instance.
+         * @since 3.0
          */
         @NonNull
         public Builder<T> withInstancePreparer(@NonNull EmbeddedPostgresPreparer<EmbeddedPostgres.Builder> instancePreparer) {
@@ -333,6 +337,7 @@ public final class DatabaseManager implements AutoCloseable {
          *
          * @param instancePreparers A set of {@link EmbeddedPostgresPreparer<EmbeddedPostgres.Builder>} instances. Must not be null.
          * @return This object instance.
+         * @since 3.0
          */
         @NonNull
         public Builder<T> withInstancePreparers(@NonNull Set<EmbeddedPostgresPreparer<EmbeddedPostgres.Builder>> instancePreparers) {
@@ -341,7 +346,7 @@ public final class DatabaseManager implements AutoCloseable {
         }
 
         /**
-         * @deprecated Use {@link #withInstancePreparer(EmbeddedPostgresPreparer)}.
+         * @deprecated Use {@link DatabaseManager.Builder#withInstancePreparer(EmbeddedPostgresPreparer)}.
          */
         @Deprecated
         @NonNull

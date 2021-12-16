@@ -47,8 +47,8 @@ import org.slf4j.LoggerFactory;
  * This extension can provide the {@link EmbeddedPostgres} instance, a {@link DatabaseInfo} or a {@link DataSource} object as test parameters.
  *
  * <ul>
- * <li>Using a {@link DatabaseInfo} parameter is equivalent to calling {@link #createDatabaseInfo()}.</li>
- * <li>Using a {@link DataSource} parameter is equivalent to calling {@link #createDataSource()}.</li>
+ * <li>Using a {@link DatabaseInfo} parameter is equivalent to calling {@link EmbeddedPgExtension#createDatabaseInfo()}.</li>
+ * <li>Using a {@link DataSource} parameter is equivalent to calling {@link EmbeddedPgExtension#createDataSource()}.</li>
  * </ul>
  */
 public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCallback, BeforeEachCallback, AfterEachCallback, ParameterResolver {
@@ -95,6 +95,8 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
      *     @RegisterExtension
      *     public static EmbeddedPgExtension pg = MultiDatabaseBuilder.instanceWithDefaults().build();
      *     }</pre>
+     *
+     * @since 3.0
      */
     public EmbeddedPgExtension() {
         this(new DatabaseManagerBuilder(true).withInstancePreparer(EmbeddedPostgres.Builder::withDefaults));
