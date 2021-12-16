@@ -27,12 +27,12 @@
         <connection>scm:git:git://github.com/hgschmie/pg-embedded.git</connection>
         <developerConnection>scm:git:git@github.com:hgschmie/pg-embedded.git</developerConnection>
         <url>https://github.com/hgschmie/pg-embedded</url>
-        <tag>HEAD</tag>
+        <tag>pg-embedded-4.1</tag>
     </scm>
 
     <groupId>de.softwareforge.testing</groupId>
     <artifactId>pg-embedded</artifactId>
-    <version>4.1-SNAPSHOT</version>
+    <version>4.1</version>
     <description>Embedded PostgreSQL framework for testing and development use.</description>
     <url>https://pg-embedded.softwareforge.de/</url>
     <inceptionYear>2021</inceptionYear>
