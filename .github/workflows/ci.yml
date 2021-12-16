@@ -34,7 +34,6 @@ jobs:
 
     - name: Build
       run: |
-          ./mvnw --version
           ./mvnw -B -fae -DskipTests clean install
 
     - uses: actions/setup-java@v2
@@ -47,5 +46,4 @@ jobs:
 
     - name: Run unit tests
       run: |
-          ./mvnw --version
           ./mvnw -B -fae -DargLine= -Dpg-embedded.postgres-version=${{ matrix.postgres-version }} surefire:test
