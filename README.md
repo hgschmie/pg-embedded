@@ -1,15 +1,17 @@
+[![Main Build](https://github.com/hgschmie/pg-embedded/actions/workflows/master-cd.yml/badge.svg)](https://github.com/hgschmie/pg-embedded/actions/workflows/master-cd.yml)
+
 # Embedded Postgres for Java
 
 Start a PostgreSQL server for unit tests or local development.
 
+Please check out the [full documentation site](https://pg-embedded.softwareforge.de/)!
+
 * PostgreSQL version 9.6+
-* Binaries loaded from Maven Central or locally installed
+* Binaries loaded from Maven Central (using the [Zonky embedded Postgres Binaries](https://github.com/zonkyio/embedded-postgres-binaries)) or locally installed.
 * Multiple Database servers
 * Multiple databases on a single database server
 * [Flyway](https://flywaydb.org/) support for Database preparation
 
-
-[Full documentation site](https://pg-embedded.softwareforge.de/) [![CD from master pushes](https://github.com/hgschmie/pg-embedded/actions/workflows/master-cd.yml/badge.svg)](https://github.com/hgschmie/pg-embedded/actions/workflows/master-cd.yml)
 
 
 ## Manage a PostgreSQL server
