@@ -114,7 +114,7 @@ public abstract class DatabaseInfo {
      * Returns a {@link DataSource} instance connected to the described database.
      *
      * @return An initialized {@link DataSource} object. Never null.
-     * @throws SQLException A problem occured trying to connect to the database.
+     * @throws SQLException A problem occurred trying to connect to the database.
      */
     @NonNull
     public DataSource asDataSource() throws SQLException {
