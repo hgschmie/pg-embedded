@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.basepom</groupId>
         <artifactId>basepom-oss</artifactId>
-        <version>42</version>
+        <version>43</version>
     </parent>
 
 
@@ -52,8 +52,8 @@
         <basepom.javadoc.show>protected</basepom.javadoc.show>
 
         <dep.plugin.jxr.version>3.0.0</dep.plugin.jxr.version>
-        <dep.plugin.scm-publish.version>3.1.0</dep.plugin.scm-publish.version>
         <dep.plugin.project-info-reports.version>3.1.1</dep.plugin.project-info-reports.version>
+        <dep.plugin.inline.version>1.0.1</dep.plugin.inline.version>
 
         <dep.slf4j.version>1.7.32</dep.slf4j.version>
         <dep.guava.version>30.1.1-jre</dep.guava.version>
@@ -61,9 +61,8 @@
         <dep.postgresql-jdbc.version>42.3.1</dep.postgresql-jdbc.version>
         <dep.junit5.version>5.8.1</dep.junit5.version>
         <dep.auto-value.version>1.8.2</dep.auto-value.version>
-        <dep.maven-loader.version>1.2</dep.maven-loader.version>
+        <dep.maven-loader.version>2.0.1</dep.maven-loader.version>
 
-        <dep.apache-commons-lang3.version>3.12.0</dep.apache-commons-lang3.version>
         <dep.apache-commons-compress.version>1.21</dep.apache-commons-compress.version>
         <dep.xz.version>1.9</dep.xz.version>
         <dep.checkerframework.version>3.17.0</dep.checkerframework.version>
@@ -227,15 +226,6 @@
                     </configuration>
                 </plugin>
                 <plugin>
-                    <groupId>com.mycila</groupId>
-                    <artifactId>license-maven-plugin</artifactId>
-                    <configuration>
-                        <excludes>
-                            <exclude>**/CNAME</exclude>
-                        </excludes>
-                    </configuration>
-                </plugin>
-                <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
                     <executions>
@@ -252,21 +242,6 @@
                             </configuration>
                         </execution>
                     </executions>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-scm-publish-plugin</artifactId>
-                    <version>${dep.plugin.scm-publish.version}</version>
-                    <configuration>
-                        <serverId>github</serverId>
-                        <pubScmUrl>${scm-publish.url}</pubScmUrl>
-                        <scmBranch>main</scmBranch>
-                        <checkoutDirectory>${java.io.tmpdir}/gh-pages-publish/${project.names}</checkoutDirectory>
-                        <content>${project.build.directory}/site</content>
-                        <subDirectory>${site-path}</subDirectory>
-                        <localCheckout>true</localCheckout>
-                    </configuration>
                 </plugin>
 
                 <plugin>
@@ -296,6 +271,24 @@
                         </archive>
                     </configuration>
                 </plugin>
+                <plugin>
+                    <groupId>org.basepom.maven</groupId>
+                    <artifactId>inline-maven-plugin</artifactId>
+                    <version>${dep.plugin.inline.version}</version>
+
+                    <configuration>
+                        <prefix>de.softwareforge.testing</prefix>
+                        <hideClasses>true</hideClasses>
+                        <inlineDependencies>
+                            <inlineDependency>
+                                <artifact>org.apache.commons:commons-compress</artifact>
+                            </inlineDependency>
+                            <inlineDependency>
+                                <artifact>org.tukaani:xz</artifact>
+                            </inlineDependency>
+                        </inlineDependencies>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
@@ -303,7 +296,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
                 <dependencies>
-                    <!-- Fluido is listed here for version update checking only -->
                     <dependency>
                         <groupId>org.apache.maven.skins</groupId>
                         <artifactId>maven-fluido-skin</artifactId>
@@ -320,6 +312,26 @@
                         <phase>site-deploy</phase>
                         <goals>
                             <goal>publish-scm</goal>
+                        </goals>
+                        <configuration>
+                            <serverId>github</serverId>
+                            <pubScmUrl>${scm-publish.url}</pubScmUrl>
+                            <scmBranch>main</scmBranch>
+                            <checkoutDirectory>${java.io.tmpdir}/gh-pages-publish/${project.name}</checkoutDirectory>
+                            <content>${project.build.directory}/site</content>
+                            <subDirectory>${site-path}</subDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.basepom.maven</groupId>
+                <artifactId>inline-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>inline</goal>
                         </goals>
                     </execution>
                 </executions>
