@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.basepom</groupId>
         <artifactId>basepom-oss</artifactId>
-        <version>43</version>
+        <version>44-SNAPSHOT</version>
     </parent>
 
 
@@ -47,12 +47,9 @@
         <maven.site.deploy.skip>true</maven.site.deploy.skip>
         <site-path>development</site-path>
 
-        <!-- site requires full javadoc generation -->
-        <basepom.javadoc.skip>false</basepom.javadoc.skip>
+        <basepom.site.check.skip-javadoc>false</basepom.site.check.skip-javadoc>
         <basepom.javadoc.show>protected</basepom.javadoc.show>
 
-        <dep.plugin.jxr.version>3.0.0</dep.plugin.jxr.version>
-        <dep.plugin.project-info-reports.version>3.1.1</dep.plugin.project-info-reports.version>
         <dep.plugin.inline.version>1.0.1</dep.plugin.inline.version>
 
         <dep.slf4j.version>1.7.32</dep.slf4j.version>
@@ -247,7 +244,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <configuration combine.children="append">
+                    <configuration>
                         <links>
                             <link>https://junit.org/junit5/docs/${dep.junit5.version}/api/</link>
                             <link>https://javadoc.io/doc/com.google.guava/guava/${dep.guava.version}/</link>
@@ -344,7 +341,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <configuration combine.children="append">
+                <configuration>
                     <links>
                         <link>https://junit.org/junit5/docs/${dep.junit5.version}/api/</link>
                         <link>https://javadoc.io/doc/com.google.guava/guava/${dep.guava.version}/</link>
