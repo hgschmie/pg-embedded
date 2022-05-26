@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.basepom</groupId>
         <artifactId>basepom-oss</artifactId>
-        <version>44-SNAPSHOT</version>
+        <version>45</version>
     </parent>
 
 
@@ -52,7 +52,7 @@
 
         <dep.plugin.inline.version>1.0.1</dep.plugin.inline.version>
 
-        <dep.slf4j.version>1.7.32</dep.slf4j.version>
+        <dep.slf4j.version>1.7.36</dep.slf4j.version>
         <dep.guava.version>30.1.1-jre</dep.guava.version>
         <dep.flyway.version>8.1.0</dep.flyway.version>
         <dep.postgresql-jdbc.version>42.3.1</dep.postgresql-jdbc.version>
@@ -207,7 +207,7 @@
         <dependency>
             <groupId>io.zonky.test.postgres</groupId>
             <artifactId>embedded-postgres-binaries-darwin-amd64</artifactId>
-            <version>13.4.0</version>
+            <version>13.7.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
