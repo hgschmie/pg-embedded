@@ -12,12 +12,12 @@
 ~   See the License for the specific language governing permissions and
 ~   limitations under the License.
 -->
-<project>
+<project name="pg-embedded">
     <poweredBy />
     <skin>
         <groupId>org.apache.maven.skins</groupId>
         <artifactId>maven-fluido-skin</artifactId>
-        <version>1.9</version>
+        <version>1.11.1</version>
     </skin>
     <custom>
         <fluidoSkin>

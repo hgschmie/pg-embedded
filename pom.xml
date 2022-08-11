@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.basepom</groupId>
         <artifactId>basepom-oss</artifactId>
-        <version>45</version>
+        <version>48-SNAPSHOT</version>
     </parent>
 
 
@@ -43,12 +43,13 @@
         <basepom.test.timeout>1800</basepom.test.timeout>
 
         <basepom.release.profiles>basepom.oss-release,pg-embedded-release</basepom.release.profiles>
-        <scm-publish.url>scm:git:https://github.com/hgschmie/pg-embedded.github.io.git</scm-publish.url>
-        <maven.site.deploy.skip>true</maven.site.deploy.skip>
-        <site-path>development</site-path>
+        <basepom.site.scm.skip-deploy>false</basepom.site.scm.skip-deploy>
+        <basepom.site.scm.id>github</basepom.site.scm.id>
+        <basepom.site.scm.url>scm:git:https://github.com/hgschmie/pg-embedded.github.io.git</basepom.site.scm.url>
 
-        <basepom.site.check.skip-javadoc>false</basepom.site.check.skip-javadoc>
+        <basepom.javadoc.skip>false</basepom.javadoc.skip>
         <basepom.javadoc.show>protected</basepom.javadoc.show>
+        <basepom.site.fail-javadoc>false</basepom.site.fail-javadoc>
 
         <dep.plugin.inline.version>1.0.1</dep.plugin.inline.version>
 
@@ -292,38 +293,6 @@
         </pluginManagement>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-site-plugin</artifactId>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.apache.maven.skins</groupId>
-                        <artifactId>maven-fluido-skin</artifactId>
-                        <version>1.9</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-scm-publish-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>publish-docs</id>
-                        <phase>site-deploy</phase>
-                        <goals>
-                            <goal>publish-scm</goal>
-                        </goals>
-                        <configuration>
-                            <serverId>github</serverId>
-                            <pubScmUrl>${scm-publish.url}</pubScmUrl>
-                            <scmBranch>main</scmBranch>
-                            <checkoutDirectory>${java.io.tmpdir}/gh-pages-publish/${project.name}</checkoutDirectory>
-                            <content>${project.build.directory}/site</content>
-                            <subDirectory>${site-path}</subDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <groupId>org.basepom.maven</groupId>
                 <artifactId>inline-maven-plugin</artifactId>
                 <executions>
@@ -345,7 +314,7 @@
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
                     <links>
-                        <link>https://junit.org/junit5/docs/${dep.junit5.version}/api/</link>
+                        <link>https://javadoc.io/doc/org.junit.jupiter/junit-jupiter-api/${dep.junit5.version}/</link>
                         <link>https://javadoc.io/doc/com.google.guava/guava/${dep.guava.version}/</link>
                         <link>https://javadoc.io/doc/com.github.spotbugs/spotbugs-annotations/${dep.spotbugs.version}</link>
                     </links>
