@@ -397,7 +397,7 @@
             <activation>
                 <os>
                     <name>linux</name>
-                    <arch>x86_64</arch>
+                    <arch>amd64</arch>
                 </os>
             </activation>
             <properties>
