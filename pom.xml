@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.basepom</groupId>
         <artifactId>basepom-oss</artifactId>
-        <version>48-SNAPSHOT</version>
+        <version>49</version>
     </parent>
 
 
@@ -56,9 +56,9 @@
         <dep.slf4j.version>1.7.36</dep.slf4j.version>
         <dep.guava.version>30.1.1-jre</dep.guava.version>
         <dep.flyway.version>8.1.0</dep.flyway.version>
-        <dep.postgresql-jdbc.version>42.3.1</dep.postgresql-jdbc.version>
-        <dep.junit5.version>5.8.1</dep.junit5.version>
-        <dep.auto-value.version>1.8.2</dep.auto-value.version>
+        <dep.postgresql-jdbc.version>42.5.0</dep.postgresql-jdbc.version>
+        <dep.junit5.version>5.9.0</dep.junit5.version>
+        <dep.auto-value.version>1.9</dep.auto-value.version>
         <dep.maven-loader.version>2.0.1</dep.maven-loader.version>
 
         <dep.apache-commons-compress.version>1.21</dep.apache-commons-compress.version>
@@ -69,6 +69,11 @@
         <pg-embedded.test.local-dir>/usr/local</pg-embedded.test.local-dir>
         <!-- really old local pg installations (such as pg 9.2) need 'unix_socket_directory' to run the LocalDirectoryPostgresTest -->
         <pg-embedded.test.unix-socket-dir>unix_socket_directories</pg-embedded.test.unix-socket-dir>
+        <pg-embedded.test.log-level>INFO</pg-embedded.test.log-level>
+        <!-- overwritten by profile below -->
+        <pg-embedded.test.binary-name />
+        <pg-embedded.test.artifact-name>linux-amd64</pg-embedded.test.artifact-name>
+        <pg-embedded.test.artifact-version>14.5.0</pg-embedded.test.artifact-version>
     </properties>
 
     <licenses>
@@ -207,8 +212,8 @@
 
         <dependency>
             <groupId>io.zonky.test.postgres</groupId>
-            <artifactId>embedded-postgres-binaries-darwin-amd64</artifactId>
-            <version>13.7.0</version>
+            <artifactId>embedded-postgres-binaries-${pg-embedded.test.artifact-name}</artifactId>
+            <version>${pg-embedded.test.artifact-version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -221,7 +226,10 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <configuration>
                         <systemProperties combine.children="append">
-                            <org.slf4j.simpleLogger.defaultLogLevel>INFO</org.slf4j.simpleLogger.defaultLogLevel>
+                            <org.slf4j.simpleLogger.defaultLogLevel>${pg-embedded.test.log-level}</org.slf4j.simpleLogger.defaultLogLevel>
+                            <pg-embedded.test.binary-name>${pg-embedded.test.binary-name}</pg-embedded.test.binary-name>
+                            <!-- run all tests with pg 14, otherwise they fail on mac/arm without rosetta -->
+                            <pg-embedded.postgres-version>${pg-embedded.test.artifact-version}</pg-embedded.postgres-version>
                         </systemProperties>
                     </configuration>
                 </plugin>
@@ -357,6 +365,45 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        <profile>
+            <id>macos-x86_64</id>
+            <activation>
+                <os>
+                    <family>mac</family>
+                    <arch>x86_64</arch>
+                </os>
+            </activation>
+            <properties>
+                <pg-embedded.test.binary-name>darwin-x86_64</pg-embedded.test.binary-name>
+                <pg-embedded.test.artifact-name>darwin-amd64</pg-embedded.test.artifact-name>
+            </properties>
+        </profile>
+        <profile>
+            <id>macos-arm64</id>
+            <activation>
+                <os>
+                    <family>mac</family>
+                    <arch>aarch64</arch>
+                </os>
+            </activation>
+            <properties>
+                <pg-embedded.test.binary-name>darwin-arm_64</pg-embedded.test.binary-name>
+                <pg-embedded.test.artifact-name>darwin-arm64v8</pg-embedded.test.artifact-name>
+            </properties>
+        </profile>
+        <profile>
+            <id>linux-x86_64</id>
+            <activation>
+                <os>
+                    <name>linux</name>
+                    <arch>x86_64</arch>
+                </os>
+            </activation>
+            <properties>
+                <pg-embedded.test.binary-name>linux-x86_64</pg-embedded.test.binary-name>
+                <pg-embedded.test.artifact-name>linux-amd64</pg-embedded.test.artifact-name>
+            </properties>
         </profile>
     </profiles>
 </project>
