@@ -1,4 +1,4 @@
-name: CD from master pushes
+name: CD (Snapshot deployment)
 
 on:
   push:
@@ -12,25 +12,25 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Install locales on runner
+    - name: Install locales on ubuntu runner
       run: sudo apt-get install -y locales-all
 
-    - uses: actions/setup-java@v3
-      id: build_java
+    - name: setup build jdk
+      uses: actions/setup-java@v3
       with:
-        java-version: 17
         distribution: temurin
+        java-version: 17
         cache: maven
         server-id: sonatype-nexus-snapshots
         server-username: NEXUS_REPO_USER
         server-password: NEXUS_REPO_PASSWORD
 
-    - name: Build
-      run: |
-          ./mvnw -B clean deploy
+    - name: deploy code
       env:
         NEXUS_REPO_USER: ${{ secrets.NEXUS_REPO_USER }}
         NEXUS_REPO_PASSWORD: ${{ secrets.NEXUS_REPO_PASSWORD }}
+        PG_MAVEN_OPTS: "-B -fae"
+      run: make deploy
 
   site:
     runs-on: ubuntu-latest
@@ -38,7 +38,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Install locales on runner
+    - name: Install locales on ubuntu runner
       run: sudo apt-get install -y locales-all
 
     - name: Set git information
@@ -46,20 +46,17 @@ jobs:
         git config --global user.name github-actions
         git config --global user.email github-actions@github.com
 
-    - uses: actions/setup-java@v3
-      id: build_java
+    - name: setup build jdk
+      uses: actions/setup-java@v3
       with:
-        java-version: 17
         distribution: temurin
+        java-version: 17
         cache: maven
         server-id: github
-        server-username: SITE_DEPLOY_USER
-        server-password: SITE_DEPLOY_TOKEN
+        server-password: SITE_DEPLOY
 
-    - name: Deploy site
-      # run install b/c https://issues.apache.org/jira/browse/MJAVADOC-701
-      run: |
-          ./mvnw -B clean install site-deploy
+    - name: deploy documentation
       env:
-        SITE_DEPLOY_USER: ${{ secrets.SITE_DEPLOY_USER }}
-        SITE_DEPLOY_TOKEN: ${{ secrets.SITE_DEPLOY_TOKEN  }}
+        SITE_DEPLOY: ${{ secrets.SITE_DEPLOY_TOKEN  }}
+        PG_MAVEN_OPTS: "-B -fae"
+      run: make deploy-site

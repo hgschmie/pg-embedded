@@ -32,8 +32,9 @@ jobs:
         cache: maven
 
     - name: Build
-      run: |
-          ./mvnw -B -fae -DskipTests clean install
+      env:
+        PG_MAVEN_OPTS: "-B -fae -DskipTests"
+      run: make install
 
     - uses: actions/setup-java@v3
       id: setup_test_jdk
@@ -44,5 +45,6 @@ jobs:
         cache: maven
 
     - name: Run unit tests
-      run: |
-          ./mvnw -B -fae -DargLine= -Dpg-embedded.postgres-version=${{ matrix.postgres-version }} surefire:test
+      env:
+        PG_MAVEN_OPTS: "-B -fae -Dpg-embedded.postgres-version=${{ matrix.postgres-version }}"
+      run: make test
