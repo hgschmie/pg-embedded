@@ -68,7 +68,7 @@ public final class ZonkyIOPostgresLocator implements NativeBinaryLocator {
 
         this.os = computeOS();
         this.architecture = computeTarXzArchitectureName();
-        LOG.debug(format("Detected a %s %s system, using PostgreSQL version %s", architecture, os, serverVersion));
+        LOG.debug(format("Detected a %s %s system, using PostgreSQL version %s/%s", EmbeddedUtil.OS_ARCH, os, serverVersion, architecture));
     }
 
     @Override
@@ -105,7 +105,7 @@ public final class ZonkyIOPostgresLocator implements NativeBinaryLocator {
             String version = artifactLoader.findLatestVersion(ZONKY_GROUP_ID, artifactId, serverVersion);
             File file = artifactLoader.getArtifactFile(ZONKY_GROUP_ID, artifactId, version);
             checkState(file != null && file.exists(), "Could not locate artifact file for %s:%s", artifactId, version);
-            LOG.info(format("Using PostgreSQL version %s", version));
+            LOG.info(format("Using PostgreSQL version %s (%s)", version, architecture));
             return file;
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -143,7 +143,7 @@ public final class ZonkyIOPostgresLocator implements NativeBinaryLocator {
 
     @Override
     public String toString() {
-        return format("ZonkyIO Stream locator for PostgreSQL (arch: %s os: %s, version: %s)", architecture, os, serverVersion);
+        return format("ZonkyIO Stream locator for PostgreSQL (machine: %s os: %s, arch: %s, version: %s)", EmbeddedUtil.OS_ARCH, os, architecture, serverVersion);
     }
 
     @Override

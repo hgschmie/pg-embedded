@@ -25,16 +25,16 @@ import java.sql.Statement;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 
+
 public class ClasspathLocatorTest {
 
     @Test
     public void testClasspathLocator() throws Exception {
-        // this test only runs on Mac
-        Assumptions.assumeTrue(EmbeddedUtil.IS_OS_MAC, "Not on MacOS");
-        Assumptions.assumeTrue(EmbeddedUtil.IS_ARCH_X86_64 || EmbeddedUtil.IS_ARCH_AARCH64, "Not on MacOS x86 or aarch64");
+        String name = System.getProperty("pg-embedded.test.binary-name");
+        Assumptions.assumeTrue(name != null && !name.isEmpty(), "No binary name set, skipping test");
 
         try (EmbeddedPostgres pg = EmbeddedPostgres.builderWithDefaults()
-                .setNativeBinaryManager(new TarXzCompressedBinaryManager(new ClasspathLocator()))
+                .setNativeBinaryManager(new TarXzCompressedBinaryManager(new ClasspathLocator(name)))
                 .build();
                 Connection c = pg.createDefaultDataSource().getConnection();
                 Statement s = c.createStatement()) {
@@ -47,9 +47,15 @@ public class ClasspathLocatorTest {
     }
 
     static class ClasspathLocator implements NativeBinaryLocator {
+        private final String name;
+
+        ClasspathLocator(String name) {
+            this.name = name;
+        }
+
         @Override
         public InputStream getInputStream() {
-            return EmbeddedPostgres.class.getResourceAsStream("/postgres-darwin-x86_64.txz");
+            return EmbeddedPostgres.class.getResourceAsStream("/postgres-" + name + ".txz");
         }
     }
 }
