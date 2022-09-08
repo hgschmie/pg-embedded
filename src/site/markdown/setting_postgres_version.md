@@ -23,15 +23,16 @@ The [FlywayPreparer](apidocs/de.softwareforge.testing.postgres/de/softwareforge/
 | Linux | x86_64 | Debian 11 (bullseye) | Needs `locales-all` installed for database locales to work |
 | Linux | x86_64 | Alpine Linux | |
 | Linux | x86_64 | Amazon Linux 2  |         |
-| Linux | aarch64 | Amazon Linux 2 | Graviton CPU |
-| Linux | aarch32 | CentOS 7 | Raspberry Pi 3B+ |
-| MacOS | x86_64 | MacOS 11.6 | |
+| Linux | aarch64 | Amazon Linux 2 | tested on AWS Graviton CPU |
+| Linux | aarch64 | RockyLinux 8 | tested on Raspberry Pi 4 |
+| Linux | aarch32 | CentOS 7 | tested on Raspberry Pi 3B+ |
+| MacOS | x86_64 | MacOS 11.6+ | |
+| MacOS | aarch64 | MacOS 12.5.1 with Rosetta 2 installed | All x86_64 binaries work as well, PostgreSQL 14 binaries contain both x86_64 and aarch64 variants. |
+| MacOS | aarch64 | MacOS 12.5.1 without Rosetta 2 | Requires "fat" binaries that contain aarch64 variants. Otherwise, set the `pg-embedded.prefer-native` system property to `true` to force the use of aarch64 artifacts. Currently, only the PostgreSQL 14 supports this. |
 
 ## Untested
 
 | OS | Architecture | Variant | Remarks |
 |----|--------------|--------------|---------|
-| MacOS | aarch64 | (fat)  | the PostgreSQL binaries used do not yet support aarch64 natively, so the x86_64 binaries are used and executed through Rosetta. When "fat" binaries are available, they should be picked up and just work. |
-| MacOS | aarch64 | (native) | When native aarch64 binaries are available, set the `pg-embedded.prefer-native` system property to `true` will enable pg-embedded to use those directly. |
 | Windows | x86_64 | - | untested, patches welcome |
 | - | i386 | - | untested |
