@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.basepom</groupId>
         <artifactId>basepom-oss</artifactId>
-        <version>49</version>
+        <version>50</version>
     </parent>
 
 
@@ -63,7 +63,7 @@
 
         <dep.apache-commons-compress.version>1.21</dep.apache-commons-compress.version>
         <dep.xz.version>1.9</dep.xz.version>
-        <dep.checkerframework.version>3.17.0</dep.checkerframework.version>
+        <dep.checkerframework.version>3.25.0</dep.checkerframework.version>
 
         <!-- MacOS Homebrew install location -->
         <pg-embedded.test.local-dir>/usr/local</pg-embedded.test.local-dir>
