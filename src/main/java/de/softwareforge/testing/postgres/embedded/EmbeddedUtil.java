@@ -11,6 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package de.softwareforge.testing.postgres.embedded;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -31,7 +32,6 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 final class EmbeddedUtil {
 
@@ -120,7 +120,6 @@ final class EmbeddedUtil {
         }
     }
 
-    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE")
     static void rmdirs(File dir) throws IOException {
         if (dir.exists() && dir.isDirectory()) {
             try (Stream<Path> walk = Files.walk(dir.toPath())) {

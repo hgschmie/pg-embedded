@@ -11,6 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package de.softwareforge.testing.postgres.embedded;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -33,7 +34,6 @@ import javax.sql.DataSource;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,8 +75,8 @@ public final class DatabaseManager implements AutoCloseable {
     }
 
     /**
-     * Creates a new {@link Builder<DatabaseManager>} instance that will return a connection to the same database on each call to {@link
-     * DatabaseManager#getDatabaseInfo()}.
+     * Creates a new {@link Builder<DatabaseManager>} instance that will return a connection to the same database on each call to
+     * {@link DatabaseManager#getDatabaseInfo()}.
      *
      * @return A builder instance.
      */
@@ -249,7 +249,6 @@ public final class DatabaseManager implements AutoCloseable {
         }
     }
 
-    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE")
     private static void createDatabase(final DataSource dataSource, final String databaseName) throws SQLException {
         try (Connection c = dataSource.getConnection();
                 Statement stmt = c.createStatement()) {
