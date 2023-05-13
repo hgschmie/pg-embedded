@@ -54,16 +54,16 @@
         <dep.plugin.inline.version>1.0.1</dep.plugin.inline.version>
 
         <dep.slf4j.version>1.7.36</dep.slf4j.version>
-        <dep.guava.version>30.1.1-jre</dep.guava.version>
-        <dep.flyway.version>8.1.0</dep.flyway.version>
-        <dep.postgresql-jdbc.version>42.5.0</dep.postgresql-jdbc.version>
-        <dep.junit5.version>5.9.0</dep.junit5.version>
-        <dep.auto-value.version>1.9</dep.auto-value.version>
+        <dep.guava.version>31.1-jre</dep.guava.version>
+        <dep.flyway.version>8.5.13</dep.flyway.version>
+        <dep.postgresql-jdbc.version>42.6.0</dep.postgresql-jdbc.version>
+        <dep.junit5.version>5.9.3</dep.junit5.version>
+        <dep.auto-value.version>1.10.1</dep.auto-value.version>
         <dep.maven-loader.version>2.0.1</dep.maven-loader.version>
 
-        <dep.apache-commons-compress.version>1.21</dep.apache-commons-compress.version>
+        <dep.apache-commons-compress.version>1.23.0</dep.apache-commons-compress.version>
         <dep.xz.version>1.9</dep.xz.version>
-        <dep.checkerframework.version>3.25.0</dep.checkerframework.version>
+        <dep.checkerframework.version>3.34.0</dep.checkerframework.version>
 
         <!-- MacOS Homebrew install location -->
         <pg-embedded.test.local-dir>/usr/local</pg-embedded.test.local-dir>
@@ -73,7 +73,7 @@
         <!-- overwritten by profile below -->
         <pg-embedded.test.binary-name />
         <pg-embedded.test.artifact-name>linux-amd64</pg-embedded.test.artifact-name>
-        <pg-embedded.test.artifact-version>14.5.0</pg-embedded.test.artifact-version>
+        <pg-embedded.test.artifact-version>14.7.0</pg-embedded.test.artifact-version>
     </properties>
 
     <licenses>
