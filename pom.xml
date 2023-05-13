@@ -367,6 +367,15 @@
             </build>
         </profile>
         <profile>
+            <!-- Profile to skip time-consuming steps. -->
+            <id>fast</id>
+            <properties>
+                <basepom.check.skip-all>true</basepom.check.skip-all>
+                <skipITs>true</skipITs>
+                <skipTests>true</skipTests>
+            </properties>
+        </profile>
+        <profile>
             <id>macos-x86_64</id>
             <activation>
                 <os>

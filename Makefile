@@ -2,8 +2,7 @@ SHELL = /bin/sh
 .SUFFIXES:
 .PHONY: help clean install test deploy deploy-site release
 
-# replace PG_MAVEN_OPTS with implicit MAVEN_OPTS, once 3.9.x or later has been released
-MAVEN = ./mvnw ${PG_MAVEN_OPTS}
+MAVEN = ./mvnw
 
 default: help
 
