@@ -78,17 +78,11 @@ public final class TarXzCompressedBinaryManager implements NativeBinaryManager {
      */
     public TarXzCompressedBinaryManager(@NonNull NativeBinaryLocator nativeBinaryLocator) {
         this.nativeBinaryLocator = checkNotNull(nativeBinaryLocator, "nativeBinaryLocator is null");
-
-        checkState(this.installationBaseDirectory.setWritable(true, false),
-                "Could not make install base directory %s writable!", this.installationBaseDirectory);
     }
 
     @Override
     public void setInstallationBaseDirectory(File installationBaseDirectory) {
         this.installationBaseDirectory = checkNotNull(installationBaseDirectory, "installationBaseDirectory is null");
-
-        checkState(this.installationBaseDirectory.setWritable(true, false),
-                "Could not make install base directory %s writable!", this.installationBaseDirectory);
     }
 
     /**
@@ -114,7 +108,7 @@ public final class TarXzCompressedBinaryManager implements NativeBinaryManager {
         try {
             String installationIdentifier = nativeBinaryLocator.getIdentifier();
             installationDirectory = new File(installationBaseDirectory, installationIdentifier);
-            EmbeddedUtil.mkdirs(installationDirectory);
+            EmbeddedUtil.ensureDirectory(installationDirectory);
 
             final File unpackLockFile = new File(installationDirectory, lockFileName);
             final File installationExistsFile = new File(installationDirectory, ".exists");
@@ -184,7 +178,7 @@ public final class TarXzCompressedBinaryManager implements NativeBinaryManager {
                     byte[] content = new byte[(int) entry.getSize()];
                     int read = tarIn.read(content, 0, content.length);
                     checkState(read != -1, "could not read %s", individualFile);
-                    EmbeddedUtil.mkdirs(fsObject.getParentFile());
+                    EmbeddedUtil.ensureDirectory(fsObject.getParentFile());
 
                     final AsynchronousFileChannel fileChannel = AsynchronousFileChannel.open(fsPath, CREATE, WRITE); //NOPMD
                     final ByteBuffer buffer = ByteBuffer.wrap(content); //NOPMD
@@ -213,7 +207,7 @@ public final class TarXzCompressedBinaryManager implements NativeBinaryManager {
                         }
                     });
                 } else if (entry.isDirectory()) {
-                    EmbeddedUtil.mkdirs(fsObject);
+                    EmbeddedUtil.ensureDirectory(fsObject);
                 } else {
                     throw new IOException(format("Unsupported entry in tar file found: %s", individualFile));
                 }

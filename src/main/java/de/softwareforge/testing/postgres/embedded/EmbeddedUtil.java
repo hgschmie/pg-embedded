@@ -15,6 +15,7 @@
 package de.softwareforge.testing.postgres.embedded;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 
 import java.io.File;
 import java.io.IOException;
@@ -76,9 +77,29 @@ final class EmbeddedUtil {
     }
 
     static File getWorkingDirectory() {
-        File tmpDir = new File(System.getProperty("java.io.tmpdir"));
+        File parent = new File(System.getProperty("java.io.tmpdir"));
         // personalize the unpack folder to allow systems with many users using the same tmp folder to work
-        return new File(tmpDir, "embedded-pg-" + Objects.requireNonNullElse(System.getProperty("user.name"), "unknown"));
+        File workDir = new File(parent, "embedded-pg-" + Objects.requireNonNullElse(System.getProperty("user.name"), "unknown"));
+
+        ensureDirectory(workDir);
+
+        return workDir;
+    }
+
+    static void ensureDirectory(@NonNull File workDir) {
+
+        if (!workDir.exists()) {
+            checkState(workDir.mkdirs(), " Could not create directory '%s'", workDir);
+        }
+
+        checkState(workDir.exists(), "'%s' does not exist!", workDir);
+        checkState(workDir.isDirectory(), "'%s' exists but is not a directory!", workDir);
+
+        if (!workDir.canWrite()) {
+            checkState(workDir.setWritable(true, false), "Could not make directory '%s' writeable!", workDir);
+        }
+
+        checkState(workDir.canWrite(), "'%s' is a directory but can not be written!", workDir);
     }
 
     //
@@ -113,12 +134,6 @@ final class EmbeddedUtil {
     //
     // taken from apache commons io
     //
-
-    static void mkdirs(@NonNull File dir) {
-        if (!dir.mkdirs() && !(dir.isDirectory() && dir.exists())) {
-            throw new IllegalStateException("could not create " + dir);
-        }
-    }
 
     static void rmdirs(File dir) throws IOException {
         if (dir.exists() && dir.isDirectory()) {

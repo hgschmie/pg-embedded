@@ -344,7 +344,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
 
 
     private void boot() throws IOException {
-        EmbeddedUtil.mkdirs(this.dataDirectory);
+        EmbeddedUtil.ensureDirectory(this.dataDirectory);
 
         if (this.removeDataOnShutdown || !new File(this.dataDirectory, "postgresql.conf").exists()) {
             initDatabase();
@@ -968,7 +968,6 @@ public final class EmbeddedPostgres implements AutoCloseable {
 
             // installation root if nothing has been set by the user.
             final File parentDirectory = EmbeddedUtil.getWorkingDirectory();
-            EmbeddedUtil.mkdirs(parentDirectory);
 
             NativeBinaryManager nativeBinaryManager = this.nativeBinaryManager;
             if (nativeBinaryManager == null) {
