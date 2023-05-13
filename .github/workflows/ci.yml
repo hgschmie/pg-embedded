@@ -13,9 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        build-java-version: [ 11, 17 ]
         test-java-version: [ 11, 17, 20 ]
-        postgres-version: [ 9.6, 10, 11, 12, 13, 14, 15 ]
 
     steps:
     - uses: actions/checkout@v3
@@ -27,7 +25,7 @@ jobs:
       id: setup_build_jdk
       name: Setup Build JDK
       with:
-        java-version: ${{ matrix.build-java-version }}
+        java-version: 17
         distribution: temurin
         cache: maven
 
@@ -45,6 +43,40 @@ jobs:
         java-version: ${{ matrix.test-java-version }}
         distribution: temurin
         cache: maven
+
+    - name: Run unit tests
+      env:
+        MAVEN_CONFIG: "-B -fae"
+      run: |
+        ./mvnw --version
+        make test
+
+  db:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        postgres-version: [ 9.6, 10, 11, 12, 13, 14, 15 ]
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install locales on runner
+      run: sudo apt-get install -y locales-all
+
+    - uses: actions/setup-java@v3
+      id: setup_build_jdk
+      name: Setup Build JDK
+      with:
+        java-version: 17
+        distribution: temurin
+        cache: maven
+
+    - name: Build
+      env:
+        MAVEN_CONFIG: "-Pfast -Dbasepom.check.skip-enforcer=false -B -fae"
+      run: |
+        ./mvnw --version
+        make install
 
     - name: Run unit tests
       env:
