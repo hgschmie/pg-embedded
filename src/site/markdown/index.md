@@ -1,4 +1,4 @@
-# Embedded PostgreSQL for JVM
+# Embedded PostgreSQL for Java
 
 Start a PostgreSQL server for unit testing or local development.
 
