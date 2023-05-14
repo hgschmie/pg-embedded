@@ -33,7 +33,6 @@ jobs:
       env:
         MAVEN_CONFIG: "-Pfast -Dbasepom.check.skip-enforcer=false -B -fae"
       run: |
-        ./mvnw --version
         make install
 
     - uses: actions/setup-java@v3
@@ -48,7 +47,6 @@ jobs:
       env:
         MAVEN_CONFIG: "-B -fae"
       run: |
-        ./mvnw --version
         make test
 
   db:
@@ -75,12 +73,10 @@ jobs:
       env:
         MAVEN_CONFIG: "-Pfast -Dbasepom.check.skip-enforcer=false -B -fae"
       run: |
-        ./mvnw --version
         make install
 
     - name: Run unit tests
       env:
         MAVEN_CONFIG: "-B -fae -Dpg-embedded.postgres-version=${{ matrix.postgres-version }}"
       run: |
-        ./mvnw --version
         make test
