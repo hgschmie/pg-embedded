@@ -53,7 +53,7 @@ public final class ZonkyIOPostgresLocator implements NativeBinaryLocator {
 
     public static final Logger LOG = LoggerFactory.getLogger(ZonkyIOPostgresLocator.class);
 
-    private static final boolean PREFER_NATIVE = Boolean.getBoolean("pg-embedded.prefer-native");
+    private static final boolean PREFER_NATIVE = Boolean.parseBoolean(System.getProperty("pg-embedded.prefer-native", "true"));
 
     private final String architecture;
     private final String os;
