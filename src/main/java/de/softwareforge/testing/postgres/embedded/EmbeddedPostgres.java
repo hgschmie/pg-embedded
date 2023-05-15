@@ -645,25 +645,6 @@ public final class EmbeddedPostgres implements AutoCloseable {
     }
 
     /**
-     * Callback interface to customize a builder during creation.
-     *
-     * @deprecated Use {@link EmbeddedPostgresPreparer} with {@link Builder} as type parameter.
-     */
-    @Deprecated
-    @FunctionalInterface
-    public interface BuilderCustomizer {
-
-        /**
-         * Callback to customize a given {@link Builder}.
-         *
-         * @param builder The builder instance. Any method on the builder can be called.
-         * @throws SQLException For any SQL related problems.
-         * @throws IOException  For any IO related problem.
-         */
-        void customize(@NonNull Builder builder) throws IOException, SQLException;
-    }
-
-    /**
      * Creates a new {@link EmbeddedPostgres} instance and starts it.
      */
     public static class Builder {
@@ -794,18 +775,6 @@ public final class EmbeddedPostgres implements AutoCloseable {
             checkNotNull(key, "key is null");
             checkNotNull(value, "value is null");
             this.serverConfiguration.put(key, value);
-            return this;
-        }
-
-        /**
-         * @deprecated Use {@link Builder#addInitDbConfiguration(String, String)}.
-         */
-        @Deprecated
-        @NonNull
-        public Builder addLocaleConfiguration(@NonNull String key, @NonNull String value) {
-            checkNotNull(key, "key is null");
-            checkNotNull(value, "value is null");
-            this.localeConfiguration.put(key, value);
             return this;
         }
 

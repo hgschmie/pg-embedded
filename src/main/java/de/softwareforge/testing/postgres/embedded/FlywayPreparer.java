@@ -90,15 +90,6 @@ public final class FlywayPreparer implements EmbeddedPostgresPreparer<DataSource
         return this;
     }
 
-    /**
-     * @deprecated Use {@link FlywayPreparer#addCustomizer(Consumer)}.
-     */
-    @Deprecated
-    @NonNull
-    public FlywayPreparer customize(@NonNull Consumer<FluentConfiguration> customizer) {
-        return addCustomizer(customizer);
-    }
-
     @Override
     public void prepare(@NonNull DataSource dataSource) throws IOException {
         checkNotNull(dataSource, "dataSource is null");

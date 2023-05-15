@@ -31,7 +31,7 @@
 
     <groupId>de.softwareforge.testing</groupId>
     <artifactId>pg-embedded</artifactId>
-    <version>4.4-SNAPSHOT</version>
+    <version>5.0-SNAPSHOT</version>
     <description>Embedded PostgreSQL framework for testing and development use.</description>
     <url>https://pg-embedded.softwareforge.de/</url>
     <inceptionYear>2021</inceptionYear>

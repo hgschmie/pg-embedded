@@ -2,6 +2,13 @@
 
 This is the changelog for the pg-embedded. It follows [Keep a Changelog v1.0.0](http://keepachangelog.com/en/1.0.0/).
 
+## unreleased
+
+- remove deprecated `DatabasePreparer` code and all related methods
+- remove deprecated `EmbeddedPostgres.BuilderCustomizer` code
+- remove deprecated `EmbeddedPostgres#addLocaleConfiguration()` method
+- remove deprecated `FlywayPreparer#customize()` method
+
 ## 4.3 - 2023-05-14
 
 ### Added

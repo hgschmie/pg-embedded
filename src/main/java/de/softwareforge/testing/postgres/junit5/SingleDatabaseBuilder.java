@@ -14,7 +14,6 @@
 package de.softwareforge.testing.postgres.junit5;
 
 import de.softwareforge.testing.postgres.embedded.DatabaseManager;
-import de.softwareforge.testing.postgres.embedded.DatabasePreparer;
 import de.softwareforge.testing.postgres.embedded.EmbeddedPostgres;
 import de.softwareforge.testing.postgres.embedded.EmbeddedPostgresPreparer;
 
@@ -50,24 +49,6 @@ public final class SingleDatabaseBuilder {
     @NonNull
     public static DatabaseManager.Builder<EmbeddedPgExtension> instanceWithDefaults() {
         return EmbeddedPgExtension.singleDatabase().withInstancePreparer(EmbeddedPostgres.Builder::withDefaults);
-    }
-
-    /**
-     * @deprecated Use {@link SingleDatabaseBuilder#preparedInstance(EmbeddedPostgresPreparer)}.
-     */
-    @Deprecated
-    @NonNull
-    public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstance(@NonNull DatabasePreparer preparer) {
-        return EmbeddedPgExtension.singleDatabase().withPreparer(preparer);
-    }
-
-    /**
-     * @deprecated Use {@link SingleDatabaseBuilder#preparedInstanceWithDefaults(EmbeddedPostgresPreparer)}.
-     */
-    @Deprecated
-    @NonNull
-    public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstanceWithDefaults(@NonNull DatabasePreparer preparer) {
-        return EmbeddedPgExtension.singleDatabase().withPreparer(preparer).withCustomizer(EmbeddedPostgres.Builder::withDefaults);
     }
 
     /**

@@ -14,7 +14,6 @@
 package de.softwareforge.testing.postgres.junit5;
 
 import de.softwareforge.testing.postgres.embedded.DatabaseManager;
-import de.softwareforge.testing.postgres.embedded.DatabasePreparer;
 import de.softwareforge.testing.postgres.embedded.EmbeddedPostgres;
 import de.softwareforge.testing.postgres.embedded.EmbeddedPostgresPreparer;
 
@@ -49,24 +48,6 @@ public final class MultiDatabaseBuilder {
     @NonNull
     public static DatabaseManager.Builder<EmbeddedPgExtension> instanceWithDefaults() {
         return EmbeddedPgExtension.multiDatabase().withInstancePreparer(EmbeddedPostgres.Builder::withDefaults);
-    }
-
-    /**
-     * @deprecated Use {@link MultiDatabaseBuilder#preparedInstance(EmbeddedPostgresPreparer)}.
-     */
-    @Deprecated
-    @NonNull
-    public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstance(@NonNull DatabasePreparer preparer) {
-        return EmbeddedPgExtension.multiDatabase().withPreparer(preparer);
-    }
-
-    /**
-     * @deprecated Use {@link MultiDatabaseBuilder#preparedInstanceWithDefaults(EmbeddedPostgresPreparer)}.
-     */
-    @Deprecated
-    @NonNull
-    public static DatabaseManager.Builder<EmbeddedPgExtension> preparedInstanceWithDefaults(@NonNull DatabasePreparer preparer) {
-        return EmbeddedPgExtension.multiDatabase().withPreparer(preparer).withInstancePreparer(EmbeddedPostgres.Builder::withDefaults);
     }
 
     /**

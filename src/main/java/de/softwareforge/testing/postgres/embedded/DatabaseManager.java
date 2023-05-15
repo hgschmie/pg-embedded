@@ -277,16 +277,6 @@ public final class DatabaseManager implements AutoCloseable {
         }
 
         /**
-         * @deprecated Use {@link DatabaseManager.Builder#withDatabasePreparer(EmbeddedPostgresPreparer)}.
-         */
-        @Deprecated
-        @NonNull
-        public Builder<T> withPreparer(@NonNull DatabasePreparer databasePreparer) {
-            checkNotNull(databasePreparer, "databasePreparer is null");
-            return withDatabasePreparer(databasePreparer::prepare);
-        }
-
-        /**
          * Add a preparer for the template database. Each preparer is called once when the database manager starts to prepare the template database. This can be
          * used to create tables, sequences etc. or preload the databases with information. In multi database mode, the template database is used and each
          * created database will have this information cloned.
@@ -341,17 +331,6 @@ public final class DatabaseManager implements AutoCloseable {
         @NonNull
         public Builder<T> withInstancePreparers(@NonNull Set<EmbeddedPostgresPreparer<EmbeddedPostgres.Builder>> instancePreparers) {
             this.instancePreparers.addAll(checkNotNull(instancePreparers, "instancePreparers is null"));
-            return this;
-        }
-
-        /**
-         * @deprecated Use {@link DatabaseManager.Builder#withInstancePreparer(EmbeddedPostgresPreparer)}.
-         */
-        @Deprecated
-        @NonNull
-        public Builder<T> withCustomizer(@NonNull EmbeddedPostgres.BuilderCustomizer customizer) {
-            checkNotNull(customizer, "customizer is null");
-            this.instancePreparers.add(customizer::customize);
             return this;
         }
 
