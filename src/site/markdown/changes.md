@@ -4,10 +4,19 @@ This is the changelog for the pg-embedded. It follows [Keep a Changelog v1.0.0](
 
 ## unreleased
 
+### Added
+
+### Removed
+
 - remove deprecated `DatabasePreparer` code and all related methods
 - remove deprecated `EmbeddedPostgres.BuilderCustomizer` code
 - remove deprecated `EmbeddedPostgres#addLocaleConfiguration()` method
 - remove deprecated `FlywayPreparer#customize()` method
+
+### Changed
+
+- fixed obscure NPE when postgres does not start
+- MacOS default is now to use native binaries, not x86_64
 
 ## 4.3 - 2023-05-14
 
@@ -16,10 +25,6 @@ This is the changelog for the pg-embedded. It follows [Keep a Changelog v1.0.0](
 - log database architecture when starting.
 - support mac arm64 for building the distribution.
 
-
-### Removed
-
-### Changed
 
 - update github actions
 - update included wrapper to Maven 3.9.1
