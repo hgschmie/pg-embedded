@@ -135,8 +135,14 @@ public final class DatabaseManager implements AutoCloseable {
     public void close() throws Exception {
         checkState(started.get(), "not yet started!");
         if (!closed.getAndSet(true)) {
-            instanceProvider.close();
-            pg.close();
+
+            if (instanceProvider != null) {
+                instanceProvider.close();
+            }
+
+            if (pg != null) {
+                pg.close();
+            }
         }
     }
 
