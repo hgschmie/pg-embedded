@@ -46,6 +46,7 @@
         <basepom.site.scm.skip-deploy>false</basepom.site.scm.skip-deploy>
         <basepom.site.scm.id>github</basepom.site.scm.id>
         <basepom.site.scm.url>scm:git:https://github.com/hgschmie/pg-embedded.github.io.git</basepom.site.scm.url>
+        <basepom.site.scm.site-path>/development</basepom.site.scm.site-path>
 
         <basepom.javadoc.skip>false</basepom.javadoc.skip>
         <basepom.javadoc.show>protected</basepom.javadoc.show>
@@ -340,7 +341,7 @@
         <profile>
             <id>pg-embedded-release</id>
             <properties>
-                <site-path>release-${project.version}</site-path>
+                <basepom.site.scm.site-path>/release-${project.version}</basepom.site.scm.site-path>
             </properties>
             <build>
                 <plugins>
