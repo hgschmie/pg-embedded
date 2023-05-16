@@ -60,7 +60,7 @@
         <dep.postgresql-jdbc.version>42.6.0</dep.postgresql-jdbc.version>
         <dep.junit5.version>5.9.3</dep.junit5.version>
         <dep.auto-value.version>1.10.1</dep.auto-value.version>
-        <dep.maven-loader.version>2.1.0-SNAPSHOT</dep.maven-loader.version>
+        <dep.maven-loader.version>2.1.0</dep.maven-loader.version>
 
         <dep.apache-commons-compress.version>1.23.0</dep.apache-commons-compress.version>
         <dep.xz.version>1.9</dep.xz.version>
@@ -98,23 +98,6 @@
             <timezone>-8</timezone>
         </developer>
     </developers>
-
-    <repositories>
-        <repository>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-                <updatePolicy>always</updatePolicy>
-                <checksumPolicy>fail</checksumPolicy>
-            </snapshots>
-            <id>snapshots-repo</id>
-            <name>Nexus Snapshots</name>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-            <layout>default</layout>
-        </repository>
-    </repositories>
 
     <dependencyManagement>
         <dependencies>

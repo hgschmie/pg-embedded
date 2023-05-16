@@ -1,10 +1,8 @@
-# Changelog
+# Change Log
 
-This is the changelog for the pg-embedded. It follows [Keep a Changelog v1.0.0](http://keepachangelog.com/en/1.0.0/).
+This is the change log for pg-embedded. It follows [Keep a Changelog v1.0.0](http://keepachangelog.com/en/1.0.0/).
 
-## unreleased
-
-### Added
+## 5.0 - 2023-05-16
 
 ### Removed
 
@@ -17,6 +15,7 @@ This is the changelog for the pg-embedded. It follows [Keep a Changelog v1.0.0](
 
 - fixed obscure NPE when postgres does not start
 - MacOS default is now to use native binaries, not x86_64
+- update maven loader to 2.1.0
 
 ## 4.3 - 2023-05-14
 
