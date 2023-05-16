@@ -211,6 +211,7 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- used for ClasspathLocatorTest -->
         <dependency>
             <groupId>io.zonky.test.postgres</groupId>
             <artifactId>embedded-postgres-binaries-${pg-embedded.test.artifact-name}</artifactId>

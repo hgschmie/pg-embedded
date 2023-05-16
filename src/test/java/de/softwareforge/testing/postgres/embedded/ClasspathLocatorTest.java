@@ -25,6 +25,10 @@ import java.sql.Statement;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 
+/**
+ * Requires a compatible postgres binary on the classpath (as part of the dependencies in test
+ * scope in the project pom.
+ */
 
 public class ClasspathLocatorTest {
 

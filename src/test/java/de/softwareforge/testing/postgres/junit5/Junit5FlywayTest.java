@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 @RequirePostgresVersion(atLeast = "10")
-public class JUnit5FlywayTest {
+public class Junit5FlywayTest {
 
     @RegisterExtension
     public static EmbeddedPgExtension singleDatabase = SingleDatabaseBuilder.preparedInstanceWithDefaults(FlywayPreparer.forClasspathLocation("db/testing"))
