@@ -60,7 +60,7 @@
         <dep.postgresql-jdbc.version>42.6.0</dep.postgresql-jdbc.version>
         <dep.junit5.version>5.9.3</dep.junit5.version>
         <dep.auto-value.version>1.10.1</dep.auto-value.version>
-        <dep.maven-loader.version>2.0.1</dep.maven-loader.version>
+        <dep.maven-loader.version>2.1.0-SNAPSHOT</dep.maven-loader.version>
 
         <dep.apache-commons-compress.version>1.23.0</dep.apache-commons-compress.version>
         <dep.xz.version>1.9</dep.xz.version>
@@ -68,7 +68,7 @@
 
         <!-- MacOS Homebrew install location -->
         <pg-embedded.test.local-dir>/usr/local</pg-embedded.test.local-dir>
-        <!-- really old local pg installations (such as pg 9.2) need 'unix_socket_directory' to run the LocalDirectoryPostgresTest -->
+        <!-- ancient local pg installations (such as pg 9.2) need 'unix_socket_directory' to run the LocalDirectoryPostgresTest -->
         <pg-embedded.test.unix-socket-dir>unix_socket_directories</pg-embedded.test.unix-socket-dir>
         <pg-embedded.test.log-level>INFO</pg-embedded.test.log-level>
         <!-- overwritten by profile below -->
@@ -230,7 +230,7 @@
                         <systemPropertyVariables combine.children="append">
                             <org.slf4j.simpleLogger.defaultLogLevel>${pg-embedded.test.log-level}</org.slf4j.simpleLogger.defaultLogLevel>
                             <pg-embedded.test.binary-name>${pg-embedded.test.binary-name}</pg-embedded.test.binary-name>
-                            <!-- run all tests with pg 14, otherwise they fail on mac/arm without rosetta -->
+                            <!-- run all tests with pg 14, otherwise they fail on Mac/arm without rosetta -->
                             <pg-embedded.postgres-version>${pg-embedded.test.artifact-version}</pg-embedded.postgres-version>
                         </systemPropertyVariables>
                     </configuration>
