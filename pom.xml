@@ -26,12 +26,12 @@
         <connection>scm:git:git://github.com/hgschmie/pg-embedded.git</connection>
         <developerConnection>scm:git:git@github.com:hgschmie/pg-embedded.git</developerConnection>
         <url>https://github.com/hgschmie/pg-embedded</url>
-        <tag>pg-embedded-5.0</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <groupId>de.softwareforge.testing</groupId>
     <artifactId>pg-embedded</artifactId>
-    <version>5.0</version>
+    <version>5.1-SNAPSHOT</version>
     <description>Embedded PostgreSQL framework for testing and development use.</description>
     <url>https://pg-embedded.softwareforge.de/</url>
     <inceptionYear>2021</inceptionYear>
