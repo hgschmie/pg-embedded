@@ -17,6 +17,7 @@ package de.softwareforge.testing.postgres.embedded;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
+import jakarta.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -32,7 +33,6 @@ import java.util.stream.Stream;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 final class EmbeddedUtil {
 
@@ -86,7 +86,7 @@ final class EmbeddedUtil {
         return workDir;
     }
 
-    static void ensureDirectory(@NonNull File workDir) {
+    static void ensureDirectory(@Nonnull File workDir) {
 
         if (!workDir.exists()) {
             checkState(workDir.mkdirs(), " Could not create directory '%s'", workDir);

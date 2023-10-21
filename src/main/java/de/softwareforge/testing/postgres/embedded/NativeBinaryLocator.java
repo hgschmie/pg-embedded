@@ -15,6 +15,7 @@ package de.softwareforge.testing.postgres.embedded;
 
 import static com.google.common.base.Preconditions.checkState;
 
+import jakarta.annotation.Nonnull;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -22,9 +23,7 @@ import com.google.common.hash.Hashing;
 import com.google.common.hash.HashingInputStream;
 import com.google.common.io.BaseEncoding;
 import com.google.common.io.ByteStreams;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import javax.annotation.CheckForNull;
 
 /**
  * Locates a native binary on the Filesystem. If necessary, it should download the binary first from the network.
@@ -59,8 +58,8 @@ public interface NativeBinaryLocator {
      * @return A stable indentifier that can be used as a file name.
      * @throws IOException If the stream could not be read.
      */
-    @NonNull
-    @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // false positive
+    @Nonnull
+    @SuppressWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE") // false positive
     default String getIdentifier() throws IOException {
         try (InputStream installationArchive = getInputStream()) {
             checkState(installationArchive != null, "Locator '%s' did not find a suitable archive to unpack!", toString());

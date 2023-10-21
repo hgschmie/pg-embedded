@@ -13,10 +13,9 @@
  */
 package de.softwareforge.testing.postgres.embedded;
 
+import jakarta.annotation.Nonnull;
 import java.io.IOException;
 import java.sql.SQLException;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Prepare a specific object instance. This allows user interaction to modify or tweak an instance before it is used.
@@ -46,5 +45,5 @@ public interface EmbeddedPostgresPreparer<T> {
      * @throws SQLException For any SQL related problems.
      * @throws IOException  For any IO related problem.
      */
-    void prepare(@NonNull T element) throws IOException, SQLException;
+    void prepare(@Nonnull T element) throws IOException, SQLException;
 }

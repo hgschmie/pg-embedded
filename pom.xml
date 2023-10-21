@@ -63,8 +63,9 @@
         <dep.maven-loader.version>2.1.0</dep.maven-loader.version>
 
         <dep.apache-commons-compress.version>1.24.0</dep.apache-commons-compress.version>
-        <dep.xz.version>1.9</dep.xz.version>
         <dep.checkerframework.version>3.39.0</dep.checkerframework.version>
+        <dep.jakarta-annotation-api.version>2.1.1</dep.jakarta-annotation-api.version>
+        <dep.xz.version>1.9</dep.xz.version>
 
         <!-- MacOS Homebrew install location -->
         <pg-embedded.test.local-dir>/usr/local</pg-embedded.test.local-dir>
@@ -168,9 +169,9 @@
         </dependency>
 
         <dependency>
-            <groupId>com.github.spotbugs</groupId>
-            <artifactId>spotbugs-annotations</artifactId>
-            <version>${dep.spotbugs.version}</version>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+            <version>${dep.jakarta-annotation-api.version}</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>

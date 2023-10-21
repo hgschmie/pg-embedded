@@ -15,13 +15,13 @@ package de.softwareforge.testing.postgres.embedded;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import jakarta.annotation.Nonnull;
 import java.io.IOException;
 import java.util.Set;
 import java.util.function.Consumer;
 import javax.sql.DataSource;
 
 import com.google.common.collect.ImmutableList;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.FlywayException;
 import org.flywaydb.core.api.configuration.FluentConfiguration;
@@ -44,7 +44,7 @@ public final class FlywayPreparer implements EmbeddedPostgresPreparer<DataSource
      * @param locations One or more locations on the classpath.
      * @return A {@link FlywayPreparer} instance.
      */
-    @NonNull
+    @Nonnull
     public static FlywayPreparer forClasspathLocation(String... locations) {
         FlywayPreparer preparer = new FlywayPreparer();
         preparer.addCustomizer(c -> c.locations(locations));
@@ -66,8 +66,8 @@ public final class FlywayPreparer implements EmbeddedPostgresPreparer<DataSource
      * @return This object.
      * @since 3.0
      */
-    @NonNull
-    public FlywayPreparer addCustomizer(@NonNull Consumer<FluentConfiguration> customizer) {
+    @Nonnull
+    public FlywayPreparer addCustomizer(@Nonnull Consumer<FluentConfiguration> customizer) {
         checkNotNull(customizer, "customizer is null");
         customizers.add(customizer);
 
@@ -82,8 +82,8 @@ public final class FlywayPreparer implements EmbeddedPostgresPreparer<DataSource
      * @return This object.
      * @since 3.0
      */
-    @NonNull
-    public FlywayPreparer addCustomizers(@NonNull Set<Consumer<FluentConfiguration>> customizers) {
+    @Nonnull
+    public FlywayPreparer addCustomizers(@Nonnull Set<Consumer<FluentConfiguration>> customizers) {
         checkNotNull(customizers, "customizers is null");
         customizers.addAll(customizers);
 
@@ -91,7 +91,7 @@ public final class FlywayPreparer implements EmbeddedPostgresPreparer<DataSource
     }
 
     @Override
-    public void prepare(@NonNull DataSource dataSource) throws IOException {
+    public void prepare(@Nonnull DataSource dataSource) throws IOException {
         checkNotNull(dataSource, "dataSource is null");
 
         try {

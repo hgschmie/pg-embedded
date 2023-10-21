@@ -16,6 +16,7 @@ package de.softwareforge.testing.postgres.embedded;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.String.format;
 
+import jakarta.annotation.Nonnull;
 import java.sql.SQLException;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -23,7 +24,6 @@ import javax.sql.DataSource;
 
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableMap;
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Information about a database located on a PostgreSQL server connected to an {@link EmbeddedPostgres} instance.
@@ -51,7 +51,7 @@ public abstract class DatabaseInfo {
      *
      * @return Name of the database. Is never null.
      */
-    @NonNull
+    @Nonnull
     public abstract String dbName();
 
     /**
@@ -66,7 +66,7 @@ public abstract class DatabaseInfo {
      *
      * @return The user name. Is never null.
      */
-    @NonNull
+    @Nonnull
     public abstract String user();
 
     /**
@@ -77,20 +77,20 @@ public abstract class DatabaseInfo {
      * @return Map of key-value pairs representing data source connection properties.
      * @since 3.0
      */
-    @NonNull
+    @Nonnull
     public abstract ImmutableMap<String, String> connectionProperties();
 
-    @NonNull
+    @Nonnull
     abstract Optional<SQLException> exception();
 
-    @NonNull
+    @Nonnull
     static Builder builder() {
         return new AutoValue_DatabaseInfo.Builder()
                 .dbName(PG_DEFAULT_DB)
                 .user(PG_DEFAULT_USER);
     }
 
-    @NonNull
+    @Nonnull
     static DatabaseInfo forException(SQLException e) {
         return builder().exception(e).port(-1).build();
     }
@@ -100,7 +100,7 @@ public abstract class DatabaseInfo {
      *
      * @return A JDBC url that can be used to connect to the database. Never null.
      */
-    @NonNull
+    @Nonnull
     public String asJdbcUrl() {
         checkState(exception().isEmpty(), "DatabaseInfo contains SQLException: %s", exception());
 
@@ -116,7 +116,7 @@ public abstract class DatabaseInfo {
      * @return An initialized {@link DataSource} object. Never null.
      * @throws SQLException A problem occurred trying to connect to the database.
      */
-    @NonNull
+    @Nonnull
     public DataSource asDataSource() throws SQLException {
         if (exception().isPresent()) {
             throw exception().get();

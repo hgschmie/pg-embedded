@@ -19,6 +19,7 @@ import static java.lang.String.format;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.WRITE;
 
+import jakarta.annotation.Nonnull;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -38,7 +39,6 @@ import java.util.concurrent.Phaser;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.slf4j.Logger;
@@ -76,7 +76,7 @@ public final class TarXzCompressedBinaryManager implements NativeBinaryManager {
      *
      * @param nativeBinaryLocator An implementation of {@link NativeBinaryLocator} that satisfies the conditions above. Must not be null.
      */
-    public TarXzCompressedBinaryManager(@NonNull NativeBinaryLocator nativeBinaryLocator) {
+    public TarXzCompressedBinaryManager(@Nonnull NativeBinaryLocator nativeBinaryLocator) {
         this.nativeBinaryLocator = checkNotNull(nativeBinaryLocator, "nativeBinaryLocator is null");
     }
 
@@ -95,7 +95,7 @@ public final class TarXzCompressedBinaryManager implements NativeBinaryManager {
     }
 
     @Override
-    @NonNull
+    @Nonnull
     public File getLocation() throws IOException {
 
         // the installation cache saves ~ 1% CPU according to the profiler

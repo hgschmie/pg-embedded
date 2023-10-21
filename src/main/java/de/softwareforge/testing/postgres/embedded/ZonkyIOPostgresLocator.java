@@ -20,7 +20,7 @@ import static java.lang.String.format;
 
 import de.softwareforge.testing.maven.MavenArtifactLoader;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
+import jakarta.annotation.Nonnull;
 import java.io.File;
 import java.io.FilterInputStream;
 import java.io.IOException;
@@ -83,7 +83,7 @@ public final class ZonkyIOPostgresLocator implements NativeBinaryLocator {
     }
 
     @Override
-    @NonNull
+    @Nonnull
     public String getIdentifier() throws IOException {
         // the optimized identifier computation saves ~ 1% CPU according to the profiler
         try {
