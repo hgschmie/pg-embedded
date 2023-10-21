@@ -44,7 +44,7 @@ public final class DatabaseManager implements AutoCloseable {
 
     private static final String PG_DEFAULT_ENCODING = "utf8";
 
-    public static final Logger LOG = LoggerFactory.getLogger(DatabaseManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DatabaseManager.class);
 
     private final AtomicBoolean closed = new AtomicBoolean();
     private final AtomicBoolean started = new AtomicBoolean();
@@ -185,6 +185,7 @@ public final class DatabaseManager implements AutoCloseable {
         default void close() {
         }
 
+        @Override
         DatabaseInfo get();
     }
 
@@ -238,8 +239,8 @@ public final class DatabaseManager implements AutoCloseable {
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     return;
-                } catch (Throwable t) {
-                    LOG.warn("Caught Throwable in instance provider loop:", t);
+                } catch (Exception e) {
+                    LOG.warn("Caught exception in instance provider loop:", e);
                 }
             }
         }

@@ -17,17 +17,19 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.String.format;
 import static java.nio.file.StandardOpenOption.CREATE;
+import static java.nio.file.StandardOpenOption.DELETE_ON_CLOSE;
+import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.nio.file.StandardOpenOption.WRITE;
 
 import jakarta.annotation.Nonnull;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.Channel;
 import java.nio.channels.CompletionHandler;
+import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -114,8 +116,8 @@ public final class TarXzCompressedBinaryManager implements NativeBinaryManager {
             final File installationExistsFile = new File(installationDirectory, ".exists");
 
             if (!installationExistsFile.exists()) {
-                try (FileOutputStream lockStream = new FileOutputStream(unpackLockFile);
-                        FileLock unpackLock = lockStream.getChannel().tryLock()) {
+                try (FileChannel lockChannel = FileChannel.open(unpackLockFile.toPath(), CREATE, WRITE, TRUNCATE_EXISTING, DELETE_ON_CLOSE);
+                        FileLock unpackLock = lockChannel.tryLock()) {
                     if (unpackLock != null) {
                         checkState(!installationExistsFile.exists(), "unpack lock acquired but .exists file is present " + installationExistsFile);
                         LOG.info("extracting archive...");

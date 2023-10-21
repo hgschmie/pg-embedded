@@ -25,16 +25,12 @@ import com.google.common.collect.ImmutableList;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.FlywayException;
 import org.flywaydb.core.api.configuration.FluentConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * An {@link EmbeddedPostgresPreparer<DataSource>} that uses the <a href="https://flywaydb.org/">Flyway version control for your database</a> framework to
  * migrate a data source to a known state.
  */
 public final class FlywayPreparer implements EmbeddedPostgresPreparer<DataSource> {
-
-    private static final Logger LOG = LoggerFactory.getLogger(FlywayPreparer.class);
 
     private final ImmutableList.Builder<Consumer<FluentConfiguration>> customizers = ImmutableList.builder();
 

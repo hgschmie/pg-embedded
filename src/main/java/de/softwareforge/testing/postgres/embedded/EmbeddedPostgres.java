@@ -21,13 +21,16 @@ import static de.softwareforge.testing.postgres.embedded.DatabaseInfo.PG_DEFAULT
 import static de.softwareforge.testing.postgres.embedded.DatabaseInfo.PG_DEFAULT_USER;
 import static de.softwareforge.testing.postgres.embedded.EmbeddedUtil.formatDuration;
 import static java.lang.String.format;
+import static java.nio.file.StandardOpenOption.CREATE;
+import static java.nio.file.StandardOpenOption.DELETE_ON_CLOSE;
+import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
+import static java.nio.file.StandardOpenOption.WRITE;
 
 import de.softwareforge.testing.postgres.embedded.ProcessOutputLogger.StreamCapture;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.ProcessBuilder.Redirect;
@@ -35,6 +38,7 @@ import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.channels.OverlappingFileLockException;
 import java.nio.charset.StandardCharsets;
@@ -75,7 +79,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
      */
     public static final String DEFAULT_POSTGRES_VERSION = "13";
 
-    static final String[] LOCALHOST_SERVER_NAMES = new String[]{"localhost"};
+    static final String[] LOCALHOST_SERVER_NAMES = {"localhost"};
 
     private static final String PG_TEMPLATE_DB = "template1";
 
@@ -92,6 +96,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
     private static final String PG_STOP_WAIT_SECONDS = "5";
     static final String LOCK_FILE_NAME = "epg-lock";
 
+    @SuppressWarnings("PMD.ProperLogger")
     private final Logger logger;
 
     private final String instanceId;
@@ -108,7 +113,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
     private final ImmutableMap<String, String> connectionProperties;
 
     private final File lockFile;
-    private volatile FileOutputStream lockStream;
+    private volatile FileChannel lockChannel;
     private volatile FileLock lock;
 
     private final boolean removeDataOnShutdown;
@@ -306,7 +311,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
             version = s.substring(s.lastIndexOf(' ')).trim();
 
         } catch (ExecutionException e) {
-            throw new IOException(format("Process '%s' failed%n%s", Joiner.on(" ").join(commandAndArgs)), e);
+            throw new IOException(format("Process '%s' failed%n", Joiner.on(" ").join(commandAndArgs)), e);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
@@ -357,8 +362,8 @@ public final class EmbeddedPostgres implements AutoCloseable {
 
 
     private synchronized void lock() throws IOException {
-        this.lockStream = new FileOutputStream(this.lockFile);
-        this.lock = lockStream.getChannel().tryLock();
+        this.lockChannel = FileChannel.open(this.lockFile.toPath(), CREATE, WRITE, TRUNCATE_EXISTING, DELETE_ON_CLOSE);
+        this.lock = this.lockChannel.tryLock();
         checkState(lock != null, "could not lock %s", lockFile);
     }
 
@@ -366,7 +371,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
         if (lock != null) {
             lock.release();
         }
-        Closeables.close(lockStream, true);
+        Closeables.close(lockChannel, true);
     }
 
     private void initDatabase() throws IOException {
@@ -426,7 +431,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
 
         serverConfiguration.forEach((key, value) -> {
             initOptions.add("-c");
-            if (value.length() > 0) {
+            if (!value.isEmpty()) {
                 initOptions.add(key + "=" + value);
             } else {
                 initOptions.add(key + "=true");
@@ -441,7 +446,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
         final ImmutableList.Builder<String> localeOptions = ImmutableList.builder();
 
         localeConfiguration.forEach((key, value) -> {
-            if (value.length() > 0) {
+            if (!value.isEmpty()) {
                 localeOptions.add("--" + key + "=" + value);
             } else {
                 localeOptions.add("--" + key);
@@ -498,7 +503,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
     private Thread newCloserThread() {
         final Thread closeThread = new Thread(() -> {
             try {
-                EmbeddedPostgres.this.close();
+                this.close();
             } catch (IOException e) {
                 logger.trace("while closing instance:", e);
             }
@@ -575,8 +580,8 @@ public final class EmbeddedPostgres implements AutoCloseable {
                 continue;
             }
 
-            try (FileOutputStream fos = new FileOutputStream(lockFile);
-                    FileLock lock = fos.getChannel().tryLock()) {
+            try (FileChannel fileChannel = FileChannel.open(lockFile.toPath(), CREATE, WRITE, TRUNCATE_EXISTING, DELETE_ON_CLOSE);
+                    FileLock lock = fileChannel.tryLock()) {
                 if (lock != null) {
                     logger.debug(format("found stale data directory %s", dir));
                     if (new File(dir, "postmaster.pid").exists()) {
@@ -621,7 +626,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
     }
 
     private Stopwatch system(List<String> commandAndArgs, StreamCapture logCapture) throws IOException {
-        checkArgument(commandAndArgs.size() > 0, "No commandAndArgs given!");
+        checkArgument(!commandAndArgs.isEmpty(), "No commandAndArgs given!");
         String prefix = EmbeddedUtil.getFileBaseName(commandAndArgs.get(0));
 
         Stopwatch watch = Stopwatch.createStarted();
@@ -664,7 +669,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
         private ProcessBuilder.Redirect errorRedirector = ProcessBuilder.Redirect.PIPE;
         private ProcessBuilder.Redirect outputRedirector = ProcessBuilder.Redirect.PIPE;
 
-        private boolean bootInstance;
+        private final boolean bootInstance;
 
         private Builder(boolean bootInstance) {
             this.bootInstance = bootInstance;
@@ -843,7 +848,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
          */
         @Nonnull
         public Builder setPort(int port) {
-            checkState(port > 1023 && port < 65535, "Port %s is not within 1024..65535", port);
+            checkState(port > 1_023 && port < 65_535, "Port %s is not within 1024..65535", port);
             this.port = port;
             return this;
         }

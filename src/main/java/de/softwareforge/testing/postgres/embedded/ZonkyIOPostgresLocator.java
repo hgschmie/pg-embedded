@@ -52,7 +52,7 @@ public final class ZonkyIOPostgresLocator implements NativeBinaryLocator {
     private static final String ZONKY_GROUP_ID = "io.zonky.test.postgres";
     private static final String ZONKY_ARTIFACT_ID_TEMPLATE = "embedded-postgres-binaries-%s-%s";
 
-    public static final Logger LOG = LoggerFactory.getLogger(ZonkyIOPostgresLocator.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ZonkyIOPostgresLocator.class);
 
     private static final boolean PREFER_NATIVE = Boolean.getBoolean("pg-embedded.prefer-native");
 
@@ -145,7 +145,8 @@ public final class ZonkyIOPostgresLocator implements NativeBinaryLocator {
 
     @Override
     public String toString() {
-        return format("ZonkyIO Stream locator for PostgreSQL (machine: %s os: %s, arch: %s, version: %s)", EmbeddedUtil.OS_ARCH, os, architecture, serverVersion);
+        return format("ZonkyIO Stream locator for PostgreSQL (machine: %s os: %s, arch: %s, version: %s)",
+                EmbeddedUtil.OS_ARCH, os, architecture, serverVersion);
     }
 
     @Override

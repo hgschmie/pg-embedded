@@ -18,12 +18,12 @@ import static com.google.common.base.Preconditions.checkState;
 import jakarta.annotation.Nonnull;
 import java.io.IOException;
 import java.io.InputStream;
+import javax.annotation.CheckForNull;
 
 import com.google.common.hash.Hashing;
 import com.google.common.hash.HashingInputStream;
 import com.google.common.io.BaseEncoding;
 import com.google.common.io.ByteStreams;
-import javax.annotation.CheckForNull;
 
 /**
  * Locates a native binary on the Filesystem. If necessary, it should download the binary first from the network.

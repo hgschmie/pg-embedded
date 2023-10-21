@@ -11,10 +11,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package de.softwareforge.testing.postgres.embedded;
 
 import java.io.BufferedReader;
 import java.io.Closeable;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
@@ -24,7 +26,6 @@ import java.util.concurrent.Future;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import com.google.common.io.Closeables;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -83,13 +84,13 @@ class ProcessOutputLogger implements Closeable {
 
     private class LogRunnable implements Runnable {
 
-        private final BufferedReader reader;
+        private final InputStream inputStream;
         private final String name;
         private final Consumer<String> consumer;
 
         private LogRunnable(String name, InputStream inputStream, Consumer<String> consumer) {
             this.name = name;
-            this.reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+            this.inputStream = inputStream;
             this.consumer = consumer;
         }
 
@@ -97,14 +98,16 @@ class ProcessOutputLogger implements Closeable {
         public void run() {
             String oldName = Thread.currentThread().getName();
             Thread.currentThread().setName(name);
-            try {
+            try (InputStreamReader isr = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+                    BufferedReader reader = new BufferedReader(isr)) {
                 try {
                     reader.lines().forEach(consumer::accept);
                 } catch (final UncheckedIOException e) {
                     logger.error("while reading output:", e);
                 }
+            } catch (IOException e) {
+                logger.error("while opening log stream", e);
             } finally {
-                Closeables.closeQuietly(reader);
                 Thread.currentThread().setName(oldName + " (" + name + ")");
             }
         }

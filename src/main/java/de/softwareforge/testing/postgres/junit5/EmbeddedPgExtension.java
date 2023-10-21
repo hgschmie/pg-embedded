@@ -56,7 +56,7 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
     private static final Logger LOG = LoggerFactory.getLogger(EmbeddedPgExtension.class);
 
     // multiple instances must use different namespaces
-    private final Namespace PG_NAMESPACE = Namespace.create(UUID.randomUUID());
+    private final Namespace pgNamespace = Namespace.create(UUID.randomUUID());
 
     private final DatabaseManager.Builder<DatabaseManager> databaseManagerBuilder;
 
@@ -140,24 +140,24 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
     public void beforeAll(@Nonnull ExtensionContext extensionContext) throws Exception {
         checkNotNull(extensionContext, "extensionContext is null");
 
-        Store pgStore = extensionContext.getStore(PG_NAMESPACE);
+        Store pgStore = extensionContext.getStore(pgNamespace);
 
-        TestMode testMode = pgStore.getOrComputeIfAbsent(TestMode.TESTMODE_KEY,
-                k -> new TestMode(extensionContext.getUniqueId(), databaseManagerBuilder.build()),
-                TestMode.class);
+        TestingContext testingContext = pgStore.getOrComputeIfAbsent(TestingContext.TESTING_CONTEXT_KEY,
+                k -> new TestingContext(extensionContext.getUniqueId(), databaseManagerBuilder.build()),
+                TestingContext.class);
 
-        this.databaseManager = testMode.start(extensionContext.getUniqueId());
+        this.databaseManager = testingContext.start(extensionContext.getUniqueId());
     }
 
     @Override
     public void afterAll(@Nonnull ExtensionContext extensionContext) throws Exception {
         checkNotNull(extensionContext, "extensionContext is null");
 
-        Store pgStore = extensionContext.getStore(PG_NAMESPACE);
-        TestMode testMode = pgStore.get(TestMode.TESTMODE_KEY, TestMode.class);
+        Store pgStore = extensionContext.getStore(pgNamespace);
+        TestingContext testingContext = pgStore.get(TestingContext.TESTING_CONTEXT_KEY, TestingContext.class);
 
-        if (testMode != null) {
-            this.databaseManager = testMode.stop(extensionContext.getUniqueId());
+        if (testingContext != null) {
+            this.databaseManager = testingContext.stop(extensionContext.getUniqueId());
         }
     }
 
@@ -165,23 +165,23 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
     public void beforeEach(@Nonnull ExtensionContext extensionContext) throws Exception {
         checkNotNull(extensionContext, "extensionContext is null");
 
-        Store pgStore = extensionContext.getStore(PG_NAMESPACE);
-        TestMode testMode = pgStore.getOrComputeIfAbsent(TestMode.TESTMODE_KEY,
-                k -> new TestMode(extensionContext.getUniqueId(), databaseManagerBuilder.build()),
-                TestMode.class);
+        Store pgStore = extensionContext.getStore(pgNamespace);
+        TestingContext testingContext = pgStore.getOrComputeIfAbsent(TestingContext.TESTING_CONTEXT_KEY,
+                k -> new TestingContext(extensionContext.getUniqueId(), databaseManagerBuilder.build()),
+                TestingContext.class);
 
-        this.databaseManager = testMode.start(extensionContext.getUniqueId());
+        this.databaseManager = testingContext.start(extensionContext.getUniqueId());
     }
 
     @Override
     public void afterEach(@Nonnull ExtensionContext extensionContext) throws Exception {
         checkNotNull(extensionContext, "extensionContext is null");
 
-        Store pgStore = extensionContext.getStore(PG_NAMESPACE);
-        TestMode testMode = pgStore.get(TestMode.TESTMODE_KEY, TestMode.class);
+        Store pgStore = extensionContext.getStore(pgNamespace);
+        TestingContext testingContext = pgStore.get(TestingContext.TESTING_CONTEXT_KEY, TestingContext.class);
 
-        if (testMode != null) {
-            this.databaseManager = testMode.stop(extensionContext.getUniqueId());
+        if (testingContext != null) {
+            this.databaseManager = testingContext.stop(extensionContext.getUniqueId());
         }
     }
 
@@ -236,14 +236,14 @@ public final class EmbeddedPgExtension implements BeforeAllCallback, AfterAllCal
         }
     }
 
-    private static final class TestMode {
+    private static final class TestingContext {
 
-        private static final Object TESTMODE_KEY = new Object();
+        private static final Object TESTING_CONTEXT_KEY = new Object();
 
         private final String id;
         private final DatabaseManager databaseManager;
 
-        private TestMode(String id, DatabaseManager databaseManager) {
+        private TestingContext(String id, DatabaseManager databaseManager) {
             this.id = id;
             this.databaseManager = databaseManager;
         }
