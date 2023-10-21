@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.kitei</groupId>
         <artifactId>kitei-root</artifactId>
-        <version>13</version>
+        <version>14</version>
     </parent>
 
     <scm>
@@ -273,34 +273,6 @@
                     </configuration>
                 </plugin>
                 <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-jar-plugin</artifactId>
-                    <executions>
-                        <execution>
-                            <id>default-jar</id>
-                            <!-- add module name to main artifact -->
-                            <configuration>
-                                <archive>
-                                    <manifestEntries combine.children="append">
-                                        <Automatic-Module-Name>${project.moduleName}</Automatic-Module-Name>
-                                    </manifestEntries>
-                                </archive>
-                            </configuration>
-                        </execution>
-                        <execution>
-                            <id>basepom.default</id>
-                            <!-- add module name with "test" appended to tests artifact -->
-                            <configuration>
-                                <archive>
-                                    <manifestEntries combine.children="append">
-                                        <Automatic-Module-Name>${project.moduleName}.tests</Automatic-Module-Name>
-                                    </manifestEntries>
-                                </archive>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
                     <groupId>org.basepom.maven</groupId>
                     <artifactId>inline-maven-plugin</artifactId>
                     <version>${dep.plugin.inline.version}</version>
@@ -358,31 +330,6 @@
     </reporting>
 
     <profiles>
-        <profile>
-            <id>java21</id>
-            <activation>
-                <jdk>[21,)</jdk>
-            </activation>
-            <properties>
-                <!-- see https://github.com/mockito/mockito/issues/3037 -->
-                <basepom.it.arguments>-XX:+EnableDynamicAgentLoading</basepom.it.arguments>
-                <basepom.test.arguments>-XX:+EnableDynamicAgentLoading</basepom.test.arguments>
-            </properties>
-            <build>
-                <pluginManagement>
-                    <plugins>
-                        <plugin>
-                            <groupId>org.apache.maven.plugins</groupId>
-                            <artifactId>maven-compiler-plugin</artifactId>
-                            <configuration>
-                                <!-- see https://inside.java/2023/07/29/quality-heads-up/ -->
-                                <proc>full</proc>
-                            </configuration>
-                        </plugin>
-                    </plugins>
-                </pluginManagement>
-            </build>
-        </profile>
         <profile>
             <id>pg-embedded-release</id>
             <properties>
