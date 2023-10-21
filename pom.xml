@@ -48,6 +48,7 @@
         <basepom.site.scm.url>scm:git:https://github.com/hgschmie/pg-embedded.github.io.git</basepom.site.scm.url>
         <basepom.site.scm.site-path>/development</basepom.site.scm.site-path>
 
+        <basepom.javadoc.legacy-mode>true</basepom.javadoc.legacy-mode>
         <basepom.javadoc.skip>false</basepom.javadoc.skip>
         <basepom.javadoc.show>protected</basepom.javadoc.show>
         <basepom.site.fail-javadoc>false</basepom.site.fail-javadoc>
@@ -250,6 +251,14 @@
                                 <rules>
                                     <!-- Ensure consistency -->
                                     <dependencyConvergence />
+
+                                    <!-- ban non-module stuff -->
+                                    <bannedDependencies>
+                                        <excludes>
+                                            <exclude>com.google.code.findbugs:jsr305</exclude>
+                                        </excludes>
+                                        <searchTransitive>false</searchTransitive>
+                                    </bannedDependencies>
                                 </rules>
                             </configuration>
                         </execution>
