@@ -17,9 +17,9 @@ package de.softwareforge.testing.postgres.embedded;
 import static com.google.common.base.Preconditions.checkState;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
-import javax.annotation.CheckForNull;
 
 import com.google.common.hash.Hashing;
 import com.google.common.hash.HashingInputStream;
@@ -44,7 +44,7 @@ public interface NativeBinaryLocator {
      * @return An input stream. May return null.
      * @throws IOException If the archive could not be located or read.
      */
-    @CheckForNull
+    @Nullable
     InputStream getInputStream() throws IOException;
 
     /**
