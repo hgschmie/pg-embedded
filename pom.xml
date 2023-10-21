@@ -74,7 +74,8 @@
         <!-- overwritten by profile below -->
         <pg-embedded.test.binary-name />
         <pg-embedded.test.artifact-name>linux-amd64</pg-embedded.test.artifact-name>
-        <pg-embedded.test.artifact-version>15</pg-embedded.test.artifact-version>
+        <!-- pg version below must be full version, does not use the resolver -->
+        <pg-embedded.test.artifact-version>15.4.0</pg-embedded.test.artifact-version>
     </properties>
 
     <licenses>
