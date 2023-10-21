@@ -11,6 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package de.softwareforge.testing.postgres.junit5;
 
 import de.softwareforge.testing.postgres.embedded.DatabaseManager;
@@ -19,7 +20,6 @@ import de.softwareforge.testing.postgres.embedded.EmbeddedPostgresPreparer;
 
 import jakarta.annotation.Nonnull;
 import javax.sql.DataSource;
-
 
 
 /**
@@ -64,8 +64,8 @@ public final class SingleDatabaseBuilder {
     }
 
     /**
-     * Create a builder with standard initializations ({@link EmbeddedPostgres.Builder#withDefaults()}) applied and register a {@link
-     * EmbeddedPostgresPreparer<DataSource>} to set up the database.
+     * Create a builder with standard initializations ({@link EmbeddedPostgres.Builder#withDefaults()}) applied and register a
+     * {@link EmbeddedPostgresPreparer<DataSource>} to set up the database.
      *
      * @param databasePreparer A {@link EmbeddedPostgresPreparer<DataSource>} instance. Must not be null.
      * @return A {@link DatabaseManager.Builder<EmbeddedPgExtension>} instance that can be customized further.

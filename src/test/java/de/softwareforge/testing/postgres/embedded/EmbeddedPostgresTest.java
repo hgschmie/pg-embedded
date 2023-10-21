@@ -11,6 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package de.softwareforge.testing.postgres.embedded;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -20,6 +21,8 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.postgresql.PGProperty.CONNECT_TIMEOUT;
+
+import de.softwareforge.testing.postgres.junit5.RequirePostgresVersion;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -31,7 +34,6 @@ import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
 
-import de.softwareforge.testing.postgres.junit5.RequirePostgresVersion;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.postgresql.ds.PGSimpleDataSource;

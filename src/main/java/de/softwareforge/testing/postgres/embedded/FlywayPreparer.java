@@ -11,6 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package de.softwareforge.testing.postgres.embedded;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -48,15 +49,15 @@ public final class FlywayPreparer implements EmbeddedPostgresPreparer<DataSource
     }
 
     /**
-     * Create a new, uninitialized preparer instance. Use {@link FlywayPreparer#addCustomizer(Consumer)} to modify the configuration for the {@link
-     * FluentConfiguration} object.
+     * Create a new, uninitialized preparer instance. Use {@link FlywayPreparer#addCustomizer(Consumer)} to modify the configuration for the
+     * {@link FluentConfiguration} object.
      */
     public FlywayPreparer() {
     }
 
     /**
-     * Add a customizer instance. Each customizer is called once with the {@link FluentConfiguration} instance before setting the datasource and calling {@link
-     * FluentConfiguration#load()} and {@link Flyway#migrate()}.
+     * Add a customizer instance. Each customizer is called once with the {@link FluentConfiguration} instance before setting the datasource and calling
+     * {@link FluentConfiguration#load()} and {@link Flyway#migrate()}.
      *
      * @param customizer A {@link Consumer<FluentConfiguration>} instance. Must not be null.
      * @return This object.
@@ -71,8 +72,8 @@ public final class FlywayPreparer implements EmbeddedPostgresPreparer<DataSource
     }
 
     /**
-     * Add customizer instances. Each customizer is called once with the {@link FluentConfiguration} instance before setting the datasource and calling {@link
-     * FluentConfiguration#load()} and {@link Flyway#migrate()}.
+     * Add customizer instances. Each customizer is called once with the {@link FluentConfiguration} instance before setting the datasource and calling
+     * {@link FluentConfiguration#load()} and {@link Flyway#migrate()}.
      *
      * @param customizers A set of {@link Consumer<FluentConfiguration>} instances. Must not be null.
      * @return This object.

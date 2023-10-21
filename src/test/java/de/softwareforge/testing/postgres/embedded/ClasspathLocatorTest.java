@@ -11,6 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package de.softwareforge.testing.postgres.embedded;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -26,8 +27,7 @@ import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 
 /**
- * Requires a compatible postgres binary on the classpath (as part of the dependencies in test
- * scope in the project pom.
+ * Requires a compatible postgres binary on the classpath (as part of the dependencies in test scope in the project pom.
  */
 
 public class ClasspathLocatorTest {
@@ -51,6 +51,7 @@ public class ClasspathLocatorTest {
     }
 
     static class ClasspathLocator implements NativeBinaryLocator {
+
         private final String name;
 
         ClasspathLocator(String name) {

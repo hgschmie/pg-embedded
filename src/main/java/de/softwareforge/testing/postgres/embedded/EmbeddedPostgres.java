@@ -228,8 +228,8 @@ public final class EmbeddedPostgres implements AutoCloseable {
     /**
      * Creates a {@link DataSource} with a specific user and database name.
      * <p>
-     * Creating the DataSource does <b>not</b> create the database or the user itself. This must be done by the calling code (e.g. with a {@link
-     * EmbeddedPostgresPreparer}).
+     * Creating the DataSource does <b>not</b> create the database or the user itself. This must be done by the calling code (e.g. with a
+     * {@link EmbeddedPostgresPreparer}).
      */
     @Nonnull
     public DataSource createDataSource(@Nonnull String user, @Nonnull String databaseName) throws SQLException {
@@ -912,9 +912,9 @@ public final class EmbeddedPostgres implements AutoCloseable {
 
         /**
          * Use a locally installed PostgreSQL server for tests. The tests will still spin up a new instance and locate the data in the data directory but it
-         * will use the locally installed binaries for starting and stopping. Calling this method sets a binary manager, so it overrides {@link
-         * Builder#setNativeBinaryManager(NativeBinaryManager)}. Calling this method makes the builder ignore the {@link
-         * Builder#setInstallationBaseDirectory(File)} setting.
+         * will use the locally installed binaries for starting and stopping. Calling this method sets a binary manager, so it overrides
+         * {@link Builder#setNativeBinaryManager(NativeBinaryManager)}. Calling this method makes the builder ignore the
+         * {@link Builder#setInstallationBaseDirectory(File)} setting.
          *
          * @param directory A local directory that contains a standard PostgreSQL installation. The directory must exist and read and executable.
          * @return The builder itself.

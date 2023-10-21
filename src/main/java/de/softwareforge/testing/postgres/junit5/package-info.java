@@ -14,4 +14,5 @@
 /**
  * JUnit 5 integration code. Requires the Jupiter API on the class path.
  */
+
 package de.softwareforge.testing.postgres.junit5;

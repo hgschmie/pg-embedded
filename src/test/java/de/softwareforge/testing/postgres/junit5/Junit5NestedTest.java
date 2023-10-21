@@ -11,6 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package de.softwareforge.testing.postgres.junit5;
 
 import static de.softwareforge.testing.postgres.junit5.Junit5ClassMemberTest.createTable;

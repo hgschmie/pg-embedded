@@ -11,6 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package de.softwareforge.testing.postgres.embedded;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -18,13 +19,14 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import de.softwareforge.testing.postgres.junit5.RequirePostgresVersion;
+
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import de.softwareforge.testing.postgres.junit5.RequirePostgresVersion;
 import org.flywaydb.core.api.FlywayException;
 import org.junit.jupiter.api.Test;
 
@@ -59,7 +61,7 @@ public class FlywayPreparerTest {
                         .forClasspathLocation("db/non-existing")
                         .addCustomizer(c -> c.failOnMissingLocations(true)))
                 .build()
-                ) {
+        ) {
 
             IOException e = assertThrows(IOException.class, manager::start);
 

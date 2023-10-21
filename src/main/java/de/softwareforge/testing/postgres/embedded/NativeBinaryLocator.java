@@ -11,6 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package de.softwareforge.testing.postgres.embedded;
 
 import static com.google.common.base.Preconditions.checkState;
@@ -28,8 +29,8 @@ import com.google.common.io.ByteStreams;
 /**
  * Locates a native binary on the Filesystem. If necessary, it should download the binary first from the network.
  * <p>
- * Implementations of this class <b>must</b> implement {@link Object#hashCode()} and {@link Object#equals(Object)} and <i>should</i> implement {@link
- * Object#toString()}.
+ * Implementations of this class <b>must</b> implement {@link Object#hashCode()} and {@link Object#equals(Object)} and <i>should</i> implement
+ * {@link Object#toString()}.
  *
  * @since 3.0
  */
