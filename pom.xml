@@ -17,9 +17,9 @@
 
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.basepom</groupId>
-        <artifactId>basepom-oss</artifactId>
-        <version>53</version>
+        <groupId>org.kitei</groupId>
+        <artifactId>kitei-root</artifactId>
+        <version>13</version>
     </parent>
 
     <scm>
@@ -52,19 +52,19 @@
         <basepom.javadoc.show>protected</basepom.javadoc.show>
         <basepom.site.fail-javadoc>false</basepom.site.fail-javadoc>
 
-        <dep.plugin.inline.version>1.0.1</dep.plugin.inline.version>
+        <dep.plugin.inline.version>1.1.0</dep.plugin.inline.version>
 
         <dep.slf4j.version>1.7.36</dep.slf4j.version>
-        <dep.guava.version>31.1-jre</dep.guava.version>
-        <dep.flyway.version>8.5.13</dep.flyway.version>
+        <dep.guava.version>32.1.3-jre</dep.guava.version>
+        <dep.flyway.version>9.22.3</dep.flyway.version>
         <dep.postgresql-jdbc.version>42.6.0</dep.postgresql-jdbc.version>
-        <dep.junit5.version>5.9.3</dep.junit5.version>
-        <dep.auto-value.version>1.10.1</dep.auto-value.version>
+        <dep.junit5.version>5.10.0</dep.junit5.version>
+        <dep.auto-value.version>1.10.4</dep.auto-value.version>
         <dep.maven-loader.version>2.1.0</dep.maven-loader.version>
 
-        <dep.apache-commons-compress.version>1.23.0</dep.apache-commons-compress.version>
+        <dep.apache-commons-compress.version>1.24.0</dep.apache-commons-compress.version>
         <dep.xz.version>1.9</dep.xz.version>
-        <dep.checkerframework.version>3.34.0</dep.checkerframework.version>
+        <dep.checkerframework.version>3.39.0</dep.checkerframework.version>
 
         <!-- MacOS Homebrew install location -->
         <pg-embedded.test.local-dir>/usr/local</pg-embedded.test.local-dir>
@@ -259,7 +259,7 @@
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <configuration>
                         <links>
-                            <link>https://junit.org/junit5/docs/${dep.junit5.version}/api/</link>
+                            <link>https://javadoc.io/doc/org.junit.jupiter/junit-jupiter-api/${dep.junit5.version}/</link>
                             <link>https://javadoc.io/doc/com.google.guava/guava/${dep.guava.version}/</link>
                             <link>https://javadoc.io/doc/com.github.spotbugs/spotbugs-annotations/${dep.spotbugs.version}</link>
                         </links>
@@ -273,13 +273,30 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
-                    <configuration>
-                        <archive>
-                            <manifestEntries combine.children="append">
-                                <Automatic-Module-Name>${project.moduleName}</Automatic-Module-Name>
-                            </manifestEntries>
-                        </archive>
-                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>default-jar</id>
+                            <!-- add module name to main artifact -->
+                            <configuration>
+                                <archive>
+                                    <manifestEntries combine.children="append">
+                                        <Automatic-Module-Name>${project.moduleName}</Automatic-Module-Name>
+                                    </manifestEntries>
+                                </archive>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>basepom.default</id>
+                            <!-- add module name with "test" appended to tests artifact -->
+                            <configuration>
+                                <archive>
+                                    <manifestEntries combine.children="append">
+                                        <Automatic-Module-Name>${project.moduleName}.tests</Automatic-Module-Name>
+                                    </manifestEntries>
+                                </archive>
+                            </configuration>
+                        </execution>
+                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.basepom.maven</groupId>
@@ -340,6 +357,31 @@
 
     <profiles>
         <profile>
+            <id>java21</id>
+            <activation>
+                <jdk>[21,)</jdk>
+            </activation>
+            <properties>
+                <!-- see https://github.com/mockito/mockito/issues/3037 -->
+                <basepom.it.arguments>-XX:+EnableDynamicAgentLoading</basepom.it.arguments>
+                <basepom.test.arguments>-XX:+EnableDynamicAgentLoading</basepom.test.arguments>
+            </properties>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-compiler-plugin</artifactId>
+                            <configuration>
+                                <!-- see https://inside.java/2023/07/29/quality-heads-up/ -->
+                                <proc>full</proc>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
+        <profile>
             <id>pg-embedded-release</id>
             <properties>
                 <basepom.site.scm.site-path>/release-${project.version}</basepom.site.scm.site-path>
@@ -351,14 +393,14 @@
                         <artifactId>maven-enforcer-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>enforce-java17</id>
+                                <id>enforce-java21</id>
                                 <goals>
                                     <goal>enforce</goal>
                                 </goals>
                                 <configuration>
                                     <rules>
                                         <requireJavaVersion>
-                                            <version>[17,)</version>
+                                            <version>[21,)</version>
                                         </requireJavaVersion>
                                     </rules>
                                 </configuration>

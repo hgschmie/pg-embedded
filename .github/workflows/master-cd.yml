@@ -19,7 +19,7 @@ jobs:
       uses: actions/setup-java@v3
       with:
         distribution: temurin
-        java-version: 17
+        java-version: 21
         cache: maven
         server-id: sonatype-nexus-snapshots
         server-username: NEXUS_REPO_USER
@@ -50,7 +50,7 @@ jobs:
       uses: actions/setup-java@v3
       with:
         distribution: temurin
-        java-version: 17
+        java-version: 21
         cache: maven
         server-id: github
         server-password: SITE_DEPLOY
