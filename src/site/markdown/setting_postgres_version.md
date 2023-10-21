@@ -1,6 +1,6 @@
 # Setting the PostgreSQL version and architecture
 
-By default, `pg-embedded` uses a PostgreSQL 13 database. This version can be changed in multiple ways:
+By default, `pg-embedded` uses a PostgreSQL 15 database. This version can be changed in multiple ways:
 
 - call `Builder.setServerVersion()` on the [EmbeddedPostgres.Builder](apidocs/de.softwareforge.testing.postgres/de/softwareforge/testing/postgres/embedded/EmbeddedPostgres.Builder.html)
 - call `Builder.withInstancePreparer(b -> b.setServerVersion(...))` on the [DatabaseManagerBuilder](apidocs/de.softwareforge.testing.postgres/de/softwareforge/testing/postgres/embedded/DatabaseManager.Builder.html)

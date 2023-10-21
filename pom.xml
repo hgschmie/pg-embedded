@@ -74,7 +74,7 @@
         <!-- overwritten by profile below -->
         <pg-embedded.test.binary-name />
         <pg-embedded.test.artifact-name>linux-amd64</pg-embedded.test.artifact-name>
-        <pg-embedded.test.artifact-version>14.7.0</pg-embedded.test.artifact-version>
+        <pg-embedded.test.artifact-version>15</pg-embedded.test.artifact-version>
     </properties>
 
     <licenses>
