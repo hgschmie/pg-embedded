@@ -42,6 +42,7 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.channels.OverlappingFileLockException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -362,7 +363,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
 
 
     private synchronized void lock() throws IOException {
-        this.lockChannel = FileChannel.open(this.lockFile.toPath(), CREATE, WRITE, TRUNCATE_EXISTING, DELETE_ON_CLOSE);
+        this.lockChannel = FileChannel.open(this.lockFile.toPath(), CREATE, WRITE, TRUNCATE_EXISTING);
         this.lock = this.lockChannel.tryLock();
         checkState(lock != null, "could not lock %s", lockFile);
     }
@@ -371,7 +372,8 @@ public final class EmbeddedPostgres implements AutoCloseable {
         if (lock != null) {
             lock.release();
         }
-        Closeables.close(lockChannel, true);
+        Closeables.close(this.lockChannel, true);
+        Files.deleteIfExists(this.lockFile.toPath());
     }
 
     private void initDatabase() throws IOException {
@@ -597,7 +599,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
             } catch (final OverlappingFileLockException e) {
                 // The directory belongs to another instance in this VM.
                 logger.trace("while cleaning old data directories:", e);
-            } catch (final Exception e) {
+            } catch (final IOException e) {
                 logger.warn("while cleaning old data directories:", e);
             }
         }

@@ -18,7 +18,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.String.format;
 import static java.nio.file.StandardOpenOption.CREATE;
-import static java.nio.file.StandardOpenOption.DELETE_ON_CLOSE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.nio.file.StandardOpenOption.WRITE;
 
@@ -117,7 +116,7 @@ public final class TarXzCompressedBinaryManager implements NativeBinaryManager {
             final File installationExistsFile = new File(installationDirectory, ".exists");
 
             if (!installationExistsFile.exists()) {
-                try (FileChannel lockChannel = FileChannel.open(unpackLockFile.toPath(), CREATE, WRITE, TRUNCATE_EXISTING, DELETE_ON_CLOSE);
+                try (FileChannel lockChannel = FileChannel.open(unpackLockFile.toPath(), CREATE, WRITE, TRUNCATE_EXISTING);
                         FileLock unpackLock = lockChannel.tryLock()) {
                     if (unpackLock != null) {
                         checkState(!installationExistsFile.exists(), "unpack lock acquired but .exists file is present " + installationExistsFile);
@@ -135,9 +134,7 @@ public final class TarXzCompressedBinaryManager implements NativeBinaryManager {
                         checkState(installationExistsFile.exists(), "Waited 60 seconds for archive to be unpacked but it never finished!");
                     }
                 } finally {
-                    if (unpackLockFile.exists() && !unpackLockFile.delete()) {
-                        LOG.error(format("could not remove lock file %s", unpackLockFile.getAbsolutePath()));
-                    }
+                    Files.deleteIfExists(unpackLockFile.toPath());
                 }
             }
 
