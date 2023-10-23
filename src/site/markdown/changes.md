@@ -2,6 +2,13 @@
 
 This is the change log for pg-embedded. It follows [Keep a Changelog v1.0.0](http://keepachangelog.com/en/1.0.0/).
 
+## 5.1.0 - 2023-10-22
+
+- dropped support for Postgres 9.x and 10 (obsolete by postgresql.org)
+- dependency updates, build fixes
+- switch to three digit versioning
+
+
 ## 5.0 - 2023-05-16
 
 ### Removed
