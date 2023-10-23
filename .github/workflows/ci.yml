@@ -1,12 +1,13 @@
+---
 name: CI build
 
 on:
   push:
     branches:
-    - master
+      - master
   pull_request:
     branches:
-    - master
+      - master
 
 jobs:
   ci:
@@ -16,38 +17,38 @@ jobs:
         test-java-version: [ 11, 17, 21 ]
 
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-    - name: Install locales on runner
-      run: sudo apt-get install -y locales-all
+      - name: Install locales on runner
+        run: sudo apt-get install -y locales-all
 
-    - uses: actions/setup-java@v3
-      id: setup_build_jdk
-      name: Setup Build JDK
-      with:
-        java-version: 21
-        distribution: temurin
-        cache: maven
+      - uses: actions/setup-java@v3
+        id: setup_build_jdk
+        name: Setup Build JDK
+        with:
+          java-version: 21
+          distribution: temurin
+          cache: maven
 
-    - name: Build
-      env:
-        MAVEN_CONFIG: "-Pfast -Dbasepom.check.skip-enforcer=false -B -fae"
-      run: |
-        make install
+      - name: Build
+        env:
+          MAVEN_CONFIG: "-Pfast -Dbasepom.check.skip-enforcer=false -B -fae"
+        run: |
+          make install
 
-    - uses: actions/setup-java@v3
-      id: setup_test_jdk
-      name: Setup Test JDK
-      with:
-        java-version: ${{ matrix.test-java-version }}
-        distribution: temurin
-        cache: maven
+      - uses: actions/setup-java@v3
+        id: setup_test_jdk
+        name: Setup Test JDK
+        with:
+          java-version: ${{ matrix.test-java-version }}
+          distribution: temurin
+          cache: maven
 
-    - name: Run unit tests
-      env:
-        MAVEN_CONFIG: "-B -fae"
-      run: |
-        make test
+      - name: Run unit tests
+        env:
+          MAVEN_CONFIG: "-B -fae"
+        run: |
+          make test
 
   db:
     runs-on: ubuntu-latest
@@ -56,27 +57,27 @@ jobs:
         postgres-version: [ 11, 12, 13, 14, 15, 16 ]
 
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: Install locales on runner
-      run: sudo apt-get install -y locales-all
+      - name: Install locales on runner
+        run: sudo apt-get install -y locales-all
 
-    - uses: actions/setup-java@v3
-      id: setup_build_jdk
-      name: Setup Build JDK
-      with:
-        java-version: 21
-        distribution: temurin
-        cache: maven
+      - uses: actions/setup-java@v3
+        id: setup_build_jdk
+        name: Setup Build JDK
+        with:
+          java-version: 21
+          distribution: temurin
+          cache: maven
 
-    - name: Build
-      env:
-        MAVEN_CONFIG: "-Pfast -Dbasepom.check.skip-enforcer=false -B -fae"
-      run: |
-        make install
+      - name: Build
+        env:
+          MAVEN_CONFIG: "-Pfast -Dbasepom.check.skip-enforcer=false -B -fae"
+        run: |
+          make install
 
-    - name: Run unit tests
-      env:
-        MAVEN_CONFIG: "-B -fae -Dpg-embedded.postgres-version=${{ matrix.postgres-version }}"
-      run: |
-        make test
+      - name: Run unit tests
+        env:
+          MAVEN_CONFIG: "-B -fae -Dpg-embedded.postgres-version=${{ matrix.postgres-version }}"
+        run: |
+          make test

@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.kitei</groupId>
         <artifactId>kitei-root</artifactId>
-        <version>14</version>
+        <version>15</version>
     </parent>
 
     <scm>
