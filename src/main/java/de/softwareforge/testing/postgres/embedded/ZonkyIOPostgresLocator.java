@@ -104,7 +104,12 @@ public final class ZonkyIOPostgresLocator implements NativeBinaryLocator {
                 artifactId += "-alpine";
             }
 
-            String version = artifactLoader.findLatestVersion(ZONKY_GROUP_ID, artifactId, serverVersion);
+            String version = artifactLoader.builder(ZONKY_GROUP_ID, artifactId)
+                    .partialMatch(serverVersion)
+                    .includeSnapshots(false)
+                    .findBestMatch()
+                    .orElseThrow(() -> new IllegalStateException(format("Could not download artifact for Zonky Postgres %s", serverVersion)));
+
             File file = artifactLoader.getArtifactFile(ZONKY_GROUP_ID, artifactId, version);
             checkState(file != null && file.exists(), "Could not locate artifact file for %s:%s", artifactId, version);
             LOG.info(format("Using PostgreSQL version %s (%s)", version, architecture));
