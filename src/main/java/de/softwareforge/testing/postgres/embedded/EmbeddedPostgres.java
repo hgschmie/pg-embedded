@@ -78,7 +78,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
     /**
      * The version of postgres used if no specific version has been given.
      */
-    public static final String DEFAULT_POSTGRES_VERSION = "13";
+    public static final String DEFAULT_POSTGRES_VERSION = "15";
 
     static final String[] LOCALHOST_SERVER_NAMES = {"localhost"};
 
