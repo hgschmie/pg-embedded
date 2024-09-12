@@ -36,7 +36,7 @@ import org.slf4j.Logger;
  * <p>
  * The use of the input stream is thread safe since it's used only in a single thread&mdash;the one launched by this code.
  */
-class ProcessOutputLogger implements Closeable {
+final class ProcessOutputLogger implements Closeable {
 
     private final Logger logger;
     private final ListeningExecutorService executorService;
@@ -63,7 +63,7 @@ class ProcessOutputLogger implements Closeable {
     }
 
 
-    class StreamCapture implements BiConsumer<String, InputStream> {
+    final class StreamCapture implements BiConsumer<String, InputStream> {
 
         private final Consumer<String> consumer;
         private volatile Future<?> completionFuture = null;
@@ -82,7 +82,7 @@ class ProcessOutputLogger implements Closeable {
         }
     }
 
-    private class LogRunnable implements Runnable {
+    private final class LogRunnable implements Runnable {
 
         private final InputStream inputStream;
         private final String name;
@@ -101,7 +101,7 @@ class ProcessOutputLogger implements Closeable {
             try (InputStreamReader isr = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
                     BufferedReader reader = new BufferedReader(isr)) {
                 try {
-                    reader.lines().forEach(consumer::accept);
+                    reader.lines().forEach(consumer);
                 } catch (final UncheckedIOException e) {
                     logger.error("while reading output:", e);
                 }

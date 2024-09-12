@@ -118,7 +118,7 @@ public final class DatabaseManager implements AutoCloseable {
                 dataSource = pg.createDefaultDataSource();
 
                 // always return a reference to the default database.
-                this.instanceProvider = () -> pg.createDefaultDatabaseInfo();
+                this.instanceProvider = pg::createDefaultDatabaseInfo;
             }
 
             for (EmbeddedPostgresPreparer<DataSource> databasePreparer : databasePreparers) {

@@ -481,6 +481,7 @@ public final class EmbeddedPostgres implements AutoCloseable {
         throw new IOException("Gave up waiting for server to start after " + serverStartupWait.toMillis() + "ms", lastCause);
     }
 
+    @SuppressWarnings("PMD.CheckResultSet") // see https://github.com/pmd/pmd/issues/5209 / https://github.com/pmd/pmd/issues/5031
     private boolean verifyReady() throws IOException, SQLException {
         // check TCP connection
         final InetAddress localhost = InetAddress.getLoopbackAddress();
