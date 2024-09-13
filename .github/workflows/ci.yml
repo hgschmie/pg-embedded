@@ -54,7 +54,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        postgres-version: [ 11, 12, 13, 14, 15, 16 ]
+        postgres-version: [ 12, 13, 14, 15, 16 ]
 
     steps:
       - uses: actions/checkout@v3

@@ -10,7 +10,7 @@ Start a PostgreSQL server for unit tests or local development.
 
 Please check out the [full documentation site](https://pg-embedded.softwareforge.de/)!
 
-* PostgreSQL version 11+ (see https://www.postgresql.org/docs/ for all supported versions of PostgreSQL).
+* PostgreSQL version 12+ (see https://www.postgresql.org/docs/ for all supported versions of PostgreSQL) are officially supported. Postgres 9.6, 10 and 11 may work but are unsupported.
 * Binaries loaded from Maven Central (using the [Zonky embedded Postgres Binaries](https://github.com/zonkyio/embedded-postgres-binaries)) or locally installed.
 * Multiple Database servers
 * Multiple databases on a single database server
