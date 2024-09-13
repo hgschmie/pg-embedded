@@ -11,7 +11,7 @@ The code uses the maven-wrapper for local builds.
 % ./mvnw clean install
 ```
 
-At least Java 11 is required for building. While the code should build with any Java version post 11, only LTS versions (currently 11 and 17) are supported.
+At least Java 17 is required for building. While the code should build with any Java version post 17, only LTS versions (currently 17 and 21) are supported.
 
 The resulting library runs on Java 11 and beyond.
 

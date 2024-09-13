@@ -8,6 +8,7 @@ This is the change log for pg-embedded. It follows [Keep a Changelog v1.0.0](htt
 - dependency updates, build fixes
 - tests are now run against 16.4.0 (used to be 15.4.0)
 - Default embedded database version is now 15 (used to be 13)
+- Require Java 17 or 21 for building
 
 
 ## 5.1.0 - 2023-10-22
