@@ -1,9 +1,9 @@
 [![Main Build](https://github.com/hgschmie/pg-embedded/actions/workflows/master-cd.yml/badge.svg)](https://github.com/hgschmie/pg-embedded/actions/workflows/master-cd.yml)
 
 ----
-*pg-embedded is not affected by the discovered xz supply chain attack! All releases of pg-embedded have shipped with xz 1.9 or earlier, which predates the attack. It was never shipped with a version that contains potentially compromising commits.* 
+*pg-embedded is not affected by the [xz supply chain attack attempt](https://nvd.nist.gov/vuln/detail/CVE-2024-3094)! All releases of pg-embedded have shipped with xz 1.10 or earlier, which either predates the attack (1.9) or was released after the attack was mitigated (1.10). pg-embedded never shipped with a version that contains potentially compromising commits.*
 
----- 
+----
 # Embedded Postgres for Java
 
 Start a PostgreSQL server for unit tests or local development.
@@ -69,4 +69,3 @@ public void simpleTest() throws SQLException {
     }
 }
 ```
-
