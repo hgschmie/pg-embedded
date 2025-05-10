@@ -176,6 +176,7 @@ public final class DatabaseManager implements AutoCloseable {
         return pg;
     }
 
+    @FunctionalInterface
     private interface InstanceProvider extends Supplier<DatabaseInfo>, AutoCloseable {
 
         default void start() {

@@ -34,6 +34,7 @@ import com.google.common.io.ByteStreams;
  *
  * @since 3.0
  */
+@SuppressWarnings("PMD.ImplicitFunctionalInterface")
 public interface NativeBinaryLocator {
 
     String INSTALL_DIRECTORY_PREFIX = "bin-";

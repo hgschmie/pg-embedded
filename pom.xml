@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.kitei</groupId>
         <artifactId>kitei-root</artifactId>
-        <version>16</version>
+        <version>19</version>
     </parent>
 
     <scm>
@@ -32,6 +32,7 @@
     <groupId>de.softwareforge.testing</groupId>
     <artifactId>pg-embedded</artifactId>
     <version>5.2.1-SNAPSHOT</version>
+    <name>pg-embedded</name>
     <description>Embedded PostgreSQL framework for testing and development use.</description>
     <url>https://pg-embedded.softwareforge.de/</url>
     <inceptionYear>2021</inceptionYear>
@@ -41,8 +42,7 @@
         <project.moduleName>de.softwareforge.testing.postgres</project.moduleName>
         <basepom.test.timeout>1800</basepom.test.timeout>
 
-        <basepom.release.profiles>basepom.oss-release,pg-embedded-release</basepom.release.profiles>
-        <basepom.nexus-staging.staging-url>https://oss.sonatype.org/</basepom.nexus-staging.staging-url>
+        <basepom.release.profiles>basepom.central-release,pg-embedded-release</basepom.release.profiles>
         <basepom.site.scm.skip-deploy>false</basepom.site.scm.skip-deploy>
         <basepom.site.scm.id>github</basepom.site.scm.id>
         <basepom.site.scm.url>scm:git:https://github.com/hgschmie/pg-embedded.github.io.git</basepom.site.scm.url>

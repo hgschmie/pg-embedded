@@ -15,7 +15,8 @@ SHELL = /bin/sh
 
 MAVEN = ./mvnw
 
-export MAVEN_OPTS MAVEN_ARGS
+export MAVEN_OPTS
+export MAVEN_ARGS
 
 # must be the first target
 default:: help
@@ -28,14 +29,23 @@ clean::
 install::
 	${MAVEN} clean install
 
-test::
-	${MAVEN} surefire:test
+tests: install-notests run-tests
+
+install-notests:: MAVEN_ARGS += -Dbasepom.test.skip=true
+install-notests:: install
+
+install-fast:: MAVEN_ARGS += -Pfast
+install-fast:: install
+
+run-tests:: MAVEN_ARGS += -Dbasepom.it.skip=false
+run-tests::
+	${MAVEN} surefire:test invoker:install invoker:integration-test invoker:verify
 
 deploy::
 	${MAVEN} clean deploy
 
 deploy-site::
-	${MAVEN} clean install site-deploy
+	${MAVEN} clean site-deploy
 
 release::
 	${MAVEN} clean release:clean release:prepare release:perform
@@ -44,10 +54,13 @@ release-site:: MAVEN_ARGS += -Ppg-embedded-release
 release-site:: deploy-site
 
 help::
-	@echo " * clean        - clean local build tree"
-	@echo " * install      - installs build result in the local maven repository"
-	@echo " * test         - run unit tests"
-	@echo " * deploy       - installs build result in the snapshot OSS repository"
-	@echo " * deploy-site  - builds and deploys the documentation site"
-	@echo " * release      - release a new version to maven central"
-	@echo " * release-site - build the release version of the documentation site"
+	@echo " * clean            - clean local build tree"
+	@echo " * install          - installs build result in the local maven repository"
+	@echo " * install-notests  - same as 'install', but skip unit tests"
+	@echo " * install-fast     - same as 'install', but skip unit tests and static analysis"
+	@echo " * tests            - build code and run unit and integration tests except really slow tests"
+	@echo " * run-tests        - run all unit and integration tests except really slow tests"
+	@echo " * deploy           - installs build result in the snapshot OSS repository"
+	@echo " * deploy-site      - builds and deploys the documentation site"
+	@echo " * release          - release a new version to maven central"
+	@echo " * release-site     - build the release version of the documentation site"
