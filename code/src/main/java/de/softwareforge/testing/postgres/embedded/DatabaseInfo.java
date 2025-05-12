@@ -108,6 +108,7 @@ public abstract class DatabaseInfo {
                 .map(e -> format("%s=%s", e.getKey(), e.getValue()))
                 .collect(Collectors.joining("&"));
     }
+
     /**
      * Returns a JDBC url to connect to the described database.
      *
