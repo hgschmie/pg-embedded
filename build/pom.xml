@@ -41,6 +41,8 @@
     <packaging>pom</packaging>
 
     <properties>
+        <dep.pg-embedded.version>5.2.1-SNAPSHOT</dep.pg-embedded.version>
+
         <project.build.targetJdk>11</project.build.targetJdk>
         <project.moduleName>de.softwareforge.testing.postgres</project.moduleName>
         <basepom.test.timeout>1800</basepom.test.timeout>
@@ -54,9 +56,8 @@
         <basepom.site.scm.url>scm:git:https://github.com/hgschmie/pg-embedded.github.io.git</basepom.site.scm.url>
         <basepom.site.scm.site-path>/development</basepom.site.scm.site-path>
 
-        <dep.plugin.inline.version>1.5.2-SNAPSHOT</dep.plugin.inline.version>
+        <dep.plugin.inline.version>1.5.1</dep.plugin.inline.version>
 
-        <dep.pg-embedded.version>5.2.1-SNAPSHOT</dep.pg-embedded.version>
         <dep.slf4j.version>2.0.17</dep.slf4j.version>
         <dep.guava.version>33.4.8-jre</dep.guava.version>
         <dep.flyway.version>11.8.1</dep.flyway.version>
