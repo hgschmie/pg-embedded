@@ -27,21 +27,21 @@
         <connection>scm:git:git://github.com/hgschmie/pg-embedded.git</connection>
         <developerConnection>scm:git:git@github.com:hgschmie/pg-embedded.git</developerConnection>
         <url>https://github.com/hgschmie/pg-embedded</url>
-        <tag>pg-embedded-root-5.3.0</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <groupId>de.softwareforge.testing</groupId>
     <description>Embedded PostgreSQL framework for testing and development use.</description>
     <url>https://pg-embedded.softwareforge.de/</url>
     <inceptionYear>2021</inceptionYear>
-    <version>5.3.0</version>
+    <version>5.3.1-SNAPSHOT</version>
 
     <artifactId>pg-embedded-build-root</artifactId>
     <name>pg-embedded :: build-root</name>
     <packaging>pom</packaging>
 
     <properties>
-        <dep.pg-embedded.version>5.3.0</dep.pg-embedded.version>
+        <dep.pg-embedded.version>5.3.1-SNAPSHOT</dep.pg-embedded.version>
 
         <project.build.targetJdk>11</project.build.targetJdk>
         <project.moduleName>de.softwareforge.testing.postgres</project.moduleName>
