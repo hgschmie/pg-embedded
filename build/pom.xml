@@ -52,8 +52,7 @@
         <!-- site is built in the code subdirectory -->
         <basepom.site.skip>true</basepom.site.skip>
         <basepom.site.scm.skip-deploy>true</basepom.site.scm.skip-deploy>
-        <basepom.site.scm.id>github</basepom.site.scm.id>
-        <basepom.site.scm.url>scm:git:https://github.com/hgschmie/pg-embedded.github.io.git</basepom.site.scm.url>
+        <basepom.site.scm.url>scm:git:git@github.com:hgschmie/pg-embedded.github.io.git</basepom.site.scm.url>
         <basepom.site.scm.site-path>/development</basepom.site.scm.site-path>
 
         <dep.plugin.inline.version>1.5.1</dep.plugin.inline.version>
