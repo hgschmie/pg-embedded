@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import javax.sql.DataSource;
 
 import com.google.auto.value.AutoValue;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -32,7 +33,7 @@ import com.google.common.collect.ImmutableMap;
 @AutoValue
 public abstract class DatabaseInfo {
 
-    private static final String JDBC_FORMAT = "jdbc:postgresql://localhost:%d/%s?user=%s";
+    private static final String JDBC_FORMAT = "jdbc:postgresql://localhost:%d/%s";
 
     DatabaseInfo() {
     }
@@ -96,6 +97,17 @@ public abstract class DatabaseInfo {
         return builder().exception(e).port(-1).build();
     }
 
+    @VisibleForTesting
+    String getBaseUrl() {
+        return format(JDBC_FORMAT, port(), dbName());
+    }
+
+    @VisibleForTesting
+    String getAdditionalParameters() {
+        return connectionProperties().entrySet().stream()
+                .map(e -> format("%s=%s", e.getKey(), e.getValue()))
+                .collect(Collectors.joining("&"));
+    }
     /**
      * Returns a JDBC url to connect to the described database.
      *
@@ -104,11 +116,8 @@ public abstract class DatabaseInfo {
     @Nonnull
     public String asJdbcUrl() {
         checkState(exception().isEmpty(), "DatabaseInfo contains SQLException: %s", exception());
-
-        String additionalParameters = connectionProperties().entrySet().stream()
-                .map(e -> format("&%s=%s", e.getKey(), e.getValue()))
-                .collect(Collectors.joining());
-        return format(JDBC_FORMAT, port(), dbName(), user()) + additionalParameters;
+        var parameters = getAdditionalParameters();
+        return parameters.isEmpty() ? getBaseUrl() : getBaseUrl() + "?" + parameters;
     }
 
     /**

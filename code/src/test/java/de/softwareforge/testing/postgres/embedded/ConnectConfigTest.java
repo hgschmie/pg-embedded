@@ -25,32 +25,60 @@ import java.sql.SQLException;
 import java.util.Map;
 import javax.sql.DataSource;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.postgresql.ds.common.BaseDataSource;
 
 public class ConnectConfigTest {
 
-    private final CapturingDatabasePreparer preparer = new CapturingDatabasePreparer();
+    @Nested
+    class WithoutParameters {
 
-    @RegisterExtension
-    public EmbeddedPgExtension db = SingleDatabaseBuilder.preparedInstanceWithDefaults(preparer)
-            .withInstancePreparer(builder -> builder.addConnectionProperty("connectTimeout", "20"))
-            .build();
+        @RegisterExtension
+        public EmbeddedPgExtension db = SingleDatabaseBuilder.instanceWithDefaults()
+                .build();
 
-    @Test
-    public void test() throws SQLException {
-        DatabaseInfo databaseInfo = db.createDatabaseInfo();
+        @Test
+        public void testWithoutParameters() throws SQLException {
+            DatabaseInfo databaseInfo = db.createDatabaseInfo();
 
-        Map<String, String> properties = databaseInfo.connectionProperties();
-        assertEquals(1, properties.size());
-        assertEquals("20", properties.get("connectTimeout"));
+            Map<String, String> properties = databaseInfo.connectionProperties();
+            assertEquals(0, properties.size());
 
-        BaseDataSource testDatabase = (BaseDataSource) db.createDataSource();
-        assertEquals("20", testDatabase.getProperty("connectTimeout"));
+            assertEquals("", databaseInfo.getAdditionalParameters());
+        }
+    }
 
-        BaseDataSource preparerDataSource = (BaseDataSource) preparer.getDataSource();
-        assertEquals("20", preparerDataSource.getProperty("connectTimeout"));
+    @Nested
+    class WithParameters {
+
+        private final CapturingDatabasePreparer preparer = new CapturingDatabasePreparer();
+
+        @RegisterExtension
+        public EmbeddedPgExtension db = SingleDatabaseBuilder.preparedInstanceWithDefaults(preparer)
+                .withInstancePreparer(builder -> builder.addConnectionProperty("connectTimeout", "20").addConnectionProperty("logUnclosedConnections", "true"))
+                .build();
+
+        @Test
+        public void testWithParameters() throws SQLException {
+            DatabaseInfo databaseInfo = db.createDatabaseInfo();
+
+            Map<String, String> properties = databaseInfo.connectionProperties();
+            assertEquals(2, properties.size());
+            assertEquals("20", properties.get("connectTimeout"));
+            assertEquals("true", properties.get("logUnclosedConnections"));
+
+            BaseDataSource testDatabase = (BaseDataSource) db.createDataSource();
+            assertEquals("20", testDatabase.getProperty("connectTimeout"));
+            assertEquals("true", properties.get("logUnclosedConnections"));
+
+            BaseDataSource preparerDataSource = (BaseDataSource) preparer.getDataSource();
+            assertEquals("20", preparerDataSource.getProperty("connectTimeout"));
+            assertEquals("true", properties.get("logUnclosedConnections"));
+
+            assertEquals("connectTimeout=20&logUnclosedConnections=true", databaseInfo.getAdditionalParameters());
+        }
     }
 
     private static class CapturingDatabasePreparer implements EmbeddedPostgresPreparer<DataSource> {
