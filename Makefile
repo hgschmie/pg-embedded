@@ -29,7 +29,13 @@ clean::
 install::
 	${MAVEN} clean install
 
-tests: install-notests run-tests
+# do not replace with "install-notests run-tests", the integration tests
+# must be run right after the inline plugin; otherwise the project pom and
+# not the newly created pom without inlined dependencies is used for the
+# integration tests.
+tests:: MAVEN_ARGS += -Dbasepom.it.skip=false
+tests::
+	${MAVEN} clean verify
 
 install-notests:: MAVEN_ARGS += -Dbasepom.test.skip=true
 install-notests:: install

@@ -1,0 +1,484 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+~   Licensed under the Apache License, Version 2.0 (the "License");
+~   you may not use this file except in compliance with the License.
+~   You may obtain a copy of the License at
+~
+~   http://www.apache.org/licenses/LICENSE-2.0
+~
+~   Unless required by applicable law or agreed to in writing, software
+~   distributed under the License is distributed on an "AS IS" BASIS,
+~   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+~   See the License for the specific language governing permissions and
+~   limitations under the License.
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.kitei</groupId>
+        <artifactId>kitei-root</artifactId>
+        <version>19</version>
+        <relativePath />
+    </parent>
+
+    <scm>
+        <connection>scm:git:git://github.com/hgschmie/pg-embedded.git</connection>
+        <developerConnection>scm:git:git@github.com:hgschmie/pg-embedded.git</developerConnection>
+        <url>https://github.com/hgschmie/pg-embedded</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <groupId>de.softwareforge.testing</groupId>
+    <description>Embedded PostgreSQL framework for testing and development use.</description>
+    <url>https://pg-embedded.softwareforge.de/</url>
+    <inceptionYear>2021</inceptionYear>
+    <version>5.2.1-SNAPSHOT</version>
+
+    <artifactId>pg-embedded-build-root</artifactId>
+    <name>pg-embedded :: build-root</name>
+    <packaging>pom</packaging>
+
+    <properties>
+        <project.build.targetJdk>11</project.build.targetJdk>
+        <project.moduleName>de.softwareforge.testing.postgres</project.moduleName>
+        <basepom.test.timeout>1800</basepom.test.timeout>
+        <basepom.it.skip>true</basepom.it.skip>
+
+        <basepom.release.profiles>basepom.central-release,pg-embedded-release</basepom.release.profiles>
+        <basepom.site.scm.skip-deploy>false</basepom.site.scm.skip-deploy>
+        <basepom.site.scm.id>github</basepom.site.scm.id>
+        <basepom.site.scm.url>scm:git:https://github.com/hgschmie/pg-embedded.github.io.git</basepom.site.scm.url>
+        <basepom.site.scm.site-path>/development</basepom.site.scm.site-path>
+
+        <basepom.javadoc.legacy-mode>true</basepom.javadoc.legacy-mode>
+        <basepom.javadoc.skip>false</basepom.javadoc.skip>
+        <basepom.javadoc.show>protected</basepom.javadoc.show>
+        <basepom.site.fail-javadoc>false</basepom.site.fail-javadoc>
+
+        <dep.plugin.inline.version>1.5.2-SNAPSHOT</dep.plugin.inline.version>
+
+        <dep.pg-embedded.version>5.2.1-SNAPSHOT</dep.pg-embedded.version>
+        <dep.slf4j.version>2.0.17</dep.slf4j.version>
+        <dep.guava.version>33.4.8-jre</dep.guava.version>
+        <dep.flyway.version>11.8.1</dep.flyway.version>
+        <dep.postgresql-jdbc.version>42.7.5</dep.postgresql-jdbc.version>
+        <dep.junit5.version>5.13.0-M3</dep.junit5.version>
+        <dep.auto-value.version>1.11.0</dep.auto-value.version>
+        <dep.maven-loader.version>2.4.0</dep.maven-loader.version>
+        <dep.jackson.version>2.18.3</dep.jackson.version>
+
+        <dep.apache-commons-compress.version>1.27.1</dep.apache-commons-compress.version>
+        <dep.checkerframework.version>3.49.3</dep.checkerframework.version>
+        <dep.jakarta-annotation-api.version>3.0.0</dep.jakarta-annotation-api.version>
+        <dep.xz.version>1.10</dep.xz.version>
+
+        <!-- MacOS Homebrew install location -->
+        <pg-embedded.test.local-dir>/usr/local</pg-embedded.test.local-dir>
+        <!-- ancient local pg installations (such as pg 9.2) need 'unix_socket_directory' to run the LocalDirectoryPostgresTest -->
+        <pg-embedded.test.unix-socket-dir>unix_socket_directories</pg-embedded.test.unix-socket-dir>
+        <pg-embedded.test.log-level>INFO</pg-embedded.test.log-level>
+        <!-- overwritten by profile below -->
+        <pg-embedded.test.binary-name />
+        <pg-embedded.test.artifact-name>linux-amd64</pg-embedded.test.artifact-name>
+        <!-- pg version below must be a full version, does not use the resolver -->
+        <pg-embedded.test.artifact-version>17.4.0</pg-embedded.test.artifact-version>
+    </properties>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+            <comments>A business-friendly OSS license</comments>
+        </license>
+    </licenses>
+
+    <organization>
+        <name>Henning Schmiedehausen</name>
+        <url>https://github.com/hgschmie</url>
+    </organization>
+
+    <developers>
+        <developer>
+            <id>hgschmie</id>
+            <name>Henning Schmiedehausen</name>
+            <timezone>-8</timezone>
+        </developer>
+    </developers>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>de.softwareforge.testing</groupId>
+                <artifactId>pg-embedded</artifactId>
+                <version>${dep.pg-embedded.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>de.softwareforge.testing</groupId>
+                <artifactId>pg-embedded</artifactId>
+                <version>${dep.pg-embedded.version}</version>
+                <classifier>tests</classifier>
+            </dependency>
+
+            <dependency>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>${dep.junit5.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${dep.jackson.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${dep.slf4j.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-simple</artifactId>
+                <version>${dep.slf4j.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.checkerframework</groupId>
+                <artifactId>checker-qual</artifactId>
+                <version>${dep.checkerframework.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>de.softwareforge.testing</groupId>
+                <artifactId>maven-loader</artifactId>
+                <version>${dep.maven-loader.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${dep.guava.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-compress</artifactId>
+                <version>${dep.apache-commons-compress.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.tukaani</groupId>
+                <artifactId>xz</artifactId>
+                <version>${dep.xz.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-core</artifactId>
+                <version>${dep.flyway.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>${dep.postgresql-jdbc.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>jakarta.annotation</groupId>
+                <artifactId>jakarta.annotation-api</artifactId>
+                <version>${dep.jakarta-annotation-api.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-database-postgresql</artifactId>
+                <version>${dep.flyway.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.auto.value</groupId>
+                <artifactId>auto-value-annotations</artifactId>
+                <version>${dep.auto-value.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.auto.value</groupId>
+                <artifactId>auto-value</artifactId>
+                <version>${dep.auto-value.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.zonky.test.postgres</groupId>
+                <artifactId>embedded-postgres-binaries-${pg-embedded.test.artifact-name}</artifactId>
+                <version>${pg-embedded.test.artifact-version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>de.softwareforge.testing</groupId>
+            <artifactId>maven-loader</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-commons</artifactId>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-toml</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.auto.value</groupId>
+            <artifactId>auto-value-annotations</artifactId>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.auto.value</groupId>
+            <artifactId>auto-value</artifactId>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- used for ClasspathLocatorTest -->
+        <dependency>
+            <groupId>io.zonky.test.postgres</groupId>
+            <artifactId>embedded-postgres-binaries-${pg-embedded.test.artifact-name}</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                        <systemPropertyVariables combine.children="append">
+                            <org.slf4j.simpleLogger.defaultLogLevel>${pg-embedded.test.log-level}</org.slf4j.simpleLogger.defaultLogLevel>
+                            <pg-embedded.test.binary-name>${pg-embedded.test.binary-name}</pg-embedded.test.binary-name>
+                            <!-- run all tests with pg 14, otherwise they fail on Mac/arm without rosetta -->
+                            <pg-embedded.postgres-version>${pg-embedded.test.artifact-version}</pg-embedded.postgres-version>
+                        </systemPropertyVariables>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>enforce-convergence</id>
+                            <goals>
+                                <goal>enforce</goal>
+                            </goals>
+                            <configuration>
+                                <rules>
+                                    <!-- Ensure consistency -->
+                                    <dependencyConvergence />
+
+                                    <!-- ban non-module stuff -->
+                                    <bannedDependencies>
+                                        <excludes>
+                                            <exclude>com.google.code.findbugs:jsr305</exclude>
+                                        </excludes>
+                                        <searchTransitive>false</searchTransitive>
+                                    </bannedDependencies>
+                                </rules>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <configuration>
+                        <links>
+                            <link>https://javadoc.io/doc/org.junit.jupiter/junit-jupiter-api/${dep.junit5.version}/</link>
+                            <link>https://javadoc.io/doc/com.google.guava/guava/${dep.guava.version}/</link>
+                            <link>https://javadoc.io/doc/com.github.spotbugs/spotbugs-annotations/${dep.spotbugs.version}</link>
+                        </links>
+                        <author>false</author>
+                        <detectJavaApiLink>true</detectJavaApiLink>
+                        <linksource>true</linksource>
+                        <nodeprecated>false</nodeprecated>
+                        <nohelp>true</nohelp>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <links>
+                        <link>https://javadoc.io/doc/org.junit.jupiter/junit-jupiter-api/${dep.junit5.version}/</link>
+                        <link>https://javadoc.io/doc/com.google.guava/guava/${dep.guava.version}/</link>
+                        <link>https://javadoc.io/doc/com.github.spotbugs/spotbugs-annotations/${dep.spotbugs.version}</link>
+                    </links>
+                    <author>false</author>
+                    <detectJavaApiLink>true</detectJavaApiLink>
+                    <linksource>true</linksource>
+                    <nodeprecated>false</nodeprecated>
+                    <nohelp>true</nohelp>
+                </configuration>
+            </plugin>
+        </plugins>
+    </reporting>
+
+    <profiles>
+        <profile>
+            <id>pg-embedded-release</id>
+            <properties>
+                <basepom.site.scm.site-path>/release-${project.version}</basepom.site.scm.site-path>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-enforcer-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>enforce-java21</id>
+                                <goals>
+                                    <goal>enforce</goal>
+                                </goals>
+                                <configuration>
+                                    <rules>
+                                        <requireJavaVersion>
+                                            <version>[21,)</version>
+                                        </requireJavaVersion>
+                                    </rules>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <!-- Profile to skip time-consuming steps. -->
+            <id>fast</id>
+            <properties>
+                <basepom.check.skip-all>true</basepom.check.skip-all>
+                <skipITs>true</skipITs>
+                <skipTests>true</skipTests>
+            </properties>
+        </profile>
+        <profile>
+            <id>macos-x86_64</id>
+            <activation>
+                <os>
+                    <family>mac</family>
+                    <arch>x86_64</arch>
+                </os>
+            </activation>
+            <properties>
+                <pg-embedded.test.binary-name>darwin-x86_64</pg-embedded.test.binary-name>
+                <pg-embedded.test.artifact-name>darwin-amd64</pg-embedded.test.artifact-name>
+            </properties>
+        </profile>
+        <profile>
+            <id>macos-arm64</id>
+            <activation>
+                <os>
+                    <family>mac</family>
+                    <arch>aarch64</arch>
+                </os>
+            </activation>
+            <properties>
+                <pg-embedded.test.binary-name>darwin-arm_64</pg-embedded.test.binary-name>
+                <pg-embedded.test.artifact-name>darwin-arm64v8</pg-embedded.test.artifact-name>
+            </properties>
+        </profile>
+        <profile>
+            <id>linux-x86_64</id>
+            <activation>
+                <os>
+                    <name>linux</name>
+                    <arch>amd64</arch>
+                </os>
+            </activation>
+            <properties>
+                <pg-embedded.test.binary-name>linux-x86_64</pg-embedded.test.binary-name>
+                <pg-embedded.test.artifact-name>linux-amd64</pg-embedded.test.artifact-name>
+            </properties>
+        </profile>
+    </profiles>
+</project>
