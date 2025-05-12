@@ -88,8 +88,27 @@ final class EmbeddedUtil {
 
     static void ensureDirectory(@Nonnull File workDir) {
 
-        if (!workDir.exists()) {
-            checkState(workDir.mkdirs(), " Could not create directory '%s'", workDir);
+        long retryCount = 5;
+
+        while (retryCount > 0) {
+            if (workDir.exists()) {
+                break;
+            }
+            if (workDir.mkdirs()) {
+                break;
+            }
+            retryCount--;
+
+            try {
+                Thread.sleep(100 * (6 - retryCount));
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IllegalStateException("Could not create working directory'" + workDir.getAbsolutePath() + "'", e);
+            }
+
+        }
+        if (retryCount == 0) {
+            throw new IllegalStateException("Could not create working directory '" + workDir.getAbsolutePath() + "' after 5 tries");
         }
 
         checkState(workDir.exists(), "'%s' does not exist!", workDir);
