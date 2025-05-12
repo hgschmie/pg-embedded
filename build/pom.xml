@@ -47,15 +47,12 @@
         <basepom.it.skip>true</basepom.it.skip>
 
         <basepom.release.profiles>basepom.central-release,pg-embedded-release</basepom.release.profiles>
-        <basepom.site.scm.skip-deploy>false</basepom.site.scm.skip-deploy>
+        <!-- site is built in the code subdirectory -->
+        <basepom.site.skip>true</basepom.site.skip>
+        <basepom.site.scm.skip-deploy>true</basepom.site.scm.skip-deploy>
         <basepom.site.scm.id>github</basepom.site.scm.id>
         <basepom.site.scm.url>scm:git:https://github.com/hgschmie/pg-embedded.github.io.git</basepom.site.scm.url>
         <basepom.site.scm.site-path>/development</basepom.site.scm.site-path>
-
-        <basepom.javadoc.legacy-mode>true</basepom.javadoc.legacy-mode>
-        <basepom.javadoc.skip>false</basepom.javadoc.skip>
-        <basepom.javadoc.show>protected</basepom.javadoc.show>
-        <basepom.site.fail-javadoc>false</basepom.site.fail-javadoc>
 
         <dep.plugin.inline.version>1.5.2-SNAPSHOT</dep.plugin.inline.version>
 

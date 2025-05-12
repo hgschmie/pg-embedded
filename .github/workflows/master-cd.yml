@@ -12,15 +12,21 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install locales on ubuntu runner
-        run: sudo apt-get install -y locales-all
-
-      - name: setup jdk
-        uses: actions/setup-java@v4
         with:
-          distribution: temurin
+          fetch-tags: true
+          fetch-depth: 0
+
+      - name: Install locales on runner
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y locales-all
+
+      - uses: actions/setup-java@v4
+        name: setup build jdk
+        id: build_jdk
+        with:
           java-version: 21
+          distribution: temurin
           cache: maven
           server-id: sonatype-nexus-snapshots
           server-username: NEXUS_REPO_USER
@@ -30,34 +36,43 @@ jobs:
         env:
           NEXUS_REPO_USER: ${{ secrets.NEXUS_REPO_USER }}
           NEXUS_REPO_PASSWORD: ${{ secrets.NEXUS_REPO_PASSWORD }}
-          MAVEN_CONFIG: "-B -fae"
-        run: make deploy
+          MAVEN_ARGS: "-B -ff"
+        run: |
+          make deploy
 
   site:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-tags: true
+          fetch-depth: 0
 
-      - name: Install locales on ubuntu runner
-        run: sudo apt-get install -y locales-all
+      - name: Install locales on runner
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y locales-all
 
       - name: Set git information
         run: |
           git config --global user.name ${{ github.actor }}
           git config --global user.email ${{ github.actor }}
 
-      - name: setup jdk
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
+        name: setup build jdk
+        id: build_jdk
         with:
-          distribution: temurin
           java-version: 21
+          distribution: temurin
           cache: maven
-          server-id: github
-          server-password: SITE_DEPLOY
+
+      - uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.PG_EMBEDDED_GITHUB_IO_DEPLOY_KEY }}
 
       - name: deploy documentation
         env:
-          SITE_DEPLOY: ${{ secrets.SITE_DEPLOY_TOKEN  }}
-          MAVEN_CONFIG: "-B -fae"
-        run: make deploy-site
+          MAVEN_ARGS: "-B -ff"
+        run: |
+          make deploy-site

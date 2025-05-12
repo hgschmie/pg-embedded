@@ -27,6 +27,17 @@
     <name>pg-embedded :: code</name>
     <packaging>jar</packaging>
 
+    <properties>
+        <basepom.javadoc.legacy-mode>true</basepom.javadoc.legacy-mode>
+        <basepom.javadoc.skip>false</basepom.javadoc.skip>
+        <basepom.javadoc.show>protected</basepom.javadoc.show>
+        <basepom.site.fail-javadoc>false</basepom.site.fail-javadoc>
+
+        <!-- Site is built in this directory -->
+        <basepom.site.skip>false</basepom.site.skip>
+        <basepom.site.scm.skip-deploy>false</basepom.site.scm.skip-deploy>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.apache.commons</groupId>

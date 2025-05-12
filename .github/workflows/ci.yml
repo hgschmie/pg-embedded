@@ -14,70 +14,87 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        test-java-version: [ 17, 21 ]
+        java-version: [ 17, 21, 24 ]
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-tags: true
+          fetch-depth: 0
 
       - name: Install locales on runner
-        run: sudo apt-get install -y locales-all
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y locales-all
 
       - uses: actions/setup-java@v4
-        id: setup_build_jdk
-        name: Setup Build JDK
+        name: setup build jdk
+        id: build_jdk
         with:
           java-version: 21
           distribution: temurin
           cache: maven
 
-      - name: Build
+      - name: build code
+        id: install_fast
         env:
-          MAVEN_CONFIG: "-Pfast -Dbasepom.check.skip-enforcer=false -B -fae"
+          MAVEN_ARGS: "-B -ff"
         run: |
-          make install
+          ./mvnw --version
+          make install-fast
 
       - uses: actions/setup-java@v4
-        id: setup_test_jdk
-        name: Setup Test JDK
+        name: setup test jdk
+        id: test_jdk
         with:
-          java-version: ${{ matrix.test-java-version }}
+          java-version: ${{ matrix.java-version }}
           distribution: temurin
-          cache: maven
 
-      - name: Run unit tests
+      - name: run tests
+        id: run_tests
         env:
-          MAVEN_CONFIG: "-B -fae"
+          MAVEN_ARGS: "-B -ff"
         run: |
-          make test
+          ./mvnw --version
+          make run-tests
 
   db:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        postgres-version: [ 12, 13, 14, 15, 16 ]
+        postgres-version: [ 17, 16, 15, 14, 13 ]
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-tags: true
+          fetch-depth: 0
 
       - name: Install locales on runner
-        run: sudo apt-get install -y locales-all
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y locales-all
 
       - uses: actions/setup-java@v4
-        id: setup_build_jdk
-        name: Setup Build JDK
+        name: setup build jdk
+        id: build_jdk
         with:
           java-version: 21
           distribution: temurin
           cache: maven
 
-      - name: Build
+      - name: build code
+        id: install_fast
         env:
-          MAVEN_CONFIG: "-Pfast -Dbasepom.check.skip-enforcer=false -B -fae"
+          MAVEN_ARGS: "-B -ff"
         run: |
-          make install
+          ./mvnw --version
+          make install-fast
 
-      - name: Run unit tests
+      - name: run tests
+        id: run_tests
         env:
-          MAVEN_CONFIG: "-B -fae -Dpg-embedded.postgres-version=${{ matrix.postgres-version }}"
+          MAVEN_ARGS: "-B -ff -Dpg-embedded.postgres-version=${{ matrix.postgres-version }}"
         run: |
-          make test
+          ./mvnw --version
+          make run-tests
