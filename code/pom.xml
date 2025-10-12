@@ -19,7 +19,7 @@
     <parent>
         <groupId>de.softwareforge.testing</groupId>
         <artifactId>pg-embedded-build-root</artifactId>
-        <version>5.3.1-SNAPSHOT</version>
+        <version>5.4.0</version>
         <relativePath>../build</relativePath>
     </parent>
 
@@ -30,7 +30,8 @@
     <scm>
         <!-- work around bug in relative site URL generation -->
         <url>https://github.com/hgschmie/pg-embedded/</url>
-    </scm>
+      <tag>pg-embedded-5.4.0</tag>
+  </scm>
 
     <properties>
         <basepom.javadoc.legacy-mode>true</basepom.javadoc.legacy-mode>
