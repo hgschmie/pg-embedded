@@ -36,6 +36,8 @@
         <!-- Site is built in this directory -->
         <basepom.site.skip>false</basepom.site.skip>
         <basepom.site.scm.skip-deploy>false</basepom.site.scm.skip-deploy>
+
+        <basepom.check.skip-dependency-management>true</basepom.check.skip-dependency-management>
     </properties>
 
     <dependencies>
@@ -51,28 +53,6 @@
     </dependencies>
 
     <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.basepom.maven</groupId>
-                    <artifactId>inline-maven-plugin</artifactId>
-                    <version>${dep.plugin.inline.version}</version>
-
-                    <configuration>
-                        <prefix>de.softwareforge.testing</prefix>
-                        <hideClasses>true</hideClasses>
-                        <inlineDependencies>
-                            <inlineDependency>
-                                <artifact>org.apache.commons:commons-compress</artifact>
-                            </inlineDependency>
-                            <inlineDependency>
-                                <artifact>org.tukaani:xz</artifact>
-                            </inlineDependency>
-                        </inlineDependencies>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>org.basepom.maven</groupId>
@@ -83,6 +63,36 @@
                         <goals>
                             <goal>inline</goal>
                         </goals>
+                        <configuration>
+                            <inlineDependencies>
+                                <inlineDependency>
+                                    <artifact>org.apache.commons:commons-compress</artifact>
+                                </inlineDependency>
+                                <inlineDependency>
+                                    <artifact>org.tukaani:xz</artifact>
+                                </inlineDependency>
+                            </inlineDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>flatten</id>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                        <phase>process-resources</phase>
+                    </execution>
+                    <execution>
+                        <id>flatten.clean</id>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                        <phase>clean</phase>
                     </execution>
                 </executions>
             </plugin>

@@ -55,6 +55,7 @@
         <basepom.site.scm.url>scm:git:git@github.com:hgschmie/pg-embedded.github.io.git</basepom.site.scm.url>
         <basepom.site.scm.site-path>/development</basepom.site.scm.site-path>
 
+        <dep.plugin.flatten.version>1.7.3</dep.plugin.flatten.version>
         <dep.plugin.inline.version>1.5.1</dep.plugin.inline.version>
 
         <dep.slf4j.version>2.0.17</dep.slf4j.version>
@@ -375,6 +376,31 @@
                         <linksource>true</linksource>
                         <nodeprecated>false</nodeprecated>
                         <nohelp>true</nohelp>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>flatten-maven-plugin</artifactId>
+                    <version>${dep.plugin.flatten.version}</version>
+                    <configuration>
+                        <flattenMode>ossrh</flattenMode>
+                        <flattenDependencyMode>inherited</flattenDependencyMode>
+                        <omitExclusions>true</omitExclusions>
+                        <pomElements>
+                            <distributionManagement>remove</distributionManagement>
+                            <!-- <dependencies>expand</dependencies> -->
+                             <repositories>remove</repositories>
+                        </pomElements>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.basepom.maven</groupId>
+                    <artifactId>inline-maven-plugin</artifactId>
+                    <version>${dep.plugin.inline.version}</version>
+                    <configuration>
+                        <prefix>de.softwareforge.testing</prefix>
+                        <hideClasses>true</hideClasses>
                     </configuration>
                 </plugin>
             </plugins>
