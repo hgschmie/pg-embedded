@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.kitei</groupId>
         <artifactId>kitei-root</artifactId>
-        <version>19</version>
+        <version>20</version>
         <relativePath />
     </parent>
 
@@ -59,15 +59,15 @@
 
         <dep.slf4j.version>2.0.17</dep.slf4j.version>
         <dep.guava.version>33.4.8-jre</dep.guava.version>
-        <dep.flyway.version>11.8.1</dep.flyway.version>
-        <dep.postgresql-jdbc.version>42.7.5</dep.postgresql-jdbc.version>
-        <dep.junit5.version>5.13.0-M3</dep.junit5.version>
+        <dep.flyway.version>11.13.3</dep.flyway.version>
+        <dep.postgresql-jdbc.version>42.7.8</dep.postgresql-jdbc.version>
+        <dep.junit5.version>5.13.3</dep.junit5.version>
         <dep.auto-value.version>1.11.0</dep.auto-value.version>
-        <dep.maven-loader.version>2.4.0</dep.maven-loader.version>
-        <dep.jackson.version>2.18.3</dep.jackson.version>
+        <dep.maven-loader.version>2.4.1</dep.maven-loader.version>
+        <dep.jackson.version>2.18.4</dep.jackson.version>
 
-        <dep.apache-commons-compress.version>1.27.1</dep.apache-commons-compress.version>
-        <dep.checkerframework.version>3.49.3</dep.checkerframework.version>
+        <dep.apache-commons-compress.version>1.28.0</dep.apache-commons-compress.version>
+        <dep.checkerframework.version>3.51.1</dep.checkerframework.version>
         <dep.jakarta-annotation-api.version>3.0.0</dep.jakarta-annotation-api.version>
         <dep.xz.version>1.10</dep.xz.version>
 
@@ -80,7 +80,7 @@
         <pg-embedded.test.binary-name />
         <pg-embedded.test.artifact-name>linux-amd64</pg-embedded.test.artifact-name>
         <!-- pg version below must be a full version, does not use the resolver -->
-        <pg-embedded.test.artifact-version>17.4.0</pg-embedded.test.artifact-version>
+        <pg-embedded.test.artifact-version>17.6.0</pg-embedded.test.artifact-version>
     </properties>
 
     <licenses>
@@ -222,6 +222,9 @@
         </dependencies>
     </dependencyManagement>
 
+    <!-- all shared dependencies between the actual jar and the integration testing execution
+         do not move to the 'code' module, it will make the integration tests fail
+    -->
     <dependencies>
         <dependency>
             <groupId>de.softwareforge.testing</groupId>
