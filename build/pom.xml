@@ -42,6 +42,7 @@
 
     <properties>
         <dep.pg-embedded.version>5.3.1-SNAPSHOT</dep.pg-embedded.version>
+        <basepom.release.tag-name-format>pg-embedded-@{project.version}</basepom.release.tag-name-format>
 
         <project.build.targetJdk>11</project.build.targetJdk>
         <project.moduleName>de.softwareforge.testing.postgres</project.moduleName>
