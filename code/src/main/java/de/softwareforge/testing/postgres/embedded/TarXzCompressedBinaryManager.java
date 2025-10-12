@@ -128,7 +128,7 @@ public final class TarXzCompressedBinaryManager implements NativeBinaryManager {
                     } else {
                         // the other guy is unpacking for us.
                         int maxAttempts = 60;
-                        while (!installationExistsFile.exists() && --maxAttempts > 0) { // NOPMD
+                        while (!installationExistsFile.exists() && --maxAttempts > 0) {
                             Thread.sleep(1000L);
                         }
                         checkState(installationExistsFile.exists(), "Waited 60 seconds for archive to be unpacked but it never finished!");
@@ -162,7 +162,7 @@ public final class TarXzCompressedBinaryManager implements NativeBinaryManager {
             final Phaser phaser = new Phaser(1);
             TarArchiveEntry entry;
 
-            while ((entry = tarIn.getNextTarEntry()) != null) { //NOPMD
+            while ((entry = tarIn.getNextEntry()) != null) {
                 final String individualFile = entry.getName();
                 final File fsObject = new File(targetDir, individualFile);
                 final Path fsPath = fsObject.toPath();
@@ -181,7 +181,7 @@ public final class TarXzCompressedBinaryManager implements NativeBinaryManager {
                     EmbeddedUtil.ensureDirectory(fsObject.getParentFile());
 
                     final AsynchronousFileChannel fileChannel = AsynchronousFileChannel.open(fsPath, CREATE, WRITE); //NOPMD
-                    final ByteBuffer buffer = ByteBuffer.wrap(content); //NOPMD
+                    final ByteBuffer buffer = ByteBuffer.wrap(content);
 
                     phaser.register();
                     fileChannel.write(buffer, 0, fileChannel, new CompletionHandler<Integer, Channel>() {

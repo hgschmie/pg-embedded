@@ -97,7 +97,6 @@ public final class EmbeddedPostgres implements AutoCloseable {
     private static final String PG_STOP_WAIT_SECONDS = "5";
     static final String LOCK_FILE_NAME = "epg-lock";
 
-    @SuppressWarnings("PMD.ProperLogger")
     private final Logger logger;
 
     private final String instanceId;
