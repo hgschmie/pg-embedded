@@ -47,6 +47,10 @@ run-tests:: MAVEN_ARGS += -Dbasepom.it.skip=false
 run-tests::
 	${MAVEN} surefire:test invoker:install invoker:integration-test invoker:verify
 
+site:: MAVEN_ARGS += -Dbasepom.it.skip=false
+site:: install
+	${MAVEN} site
+
 deploy:: MAVEN_ARGS += -Dbasepom.it.skip=false
 deploy::
 	${MAVEN} clean deploy

@@ -27,6 +27,11 @@
     <name>pg-embedded :: code</name>
     <packaging>jar</packaging>
 
+    <scm>
+        <!-- work around bug in relative site URL generation -->
+        <url>https://github.com/hgschmie/pg-embedded/</url>
+    </scm>
+
     <properties>
         <basepom.javadoc.legacy-mode>true</basepom.javadoc.legacy-mode>
         <basepom.javadoc.skip>false</basepom.javadoc.skip>
