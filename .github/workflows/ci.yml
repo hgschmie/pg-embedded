@@ -45,7 +45,7 @@ jobs:
           MAVEN_ARGS: "-B -ff"
         run: |
           ./mvnw --version
-          make install-fast
+          make install-notests
 
       - uses: actions/setup-java@v4
         id: setup_test_jdk
@@ -116,7 +116,7 @@ jobs:
           MAVEN_ARGS: "-B -ff"
         run: |
           ./mvnw --version
-          make install-fast
+          make install-notests
 
       - name: Run unit tests
         env:
