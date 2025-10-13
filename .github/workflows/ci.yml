@@ -68,7 +68,7 @@ jobs:
         continue-on-error: true
         if: ${{ always() }}
         with:
-          name: build logs (${{ github.job }}, ${{ matrix.java-version }}, ${{ matrix.distribution }})
+          name: build logs (${{ github.job }}, ${{ matrix.test-java-version }})
           retention-days: 90
           path: |
             **/target
@@ -80,7 +80,7 @@ jobs:
         id: upload_build_artifacts
         continue-on-error: true
         with:
-          name: build artifacts (${{ github.job }}, ${{ matrix.java-version }}, ${{ matrix.distribution }})
+          name: build artifacts (${{ github.job }}, ${{ matrix.test-java-version }})
           retention-days: 1
           path: |
             **/target/**/*.jar
@@ -131,7 +131,7 @@ jobs:
         continue-on-error: true
         if: ${{ always() }}
         with:
-          name: build logs (${{ github.job }}, ${{ matrix.java-version }}, ${{ matrix.distribution }})
+          name: build logs (${{ github.job }}, ${{ matrix.postgres-version }})
           retention-days: 90
           path: |
             **/target
@@ -143,7 +143,7 @@ jobs:
         id: upload_build_artifacts
         continue-on-error: true
         with:
-          name: build artifacts (${{ github.job }}, ${{ matrix.java-version }}, ${{ matrix.distribution }})
+          name: build artifacts (${{ github.job }}, ${{ matrix.postgres-version }})
           retention-days: 1
           path: |
             **/target/**/*.jar
