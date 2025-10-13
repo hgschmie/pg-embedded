@@ -383,6 +383,7 @@
                         <linksource>true</linksource>
                         <nodeprecated>false</nodeprecated>
                         <nohelp>true</nohelp>
+                        <windowtitle>pg-embedded ${project.version} API</windowtitle>
                     </configuration>
                 </plugin>
 
