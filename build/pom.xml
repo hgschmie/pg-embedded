@@ -400,6 +400,8 @@
                             <!-- <dependencies>expand</dependencies> -->
                              <repositories>remove</repositories>
                         </pomElements>
+                        <outputDirectory>${project.build.directory}</outputDirectory>
+                        <flattenedPomFilename>flattened-pom.xml</flattenedPomFilename>
                     </configuration>
                 </plugin>
                 <plugin>
