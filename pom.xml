@@ -19,19 +19,26 @@
     <parent>
         <groupId>org.kitei</groupId>
         <artifactId>kitei-root</artifactId>
-        <version>65.1</version>
+        <version>65.3</version>
         <relativePath />
     </parent>
 
     <groupId>de.softwareforge.testing</groupId>
+    <artifactId>pg-embedded-root</artifactId>
+    <version>5.4.2-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>pg-embedded :: root</name>
     <description>Embedded PostgreSQL framework for testing and development use.</description>
     <url>https://pg-embedded.softwareforge.de/</url>
     <inceptionYear>2021</inceptionYear>
-    <version>5.4.2-SNAPSHOT</version>
 
-    <artifactId>pg-embedded-root</artifactId>
-    <name>pg-embedded :: root</name>
-    <packaging>pom</packaging>
+    <scm>
+        <connection>scm:git:git://github.com/hgschmie/pg-embedded.git</connection>
+        <developerConnection>scm:git:git@github.com:hgschmie/pg-embedded.git</developerConnection>
+        <url>https://github.com/hgschmie/pg-embedded/</url>
+        <tag>HEAD</tag>
+    </scm>
 
     <properties>
         <dep.pg-embedded.version>5.4.2-SNAPSHOT</dep.pg-embedded.version>
@@ -92,6 +99,28 @@
     <modules>
         <module>code</module>
     </modules>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+            <comments>A business-friendly OSS license</comments>
+        </license>
+    </licenses>
+
+    <organization>
+        <name>Henning Schmiedehausen</name>
+        <url>https://github.com/hgschmie</url>
+    </organization>
+
+    <developers>
+        <developer>
+            <id>hgschmie</id>
+            <name>Henning Schmiedehausen</name>
+            <timezone>-8</timezone>
+        </developer>
+    </developers>
 
     <dependencyManagement>
         <dependencies>

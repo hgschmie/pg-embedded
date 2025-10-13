@@ -27,35 +27,6 @@
     <name>pg-embedded</name>
     <packaging>jar</packaging>
 
-    <scm>
-        <connection>scm:git:git://github.com/hgschmie/pg-embedded.git</connection>
-        <developerConnection>scm:git:git@github.com:hgschmie/pg-embedded.git</developerConnection>
-        <url>https://github.com/hgschmie/pg-embedded/</url>
-        <tag>HEAD</tag>
-    </scm>
-
-    <licenses>
-        <license>
-            <name>Apache License, Version 2.0</name>
-            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
-            <distribution>repo</distribution>
-            <comments>A business-friendly OSS license</comments>
-        </license>
-    </licenses>
-
-    <organization>
-        <name>Henning Schmiedehausen</name>
-        <url>https://github.com/hgschmie</url>
-    </organization>
-
-    <developers>
-        <developer>
-            <id>hgschmie</id>
-            <name>Henning Schmiedehausen</name>
-            <timezone>-8</timezone>
-        </developer>
-    </developers>
-
     <properties>
         <project.moduleName>de.softwareforge.testing.postgres</project.moduleName>
 
