@@ -6,6 +6,10 @@ on:
     branches:
       - master
 
+concurrency:
+  group: ${{ github.workflow_ref }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   cd:
     runs-on: ubuntu-latest
@@ -25,17 +29,17 @@ jobs:
         name: setup build jdk
         id: build_jdk
         with:
-          java-version: 21
           distribution: temurin
+          java-version: 21
           cache: maven
-          server-id: central
-          server-username: CENTRAL_REPO_USER
-          server-password: CENTRAL_REPO_PASSWORD
+          server-id: sonatype-central-portal
+          server-username: NEXUS_REPO_USER
+          server-password: NEXUS_REPO_PASSWORD
 
       - name: deploy code
         env:
-          CENTRAL_REPO_USER: ${{ secrets.CENTRAL_REPO_USER }}
-          CENTRAL_REPO_PASSWORD: ${{ secrets.CENTRAL_REPO_PASSWORD }}
+          NEXUS_REPO_USER: ${{ secrets.CENTRAL_REPO_USER }}
+          NEXUS_REPO_PASSWORD: ${{ secrets.CENTRAL_REPO_PASSWORD }}
           MAVEN_ARGS: "-B -ff"
         run: |
           make deploy
@@ -63,16 +67,12 @@ jobs:
         name: setup build jdk
         id: build_jdk
         with:
-          java-version: 21
           distribution: temurin
+          java-version: 21
           cache: maven
-
-      - uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.PG_EMBEDDED_GITHUB_IO_DEPLOY_KEY }}
 
       - name: deploy documentation
         env:
-          MAVEN_ARGS: "-B -ff"
-        run: |
-          make deploy-site
+          SITE_DEPLOY: ${{ secrets.SITE_DEPLOY_TOKEN  }}
+          MAVEN_CONFIG: "-B -ff"
+        run: make deploy-site

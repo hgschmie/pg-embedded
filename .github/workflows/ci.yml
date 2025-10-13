@@ -9,12 +9,16 @@ on:
     branches:
       - master
 
+concurrency:
+  group: ${{ github.workflow_ref }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   ci:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java-version: [ 17, 21, 24 ]
+        test-java-version: [ 11, 17, 21, 25 ]
 
     steps:
       - uses: actions/checkout@v4
@@ -28,8 +32,8 @@ jobs:
           sudo apt-get install -y locales-all
 
       - uses: actions/setup-java@v4
-        name: setup build jdk
-        id: build_jdk
+        id: setup_build_jdk
+        name: Setup Build JDK
         with:
           java-version: 21
           distribution: temurin
@@ -44,14 +48,14 @@ jobs:
           make install-fast
 
       - uses: actions/setup-java@v4
-        name: setup test jdk
-        id: test_jdk
+        id: setup_test_jdk
+        name: Setup Test JDK
         with:
-          java-version: ${{ matrix.java-version }}
+          java-version: ${{ matrix.test-java-version }}
           distribution: temurin
+          cache: maven
 
-      - name: run tests
-        id: run_tests
+      - name: Run unit tests
         env:
           MAVEN_ARGS: "-B -ff"
         run: |
@@ -76,8 +80,8 @@ jobs:
           sudo apt-get install -y locales-all
 
       - uses: actions/setup-java@v4
-        name: setup build jdk
-        id: build_jdk
+        id: setup_build_jdk
+        name: Setup Build JDK
         with:
           java-version: 21
           distribution: temurin
@@ -91,8 +95,7 @@ jobs:
           ./mvnw --version
           make install-fast
 
-      - name: run tests
-        id: run_tests
+      - name: Run unit tests
         env:
           MAVEN_ARGS: "-B -ff -Dpg-embedded.postgres-version=${{ matrix.postgres-version }}"
         run: |
