@@ -70,6 +70,8 @@ jobs:
           distribution: temurin
           java-version: 21
           cache: maven
+          server-id: github
+          server-password: SITE_DEPLOY
 
       - name: deploy documentation
         env:
