@@ -17,9 +17,9 @@
 
     <parent>
         <groupId>de.softwareforge.testing</groupId>
-        <artifactId>pg-embedded-build-root</artifactId>
+        <artifactId>pg-embedded-root</artifactId>
         <version>@project.version@</version>
-        <relativePath>../../../build</relativePath>
+        <relativePath>../../..</relativePath>
     </parent>
 
     <artifactId>test-inline-jar</artifactId>

@@ -76,5 +76,5 @@ jobs:
       - name: deploy documentation
         env:
           SITE_DEPLOY: ${{ secrets.SITE_DEPLOY_TOKEN  }}
-          MAVEN_CONFIG: "-B -ff"
+          MAVEN_ARGS: "-B -ff"
         run: make deploy-site

@@ -13,14 +13,14 @@
 ~   limitations under the License.
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>de.softwareforge.testing</groupId>
-        <artifactId>pg-embedded-build-root</artifactId>
+        <artifactId>pg-embedded-root</artifactId>
         <version>5.4.2-SNAPSHOT</version>
-        <relativePath>../build</relativePath>
     </parent>
 
     <artifactId>pg-embedded</artifactId>
@@ -28,10 +28,33 @@
     <packaging>jar</packaging>
 
     <scm>
-        <!-- work around bug in relative site URL generation -->
+        <connection>scm:git:git://github.com/hgschmie/pg-embedded.git</connection>
+        <developerConnection>scm:git:git@github.com:hgschmie/pg-embedded.git</developerConnection>
         <url>https://github.com/hgschmie/pg-embedded/</url>
-      <tag>HEAD</tag>
-  </scm>
+        <tag>HEAD</tag>
+    </scm>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+            <comments>A business-friendly OSS license</comments>
+        </license>
+    </licenses>
+
+    <organization>
+        <name>Henning Schmiedehausen</name>
+        <url>https://github.com/hgschmie</url>
+    </organization>
+
+    <developers>
+        <developer>
+            <id>hgschmie</id>
+            <name>Henning Schmiedehausen</name>
+            <timezone>-8</timezone>
+        </developer>
+    </developers>
 
     <properties>
         <project.moduleName>de.softwareforge.testing.postgres</project.moduleName>
