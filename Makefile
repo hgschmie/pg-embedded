@@ -29,23 +29,17 @@ clean::
 install::
 	${MAVEN} clean install
 
-# do not replace with "install-notests run-tests", the integration tests
-# must be run right after the inline plugin; otherwise the project pom and
-# not the newly created pom without inlined dependencies is used for the
-# integration tests.
-tests:: MAVEN_ARGS += -Dbasepom.it.skip=false
-tests::
-	${MAVEN} clean verify
+tests:: install-notests run-tests
 
 install-notests:: MAVEN_ARGS += -Dbasepom.test.skip=true
 install-notests:: install
 
-install-fast:: MAVEN_ARGS += -Pfast
+install-fast:: MAVEN_ARGS += -Pkitei.fast
 install-fast:: install
 
 run-tests:: MAVEN_ARGS += -Dbasepom.it.skip=false
 run-tests::
-	${MAVEN} surefire:test invoker:install invoker:integration-test invoker:verify
+	${MAVEN} surefire:test invoker:integration-test invoker:verify
 
 site:: MAVEN_ARGS += -Dbasepom.it.skip=false
 site:: install
@@ -62,7 +56,7 @@ deploy-site:: install
 release::
 	${MAVEN} clean release:clean release:prepare release:perform
 
-release-site:: MAVEN_ARGS += -Ppg-embedded-release
+release-site:: MAVEN_ARGS += -Pkitei.release
 release-site:: deploy-site
 
 help::

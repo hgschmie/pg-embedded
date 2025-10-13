@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.kitei</groupId>
         <artifactId>kitei-root</artifactId>
-        <version>21</version>
+        <version>65.2</version>
         <relativePath />
     </parent>
 
@@ -49,18 +49,22 @@
         <basepom.install.skip>true</basepom.install.skip>
 
         <project.build.targetJdk>11</project.build.targetJdk>
-        <project.moduleName>de.softwareforge.testing.postgres</project.moduleName>
         <basepom.test.timeout>1800</basepom.test.timeout>
         <basepom.it.skip>true</basepom.it.skip>
 
         <!-- use deploy / njord -->
         <basepom.release.profiles>basepom.deploy-release,kitei.release</basepom.release.profiles>
 
+        <basepom.javadoc.title>pg-embedded ${project.version} API</basepom.javadoc.title>
+        <basepom.javadoc.legacy-mode>true</basepom.javadoc.legacy-mode>
+
         <!-- site is built in the code subdirectory -->
         <basepom.site.skip>true</basepom.site.skip>
         <basepom.site.scm.skip-deploy>true</basepom.site.scm.skip-deploy>
+        <basepom.site.scm.id>github</basepom.site.scm.id>
         <basepom.site.scm.url>scm:git:git@github.com:hgschmie/pg-embedded.github.io.git</basepom.site.scm.url>
         <basepom.site.scm.site-path>/development</basepom.site.scm.site-path>
+        <basepom.site.fail-javadoc>false</basepom.site.fail-javadoc>
 
         <dep.plugin.flatten.version>1.7.3</dep.plugin.flatten.version>
         <dep.plugin.inline.version>1.5.1</dep.plugin.inline.version>
@@ -71,7 +75,7 @@
         <dep.postgresql-jdbc.version>42.7.8</dep.postgresql-jdbc.version>
         <dep.junit5.version>5.13.3</dep.junit5.version>
         <dep.auto-value.version>1.11.0</dep.auto-value.version>
-        <dep.maven-loader.version>2.4.1</dep.maven-loader.version>
+        <dep.maven-loader.version>2.4.2</dep.maven-loader.version>
         <dep.jackson.version>2.18.4</dep.jackson.version>
 
         <dep.apache-commons-compress.version>1.28.0</dep.apache-commons-compress.version>
@@ -342,6 +346,7 @@
                         </systemPropertyVariables>
                     </configuration>
                 </plugin>
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
@@ -378,12 +383,6 @@
                             <link>https://javadoc.io/doc/com.google.guava/guava/${dep.guava.version}/</link>
                             <link>https://javadoc.io/doc/com.github.spotbugs/spotbugs-annotations/${dep.spotbugs.version}</link>
                         </links>
-                        <author>false</author>
-                        <detectJavaApiLink>true</detectJavaApiLink>
-                        <linksource>true</linksource>
-                        <nodeprecated>false</nodeprecated>
-                        <nohelp>true</nohelp>
-                        <windowtitle>pg-embedded ${project.version} API</windowtitle>
                     </configuration>
                 </plugin>
 
@@ -397,21 +396,17 @@
                         <omitExclusions>true</omitExclusions>
                         <pomElements>
                             <distributionManagement>remove</distributionManagement>
-                            <!-- <dependencies>expand</dependencies> -->
-                             <repositories>remove</repositories>
+                            <repositories>remove</repositories>
                         </pomElements>
                         <outputDirectory>${project.build.directory}</outputDirectory>
                         <flattenedPomFilename>flattened-pom.xml</flattenedPomFilename>
                     </configuration>
                 </plugin>
+
                 <plugin>
                     <groupId>org.basepom.maven</groupId>
                     <artifactId>inline-maven-plugin</artifactId>
                     <version>${dep.plugin.inline.version}</version>
-                    <configuration>
-                        <prefix>de.softwareforge.testing</prefix>
-                        <hideClasses>true</hideClasses>
-                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -428,11 +423,6 @@
                         <link>https://javadoc.io/doc/com.google.guava/guava/${dep.guava.version}/</link>
                         <link>https://javadoc.io/doc/com.github.spotbugs/spotbugs-annotations/${dep.spotbugs.version}</link>
                     </links>
-                    <author>false</author>
-                    <detectJavaApiLink>true</detectJavaApiLink>
-                    <linksource>true</linksource>
-                    <nodeprecated>false</nodeprecated>
-                    <nohelp>true</nohelp>
                 </configuration>
             </plugin>
         </plugins>
@@ -443,15 +433,6 @@
             <id>kitei.release</id>
             <properties>
                 <basepom.site.scm.site-path>/release-${project.version}</basepom.site.scm.site-path>
-            </properties>
-        </profile>
-        <profile>
-            <!-- Profile to skip time-consuming steps. -->
-            <id>fast</id>
-            <properties>
-                <basepom.check.skip-all>true</basepom.check.skip-all>
-                <skipITs>true</skipITs>
-                <skipTests>true</skipTests>
             </properties>
         </profile>
         <profile>
