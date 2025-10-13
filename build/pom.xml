@@ -44,12 +44,18 @@
         <dep.pg-embedded.version>5.4.1-SNAPSHOT</dep.pg-embedded.version>
         <basepom.release.tag-name-format>pg-embedded-@{project.version}</basepom.release.tag-name-format>
 
+        <!-- by default, don't deploy. Only deploy the code module -->
+        <basepom.deploy.skip>true</basepom.deploy.skip>
+        <basepom.install.skip>true</basepom.install.skip>
+
         <project.build.targetJdk>11</project.build.targetJdk>
         <project.moduleName>de.softwareforge.testing.postgres</project.moduleName>
         <basepom.test.timeout>1800</basepom.test.timeout>
         <basepom.it.skip>true</basepom.it.skip>
 
-        <basepom.release.profiles>basepom.central-release,pg-embedded-release</basepom.release.profiles>
+        <!-- use deploy / njord -->
+        <basepom.release.profiles>basepom.deploy-release,kitei.release</basepom.release.profiles>
+
         <!-- site is built in the code subdirectory -->
         <basepom.site.skip>true</basepom.site.skip>
         <basepom.site.scm.skip-deploy>true</basepom.site.scm.skip-deploy>
