@@ -2,9 +2,54 @@
 
 This is the change log for pg-embedded. It follows [Keep a Changelog v1.0.0](http://keepachangelog.com/en/1.0.0/).
 
+## 5.4.1 - 2025-10-12
+
+### Changed
+
+- deploy with njord, only deploy the code module
+- fix javadoc API title
+
+## 5.4.0 - 2025-10-11
+
+### Changed
+
+- dependency updates
+- fix build tag format (#4)
+- fix SCM url on site (#2)
+
+
+### Added
+
+- experimental reflection metadata for GraalVM support
+
+
+## 5.3.0 - 2025-05-11
+
+### Removed
+
+- dropped support for PostgreSQL 12 (obsolete)
+- removed redundant user parameter from URL
+
+### Added
+
+- add support for PostgreSQL 17
+- testing with Java 24
+- integration testing against the inlined jar
+
+### Changed
+
+- dependency updates
+- reorganized build with smaller pom
+- Work directory creation is more resilient, fixes spurious build errors
+
 ## 5.2.0 - 2024-09-12
 
+### Removed
+
 - dropped support for Postgres 11 (obsolete by postgresql.org)
+
+## Changed
+
 - dependency updates, build fixes
 - tests are now run against 16.4.0 (used to be 15.4.0)
 - Default embedded database version is now 15 (used to be 13)
@@ -13,7 +58,12 @@ This is the change log for pg-embedded. It follows [Keep a Changelog v1.0.0](htt
 
 ## 5.1.0 - 2023-10-22
 
+### Removed
+
 - dropped support for Postgres 9.x and 10 (obsolete by postgresql.org)
+
+### Changed
+
 - dependency updates, build fixes
 - switch to three digit versioning
 
