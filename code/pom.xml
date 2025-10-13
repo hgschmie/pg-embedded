@@ -34,6 +34,9 @@
   </scm>
 
     <properties>
+        <basepom.deploy.skip>false</basepom.deploy.skip>
+        <basepom.install.skip>false</basepom.install.skip>
+
         <basepom.javadoc.legacy-mode>true</basepom.javadoc.legacy-mode>
         <basepom.javadoc.skip>false</basepom.javadoc.skip>
         <basepom.javadoc.show>protected</basepom.javadoc.show>
